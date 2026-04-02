@@ -1,0 +1,418 @@
+{
+  "2dp_students": [
+    {
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Rafael Costa",
+      "age": 22,
+      "weight": 76,
+      "height": 178,
+      "objective": "Melhorar potência explosiva e aceleração nos sprints para ganhar posição no elenco profissional de futebol",
+      "createdAt": "2024-09-10T10:00:00.000Z"
+    },
+    {
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Ana Beatriz Santos",
+      "age": 24,
+      "weight": 58,
+      "height": 168,
+      "objective": "Maximizar potência horizontal e reatividade para competições de salto em distância — meta de 6,80m na temporada",
+      "createdAt": "2024-09-30T10:00:00.000Z"
+    },
+    {
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Lucas Almeida",
+      "age": 20,
+      "weight": 88,
+      "height": 192,
+      "objective": "Aumentar altura de salto vertical e RSI para melhorar desempenho em bandeja, rebote e bloqueio no basquete universitário",
+      "createdAt": "2024-08-15T10:00:00.000Z"
+    },
+    {
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Camila Ferreira",
+      "age": 26,
+      "weight": 68,
+      "height": 175,
+      "objetivo": "Aumentar altura de ataque no vôlei e reduzir tempo de contato no bloqueio para chegar ao time titular da seleção estadual",
+      "objective": "Aumentar altura de ataque no vôlei e reduzir tempo de contato no bloqueio para chegar ao time titular da seleção estadual",
+      "createdAt": "2024-08-28T10:00:00.000Z"
+    },
+    {
+      "id": "a1b2c3d4-0005-4000-8000-000000000005",
+      "name": "Marcos Oliveira",
+      "age": 29,
+      "weight": 98,
+      "height": 185,
+      "objective": "Corrigir assimetria bilateral severa no membro inferior e desenvolver potência reativa para o rugby — retorno pós-lesão de LCA esquerdo",
+      "createdAt": "2024-10-05T10:00:00.000Z"
+    },
+    {
+      "id": "a1b2c3d4-0006-4000-8000-000000000006",
+      "name": "Giulia Martins",
+      "age": 19,
+      "weight": 62,
+      "height": 163,
+      "objective": "Desenvolver reatividade e SSC rápido para futsal feminino — foco em mudanças de direção explosivas e saída de marcação",
+      "createdAt": "2024-11-01T10:00:00.000Z"
+    }
+  ],
+  "2dp_assessments": [
+    {
+      "id": "e1000001-0001-4000-8000-000000000001",
+      "studentId": "a1b2c3d4-0001-4000-8000-000000000001",
+      "date": "2024-09-15",
+      "metrics": {
+        "cmj": 38.5,
+        "sj": 34.2,
+        "abalakov": 45.8,
+        "rsi": 1.32,
+        "tempoContato": 248,
+        "alturaSaltoDJ": 32.8,
+        "cmjEsquerdo": 33.2,
+        "cmjDireito": 35.1,
+        "assimetriaPercentual": 5.4,
+        "saltoHorizontal": 220
+      }
+    },
+    {
+      "id": "e1000001-0002-4000-8000-000000000001",
+      "studentId": "a1b2c3d4-0001-4000-8000-000000000001",
+      "date": "2024-11-10",
+      "metrics": {
+        "cmj": 41.2,
+        "sj": 36.5,
+        "abalakov": 48.3,
+        "rsi": 1.48,
+        "tempoContato": 235,
+        "alturaSaltoDJ": 35.2,
+        "cmjEsquerdo": 35.8,
+        "cmjDireito": 37.5,
+        "assimetriaPercentual": 4.5,
+        "saltoHorizontal": 228
+      }
+    },
+    {
+      "id": "e1000001-0003-4000-8000-000000000001",
+      "studentId": "a1b2c3d4-0001-4000-8000-000000000001",
+      "date": "2025-01-20",
+      "metrics": {
+        "cmj": 43.8,
+        "sj": 38.1,
+        "abalakov": 51.2,
+        "rsi": 1.67,
+        "tempoContato": 218,
+        "alturaSaltoDJ": 38.4,
+        "cmjEsquerdo": 38.2,
+        "cmjDireito": 39.5,
+        "assimetriaPercentual": 3.3,
+        "saltoHorizontal": 235
+      }
+    },
+    {
+      "id": "e1000001-0004-4000-8000-000000000001",
+      "studentId": "a1b2c3d4-0001-4000-8000-000000000001",
+      "date": "2025-03-15",
+      "metrics": {
+        "cmj": 46.1,
+        "sj": 39.8,
+        "abalakov": 54.0,
+        "rsi": 1.85,
+        "tempoContato": 205,
+        "alturaSaltoDJ": 41.2,
+        "cmjEsquerdo": 40.5,
+        "cmjDireito": 41.8,
+        "assimetriaPercentual": 3.1,
+        "saltoHorizontal": 241
+      }
+    },
+    {
+      "id": "e1000002-0001-4000-8000-000000000002",
+      "studentId": "a1b2c3d4-0002-4000-8000-000000000002",
+      "date": "2024-10-05",
+      "metrics": {
+        "cmj": 44.2,
+        "sj": 41.8,
+        "abalakov": 53.6,
+        "rsi": 1.58,
+        "tempoContato": 215,
+        "alturaSaltoDJ": 38.5,
+        "cmjEsquerdo": 40.1,
+        "cmjDireito": 42.8,
+        "assimetriaPercentual": 6.3,
+        "saltoHorizontal": 248
+      }
+    },
+    {
+      "id": "e1000002-0002-4000-8000-000000000002",
+      "studentId": "a1b2c3d4-0002-4000-8000-000000000002",
+      "date": "2024-12-10",
+      "metrics": {
+        "cmj": 47.5,
+        "sj": 44.2,
+        "abalakov": 56.8,
+        "rsi": 1.75,
+        "tempoContato": 198,
+        "alturaSaltoDJ": 41.3,
+        "cmjEsquerdo": 43.2,
+        "cmjDireito": 44.8,
+        "assimetriaPercentual": 3.6,
+        "saltoHorizontal": 258
+      }
+    },
+    {
+      "id": "e1000002-0003-4000-8000-000000000002",
+      "studentId": "a1b2c3d4-0002-4000-8000-000000000002",
+      "date": "2025-02-28",
+      "metrics": {
+        "cmj": 50.8,
+        "sj": 46.5,
+        "abalakov": 60.2,
+        "rsi": 1.92,
+        "tempoContato": 185,
+        "alturaSaltoDJ": 44.6,
+        "cmjEsquerdo": 46.1,
+        "cmjDireito": 47.5,
+        "assimetriaPercentual": 3.0,
+        "saltoHorizontal": 267
+      }
+    },
+    {
+      "id": "e1000003-0001-4000-8000-000000000003",
+      "studentId": "a1b2c3d4-0003-4000-8000-000000000003",
+      "date": "2024-08-20",
+      "metrics": {
+        "cmj": 52.3,
+        "sj": 45.8,
+        "abalakov": 62.1,
+        "rsi": 1.72,
+        "tempoContato": 228,
+        "alturaSaltoDJ": 45.5,
+        "cmjEsquerdo": 47.2,
+        "cmjDireito": 50.1,
+        "assimetriaPercentual": 5.8,
+        "saltoHorizontal": 255
+      }
+    },
+    {
+      "id": "e1000003-0002-4000-8000-000000000003",
+      "studentId": "a1b2c3d4-0003-4000-8000-000000000003",
+      "date": "2024-10-25",
+      "metrics": {
+        "cmj": 55.8,
+        "sj": 48.2,
+        "abalakov": 65.5,
+        "rsi": 1.92,
+        "tempoContato": 212,
+        "alturaSaltoDJ": 48.8,
+        "cmjEsquerdo": 50.5,
+        "cmjDireito": 53.2,
+        "assimetriaPercentual": 5.1,
+        "saltoHorizontal": 262
+      }
+    },
+    {
+      "id": "e1000003-0003-4000-8000-000000000003",
+      "studentId": "a1b2c3d4-0003-4000-8000-000000000003",
+      "date": "2025-01-08",
+      "metrics": {
+        "cmj": 58.4,
+        "sj": 50.5,
+        "abalakov": 68.8,
+        "rsi": 2.12,
+        "tempoContato": 198,
+        "alturaSaltoDJ": 51.5,
+        "cmjEsquerdo": 53.2,
+        "cmjDireito": 55.8,
+        "assimetriaPercentual": 4.7,
+        "saltoHorizontal": 268
+      }
+    },
+    {
+      "id": "e1000003-0004-4000-8000-000000000003",
+      "studentId": "a1b2c3d4-0003-4000-8000-000000000003",
+      "date": "2025-03-20",
+      "metrics": {
+        "cmj": 61.2,
+        "sj": 52.8,
+        "abalakov": 72.3,
+        "rsi": 2.31,
+        "tempoContato": 185,
+        "alturaSaltoDJ": 54.2,
+        "cmjEsquerdo": 55.8,
+        "cmjDireito": 58.5,
+        "assimetriaPercentual": 4.5,
+        "saltoHorizontal": 274
+      }
+    },
+    {
+      "id": "e1000004-0001-4000-8000-000000000004",
+      "studentId": "a1b2c3d4-0004-4000-8000-000000000004",
+      "date": "2024-09-01",
+      "metrics": {
+        "cmj": 41.5,
+        "sj": 37.8,
+        "abalakov": 52.3,
+        "rsi": 1.45,
+        "tempoContato": 238,
+        "alturaSaltoDJ": 36.2,
+        "cmjEsquerdo": 37.8,
+        "cmjDireito": 38.5,
+        "assimetriaPercentual": 1.8,
+        "saltoHorizontal": 215
+      }
+    },
+    {
+      "id": "e1000004-0002-4000-8000-000000000004",
+      "studentId": "a1b2c3d4-0004-4000-8000-000000000004",
+      "date": "2024-11-15",
+      "metrics": {
+        "cmj": 44.8,
+        "sj": 40.2,
+        "abalakov": 55.8,
+        "rsi": 1.68,
+        "tempoContato": 218,
+        "alturaSaltoDJ": 39.5,
+        "cmjEsquerdo": 40.5,
+        "cmjDireito": 41.2,
+        "assimetriaPercentual": 1.7,
+        "saltoHorizontal": 222
+      }
+    },
+    {
+      "id": "e1000004-0003-4000-8000-000000000004",
+      "studentId": "a1b2c3d4-0004-4000-8000-000000000004",
+      "date": "2025-02-10",
+      "metrics": {
+        "cmj": 47.2,
+        "sj": 42.5,
+        "abalakov": 58.9,
+        "rsi": 1.88,
+        "tempoContato": 202,
+        "alturaSaltoDJ": 42.1,
+        "cmjEsquerdo": 42.8,
+        "cmjDireito": 43.5,
+        "assimetriaPercentual": 1.6,
+        "saltoHorizontal": 229
+      }
+    },
+    {
+      "id": "e1000005-0001-4000-8000-000000000005",
+      "studentId": "a1b2c3d4-0005-4000-8000-000000000005",
+      "date": "2024-10-10",
+      "metrics": {
+        "cmj": 45.2,
+        "sj": 42.5,
+        "abalakov": 54.8,
+        "rsi": 1.38,
+        "tempoContato": 268,
+        "alturaSaltoDJ": 38.5,
+        "cmjEsquerdo": 38.2,
+        "cmjDireito": 44.8,
+        "assimetriaPercentual": 14.7,
+        "saltoHorizontal": 228
+      }
+    },
+    {
+      "id": "e1000005-0002-4000-8000-000000000005",
+      "studentId": "a1b2c3d4-0005-4000-8000-000000000005",
+      "date": "2024-12-15",
+      "metrics": {
+        "cmj": 46.8,
+        "sj": 43.2,
+        "abalakov": 56.2,
+        "rsi": 1.52,
+        "tempoContato": 252,
+        "alturaSaltoDJ": 40.2,
+        "cmjEsquerdo": 41.5,
+        "cmjDireito": 45.2,
+        "assimetriaPercentual": 8.2,
+        "saltoHorizontal": 234
+      }
+    },
+    {
+      "id": "e1000005-0003-4000-8000-000000000005",
+      "studentId": "a1b2c3d4-0005-4000-8000-000000000005",
+      "date": "2025-02-20",
+      "metrics": {
+        "cmj": 48.5,
+        "sj": 44.8,
+        "abalakov": 58.5,
+        "rsi": 1.68,
+        "tempoContato": 238,
+        "alturaSaltoDJ": 42.5,
+        "cmjEsquerdo": 44.2,
+        "cmjDireito": 46.8,
+        "assimetriaPercentual": 5.6,
+        "saltoHorizontal": 241
+      }
+    },
+    {
+      "id": "e1000005-0004-4000-8000-000000000005",
+      "studentId": "a1b2c3d4-0005-4000-8000-000000000005",
+      "date": "2025-03-28",
+      "metrics": {
+        "cmj": 50.2,
+        "sj": 46.2,
+        "abalakov": 60.8,
+        "rsi": 1.82,
+        "tempoContato": 225,
+        "alturaSaltoDJ": 44.2,
+        "cmjEsquerdo": 46.5,
+        "cmjDireito": 48.8,
+        "assimetriaPercentual": 4.7,
+        "saltoHorizontal": 248
+      }
+    },
+    {
+      "id": "e1000006-0001-4000-8000-000000000006",
+      "studentId": "a1b2c3d4-0006-4000-8000-000000000006",
+      "date": "2024-11-05",
+      "metrics": {
+        "cmj": 28.5,
+        "sj": 27.2,
+        "abalakov": 36.8,
+        "rsi": 0.82,
+        "tempoContato": 312,
+        "alturaSaltoDJ": 25.5,
+        "cmjEsquerdo": 25.8,
+        "cmjDireito": 26.5,
+        "assimetriaPercentual": 2.6,
+        "saltoHorizontal": 182
+      }
+    },
+    {
+      "id": "e1000006-0002-4000-8000-000000000006",
+      "studentId": "a1b2c3d4-0006-4000-8000-000000000006",
+      "date": "2025-01-15",
+      "metrics": {
+        "cmj": 31.2,
+        "sj": 28.8,
+        "abalakov": 39.5,
+        "rsi": 1.05,
+        "tempoContato": 285,
+        "alturaSaltoDJ": 28.2,
+        "cmjEsquerdo": 28.5,
+        "cmjDireito": 29.2,
+        "assimetriaPercentual": 2.4,
+        "saltoHorizontal": 192
+      }
+    },
+    {
+      "id": "e1000006-0003-4000-8000-000000000006",
+      "studentId": "a1b2c3d4-0006-4000-8000-000000000006",
+      "date": "2025-03-10",
+      "metrics": {
+        "cmj": 34.5,
+        "sj": 31.2,
+        "abalakov": 42.8,
+        "rsi": 1.28,
+        "tempoContato": 258,
+        "alturaSaltoDJ": 31.5,
+        "cmjEsquerdo": 31.8,
+        "cmjDireito": 33.2,
+        "assimetriaPercentual": 4.2,
+        "saltoHorizontal": 203
+      }
+    }
+  ]
+}
