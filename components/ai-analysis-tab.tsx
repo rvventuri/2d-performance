@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Student, Assessment, AiAnalysisData, AiMetricScore, MetricStatus } from "@/lib/types";
-import { jsonrepair } from "jsonrepair";
 import { getAiAnalysis, saveAiAnalysis } from "@/lib/storage";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -260,6 +259,7 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
 
       let analysisData: AiAnalysisData;
       try {
+        const { jsonrepair } = await import("jsonrepair");
         const repaired = jsonrepair(rawText);
         analysisData = JSON.parse(repaired);
       } catch {
