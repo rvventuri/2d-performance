@@ -66,7 +66,7 @@ export default function EditStudentPage() {
 
   if (!student) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <Loader2 className="w-8 h-8 animate-spin text-[#22C55E]" />
+      <Loader2 className="w-8 h-8 animate-spin text-brand-blue-light" />
     </div>
   );
 
@@ -93,7 +93,7 @@ export default function EditStudentPage() {
               id="name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#475569] focus:border-[#22C55E] h-11"
+              className="bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#475569] focus:border-brand-blue-light h-11"
               required
             />
           </div>
@@ -108,7 +108,7 @@ export default function EditStudentPage() {
                 max={99}
                 value={form.age}
                 onChange={(e) => setForm({ ...form, age: e.target.value })}
-                className="bg-[#1E293B] border-[#1E293B] text-white focus:border-[#22C55E] h-11"
+                className="bg-[#1E293B] border-[#1E293B] text-white focus:border-brand-blue-light h-11"
               />
             </div>
             <div className="space-y-2">
@@ -119,7 +119,7 @@ export default function EditStudentPage() {
                 step="0.1"
                 value={form.weight}
                 onChange={(e) => setForm({ ...form, weight: e.target.value })}
-                className="bg-[#1E293B] border-[#1E293B] text-white focus:border-[#22C55E] h-11"
+                className="bg-[#1E293B] border-[#1E293B] text-white focus:border-brand-blue-light h-11"
               />
             </div>
             <div className="space-y-2">
@@ -130,7 +130,7 @@ export default function EditStudentPage() {
                 step="0.1"
                 value={form.height}
                 onChange={(e) => setForm({ ...form, height: e.target.value })}
-                className="bg-[#1E293B] border-[#1E293B] text-white focus:border-[#22C55E] h-11"
+                className="bg-[#1E293B] border-[#1E293B] text-white focus:border-brand-blue-light h-11"
               />
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function EditStudentPage() {
               id="objective"
               value={form.objective}
               onChange={(e) => setForm({ ...form, objective: e.target.value })}
-              className="bg-[#1E293B] border-[#1E293B] text-white focus:border-[#22C55E] resize-none"
+              className="bg-[#1E293B] border-[#1E293B] text-white focus:border-brand-blue-light resize-none"
               rows={3}
             />
           </div>
@@ -150,7 +150,7 @@ export default function EditStudentPage() {
             <Button
               type="submit"
               disabled={saving}
-              className="bg-[#22C55E] hover:bg-[#16A34A] text-[#020617] font-bold cursor-pointer flex-1 h-11"
+              className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer flex-1 h-11"
             >
               {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
               {saving ? "Salvando..." : "Salvar Alterações"}

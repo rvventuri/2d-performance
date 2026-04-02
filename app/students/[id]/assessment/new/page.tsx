@@ -15,13 +15,13 @@ const METRIC_GROUPS = [
   {
     title: "Saltos Bilaterais",
     description: "Métricas de salto vertical bilateral",
-    color: "#22C55E",
+    color: "#1437C9",
     fields: ["cmj", "sj", "abalakov"] as (keyof Metrics)[],
   },
   {
     title: "Reatividade",
     description: "Drop Jump e capacidade reativa",
-    color: "#3B82F6",
+    color: "#2E5BFF",
     fields: ["rsi", "tempoContato", "alturaSaltoDJ"] as (keyof Metrics)[],
   },
   {
@@ -111,7 +111,7 @@ export default function NewAssessmentPage() {
 
   if (!student) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <Loader2 className="w-8 h-8 animate-spin text-[#22C55E]" />
+      <Loader2 className="w-8 h-8 animate-spin text-brand-blue-light" />
     </div>
   );
 
@@ -139,7 +139,7 @@ export default function NewAssessmentPage() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="bg-[#1E293B] border-[#1E293B] text-white focus:border-[#22C55E] h-11 [color-scheme:dark]"
+              className="bg-[#1E293B] border-[#1E293B] text-white focus:border-brand-blue-light h-11 [color-scheme:dark]"
             />
           </div>
         </div>
@@ -166,7 +166,7 @@ export default function NewAssessmentPage() {
                     >
                       {METRIC_LABELS[field]}
                       {isAutoCalc && (
-                        <span className="text-[#22C55E] text-xs normal-case font-normal">(auto)</span>
+                        <span className="text-brand-blue-light text-xs normal-case font-normal">(auto)</span>
                       )}
                     </Label>
                     <div className="relative">
@@ -178,7 +178,7 @@ export default function NewAssessmentPage() {
                         value={metrics[field]}
                         onChange={(e) => handleMetricChange(field, e.target.value)}
                         readOnly={isAutoCalc}
-                        className={`bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#334155] focus:border-[#22C55E] h-11 ${
+                        className={`bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#334155] focus:border-brand-blue-light h-11 ${
                           METRIC_UNITS[field] ? "pr-12" : ""
                         } ${isAutoCalc ? "opacity-70 cursor-default" : ""}`}
                       />
@@ -196,7 +196,7 @@ export default function NewAssessmentPage() {
         ))}
 
         <div className="flex items-center gap-2 p-3 bg-[#0F172A] border border-[#1E293B]/50 rounded-lg">
-          <Info className="w-4 h-4 text-[#3B82F6] shrink-0" />
+          <Info className="w-4 h-4 text-brand-blue-light shrink-0" />
           <p className="text-[#94A3B8] text-xs">
             Campos não preenchidos serão ignorados na análise. A assimetria é calculada automaticamente a partir do CMJ esquerdo e direito.
           </p>
@@ -206,7 +206,7 @@ export default function NewAssessmentPage() {
           <Button
             type="submit"
             disabled={saving}
-            className="bg-[#22C55E] hover:bg-[#16A34A] text-[#020617] font-bold cursor-pointer flex-1 h-12 text-base"
+            className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer flex-1 h-12 text-base"
           >
             {saving ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <ClipboardPlus className="w-5 h-5 mr-2" />}
             {saving ? "Salvando..." : "Salvar Avaliação"}

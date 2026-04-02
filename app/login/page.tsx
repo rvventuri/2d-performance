@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Activity, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 type Mode = "login" | "signup";
 
@@ -71,18 +72,20 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 bg-[#020617]">
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#22C55E]/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-brand-blue-mid/10 rounded-full blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-[#22C55E] rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-green-900/30">
-            <Activity className="w-8 h-8 text-[#020617]" strokeWidth={2.5} />
-          </div>
-          <h1 className="font-heading text-3xl font-bold text-white tracking-wide">
-            2D <span className="text-[#22C55E]">PERFORMANCE</span>
-          </h1>
+          <Image
+            src="/logosemfundo.png"
+            alt="2D Performance"
+            width={220}
+            height={88}
+            className="w-52 sm:w-56 h-auto object-contain mb-3"
+            priority
+          />
           <p className="text-[#94A3B8] text-sm mt-1">
             Plataforma de avaliação esportiva
           </p>
@@ -100,8 +103,8 @@ export default function LoginPage() {
           </p>
 
           {successMsg && (
-            <div className="mb-4 p-3 bg-[#22C55E]/10 border border-[#22C55E]/30 rounded-lg">
-              <p className="text-[#86EFAC] text-sm">{successMsg}</p>
+            <div className="mb-4 p-3 bg-brand-blue-mid/15 border border-brand-blue-light/30 rounded-lg">
+              <p className="text-brand-yellow-glow text-sm">{successMsg}</p>
             </div>
           )}
 
@@ -127,7 +130,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#475569] focus:border-[#22C55E] h-11"
+                className="bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#475569] focus:border-brand-blue-light h-11"
               />
             </div>
 
@@ -147,7 +150,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  className="bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#475569] focus:border-[#22C55E] h-11 pr-10"
+                  className="bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#475569] focus:border-brand-blue-light h-11 pr-10"
                 />
                 <button
                   type="button"
@@ -166,7 +169,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-11 bg-[#22C55E] hover:bg-[#16A34A] text-[#020617] font-bold cursor-pointer text-base mt-2 disabled:opacity-60"
+              className="w-full h-11 bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer text-base mt-2 disabled:opacity-60"
             >
               {loading ? (
                 <>
@@ -187,7 +190,7 @@ export default function LoginPage() {
                 Não tem conta?{" "}
                 <button
                   onClick={() => { setMode("signup"); setError(""); setSuccessMsg(""); }}
-                  className="text-[#22C55E] hover:text-[#16A34A] font-semibold cursor-pointer transition-colors"
+                  className="text-brand-blue-light hover:text-brand-yellow-glow font-semibold cursor-pointer transition-colors"
                 >
                   Criar conta
                 </button>
@@ -197,7 +200,7 @@ export default function LoginPage() {
                 Já tem conta?{" "}
                 <button
                   onClick={() => { setMode("login"); setError(""); setSuccessMsg(""); }}
-                  className="text-[#22C55E] hover:text-[#16A34A] font-semibold cursor-pointer transition-colors"
+                  className="text-brand-blue-light hover:text-brand-yellow-glow font-semibold cursor-pointer transition-colors"
                 >
                   Fazer login
                 </button>

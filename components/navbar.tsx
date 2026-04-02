@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Activity, Users, Plus, LogOut, ChevronDown } from "lucide-react";
+import { Users, Plus, LogOut, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -40,13 +41,15 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#22C55E] rounded-lg flex items-center justify-center">
-              <Activity className="w-5 h-5 text-[#020617]" strokeWidth={2.5} />
-            </div>
-            <span className="font-heading text-xl font-bold text-white tracking-wide">
-              2D <span className="text-[#22C55E]">PERFORMANCE</span>
-            </span>
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image
+              src="/logosemfundo.png"
+              alt="2D Performance"
+              width={120}
+              height={40}
+              className="h-9 w-auto object-contain object-left"
+              priority
+            />
           </Link>
 
           {/* Right side */}
@@ -68,7 +71,7 @@ export default function Navbar() {
             <Link href="/students/new">
               <Button
                 size="sm"
-                className="bg-[#22C55E] hover:bg-[#16A34A] text-[#020617] font-semibold cursor-pointer transition-colors duration-150"
+                className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-semibold cursor-pointer transition-colors duration-150"
               >
                 <Plus className="w-4 h-4 sm:mr-1" />
                 <span className="hidden sm:inline">Novo Aluno</span>
@@ -82,8 +85,8 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-lg hover:bg-[#1E293B] cursor-pointer transition-colors"
                 >
-                  <div className="w-7 h-7 bg-[#22C55E]/20 border border-[#22C55E]/30 rounded-full flex items-center justify-center">
-                    <span className="text-[#22C55E] text-xs font-bold">{emailInitial}</span>
+                  <div className="w-7 h-7 bg-brand-blue-mid/20 border border-brand-blue-light/35 rounded-full flex items-center justify-center">
+                    <span className="text-brand-blue-light text-xs font-bold">{emailInitial}</span>
                   </div>
                   <span className="text-[#94A3B8] text-xs hidden md:block max-w-[120px] truncate">
                     {emailShort}

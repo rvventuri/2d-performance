@@ -44,7 +44,7 @@ const CustomTooltip = ({
   return null;
 };
 
-export default function MetricChart({ assessments, metricKey, color = "#22C55E" }: MetricChartProps) {
+export default function MetricChart({ assessments, metricKey, color = "#2E5BFF" }: MetricChartProps) {
   const data = assessments
     .filter((a) => a.metrics[metricKey] !== null)
     .map((a) => ({

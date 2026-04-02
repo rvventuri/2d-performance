@@ -64,9 +64,9 @@ export default function Dashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
         {[
-          { icon: Users, color: "#22C55E", label: "Alunos", value: students.length },
-          { icon: Activity, color: "#3B82F6", label: "Avaliações", value: Object.values(assessmentCounts).reduce((a, b) => a + b, 0) },
-          { icon: TrendingUp, color: "#F59E0B", label: "Com histórico", value: Object.values(assessmentCounts).filter((c) => c >= 2).length },
+          { icon: Users, color: "#1437C9", label: "Alunos", value: students.length },
+          { icon: Activity, color: "#2E5BFF", label: "Avaliações", value: Object.values(assessmentCounts).reduce((a, b) => a + b, 0) },
+          { icon: TrendingUp, color: "#FFD400", label: "Com histórico", value: Object.values(assessmentCounts).filter((c) => c >= 2).length },
         ].map(({ icon: Icon, color, label, value }, i) => (
           <div key={i} className={`bg-[#0F172A] border border-[#1E293B] rounded-xl p-4 ${i === 2 ? "col-span-2 sm:col-span-1" : ""}`}>
             <div className="flex items-center gap-3">
@@ -92,11 +92,11 @@ export default function Dashboard() {
             placeholder="Buscar aluno..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-[#0F172A] border-[#1E293B] text-white placeholder:text-[#475569] focus:border-[#22C55E] transition-colors"
+            className="pl-9 bg-[#0F172A] border-[#1E293B] text-white placeholder:text-[#475569] focus:border-brand-blue-light transition-colors"
           />
         </div>
         <Link href="/students/new">
-          <Button className="bg-[#22C55E] hover:bg-[#16A34A] text-[#020617] font-semibold cursor-pointer shrink-0">
+          <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-semibold cursor-pointer shrink-0">
             <Plus className="w-4 h-4 mr-2" />
             Novo Aluno
           </Button>
@@ -106,7 +106,7 @@ export default function Dashboard() {
       {/* List */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-[#22C55E]" />
+          <Loader2 className="w-8 h-8 animate-spin text-brand-blue-light" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 bg-[#0F172A] border border-[#1E293B] rounded-xl">
@@ -118,7 +118,7 @@ export default function Dashboard() {
               <h3 className="font-heading text-xl font-bold text-white mb-2">Nenhum aluno cadastrado</h3>
               <p className="text-[#94A3B8] text-sm mb-6">Comece cadastrando seu primeiro aluno para iniciar as avaliações.</p>
               <Link href="/students/new">
-                <Button className="bg-[#22C55E] hover:bg-[#16A34A] text-[#020617] font-semibold cursor-pointer">
+                <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-semibold cursor-pointer">
                   <Plus className="w-4 h-4 mr-2" />
                   Cadastrar Primeiro Aluno
                 </Button>
@@ -135,9 +135,9 @@ export default function Dashboard() {
             const lastDate = lastDates[student.id];
             return (
               <Link key={student.id} href={`/students/${student.id}`}>
-                <div className="bg-[#0F172A] border border-[#1E293B] hover:border-[#22C55E]/40 rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 group">
-                  <div className="w-12 h-12 bg-[#1E293B] rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#22C55E]/10 transition-colors">
-                    <User className="w-6 h-6 text-[#94A3B8] group-hover:text-[#22C55E] transition-colors" />
+                <div className="bg-[#0F172A] border border-[#1E293B] hover:border-brand-blue-light/35 rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 group">
+                  <div className="w-12 h-12 bg-[#1E293B] rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-blue-mid/15 transition-colors">
+                    <User className="w-6 h-6 text-[#94A3B8] group-hover:text-brand-blue-light transition-colors" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -164,12 +164,12 @@ export default function Dashboard() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {count >= 2 && (
-                      <Badge className="bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20 text-xs hidden sm:flex">
+                      <Badge className="bg-brand-blue-mid/15 text-brand-yellow-glow border-brand-blue-light/25 text-xs hidden sm:flex">
                         <TrendingUp className="w-3 h-3 mr-1" />
                         Histórico
                       </Badge>
                     )}
-                    <ChevronRight className="w-5 h-5 text-[#1E293B] group-hover:text-[#22C55E] transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-[#1E293B] group-hover:text-brand-blue-light transition-colors" />
                   </div>
                 </div>
               </Link>

@@ -126,7 +126,7 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
                       <Badge
                         className={`text-xs border-0 ${
                           pct > 0
-                            ? "bg-[#22C55E]/10 text-[#22C55E]"
+                            ? "bg-brand-blue-mid/15 text-brand-blue-light"
                             : pct < -2
                             ? "bg-[#EF4444]/10 text-[#EF4444]"
                             : "bg-[#94A3B8]/10 text-[#94A3B8]"
@@ -146,10 +146,10 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
       {evolutions.length > 0 && (improvements.length > 0 || regressions.length > 0) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {improvements.length > 0 && (
-            <div className="bg-[#22C55E]/5 border border-[#22C55E]/20 rounded-xl p-5">
+            <div className="bg-brand-blue-mid/10 border border-brand-blue-light/25 rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-4 h-4 text-[#22C55E]" />
-                <h3 className="font-heading text-sm font-bold text-[#22C55E] uppercase tracking-wider">
+                <TrendingUp className="w-4 h-4 text-brand-yellow" />
+                <h3 className="font-heading text-sm font-bold text-brand-blue-light uppercase tracking-wider">
                   Pontos Positivos
                 </h3>
               </div>
@@ -157,7 +157,7 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
                 {improvements.map((ev) => (
                   <li key={ev.key} className="flex items-center justify-between text-sm">
                     <span className="text-[#CBD5E1]">{METRIC_LABELS[ev.key as keyof Metrics]}</span>
-                    <span className="text-[#22C55E] font-semibold">
+                    <span className="text-brand-yellow-glow font-semibold">
                       +{ev.changePercent?.toFixed(1)}%
                     </span>
                   </li>
@@ -205,14 +205,14 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
                   isWarning
                     ? "bg-[#EF4444]/5 border border-[#EF4444]/20"
                     : isSuccess
-                    ? "bg-[#22C55E]/5 border border-[#22C55E]/20"
-                    : "bg-[#3B82F6]/5 border border-[#3B82F6]/20"
+                    ? "bg-brand-blue-mid/10 border border-brand-blue-light/25"
+                    : "bg-[#1437C9]/10 border border-[#2E5BFF]/25"
                 }`}
               >
                 {Icon && (
                   <Icon
                     className={`w-4 h-4 shrink-0 mt-0.5 ${
-                      isWarning ? "text-[#EF4444]" : "text-[#22C55E]"
+                      isWarning ? "text-[#EF4444]" : "text-brand-yellow"
                     }`}
                   />
                 )}
@@ -222,7 +222,7 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
                       isWarning
                         ? "text-[#FCA5A5]"
                         : isSuccess
-                        ? "text-[#86EFAC]"
+                        ? "text-brand-yellow-glow"
                         : "text-[#93C5FD]"
                     }`}
                   >
@@ -249,25 +249,25 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
           )}
           {warnings.some((w) => w.title.includes("Assimetria")) && (
             <div className="flex gap-2 text-sm text-[#CBD5E1]">
-              <span className="text-[#22C55E] font-bold shrink-0">→</span>
+              <span className="text-brand-blue-light font-bold shrink-0">→</span>
               Incluir exercícios unilaterais (lunges, step-up, single-leg RDL) para reduzir a assimetria. Reavalie em 3–4 semanas.
             </div>
           )}
           {insights.some((i) => i.title.includes("Ciclo Elástico Neutro") || i.title.includes("Déficit")) && (
             <div className="flex gap-2 text-sm text-[#CBD5E1]">
-              <span className="text-[#22C55E] font-bold shrink-0">→</span>
+              <span className="text-brand-blue-light font-bold shrink-0">→</span>
               Treinos de pliometria progressiva (skipping, salto em caixas, bounding) para melhorar a utilização do ciclo SSC.
             </div>
           )}
           {insights.some((i) => i.title.includes("Baixa Reatividade")) && (
             <div className="flex gap-2 text-sm text-[#CBD5E1]">
-              <span className="text-[#22C55E] font-bold shrink-0">→</span>
+              <span className="text-brand-blue-light font-bold shrink-0">→</span>
               Exercícios de baixo drop jump (20–30cm) com foco em minimizar tempo de contato. Progrida a altura conforme melhora do RSI.
             </div>
           )}
           {insights.some((i) => i.title.includes("Tempo de Contato Elevado")) && (
             <div className="flex gap-2 text-sm text-[#CBD5E1]">
-              <span className="text-[#22C55E] font-bold shrink-0">→</span>
+              <span className="text-brand-blue-light font-bold shrink-0">→</span>
               Treinar resposta neural rápida com exercícios de sprint, skips e rebotes rápidos com banda de resistência.
             </div>
           )}

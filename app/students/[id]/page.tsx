@@ -44,8 +44,8 @@ import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 
 const CHART_COLORS: Record<string, string> = {
-  cmj: "#22C55E",
-  sj: "#3B82F6",
+  cmj: "#1437C9",
+  sj: "#2E5BFF",
   abalakov: "#F59E0B",
   rsi: "#EC4899",
   tempoContato: "#8B5CF6",
@@ -206,7 +206,7 @@ export default function StudentDetailPage() {
 
   if (pageLoading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <Loader2 className="w-8 h-8 animate-spin text-[#22C55E]" />
+      <Loader2 className="w-8 h-8 animate-spin text-brand-blue-light" />
     </div>
   );
 
@@ -266,7 +266,7 @@ export default function StudentDetailPage() {
 
           <div className="flex items-center gap-2 flex-wrap">
             <Link href={`/students/${id}/assessment/new`}>
-              <Button className="bg-[#22C55E] hover:bg-[#16A34A] text-[#020617] font-bold cursor-pointer">
+              <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer">
                 <Plus className="w-4 h-4 mr-2" />
                 Nova Avaliação
               </Button>
@@ -339,7 +339,7 @@ export default function StudentDetailPage() {
                 Registre a primeira avaliação para começar a acompanhar a evolução.
               </p>
               <Link href={`/students/${id}/assessment/new`}>
-                <Button className="bg-[#22C55E] hover:bg-[#16A34A] text-[#020617] font-bold cursor-pointer">
+                <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer">
                   <Plus className="w-4 h-4 mr-2" />
                   Registrar Avaliação
                 </Button>

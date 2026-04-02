@@ -7,26 +7,27 @@ import { Button } from "@/components/ui/button";
 
 type Status = "idle" | "seeding" | "clearing" | "done" | "cleared" | "error";
 
-interface SeedResult {
+interface AthleteResult {
   student: string;
   assessments: number;
+  aiStatus: string;
 }
 
 const ATHLETES_PREVIEW = [
-  { name: "Rafael Costa", sport: "Futebol", assessments: 7, highlight: "Evolução de CMJ 38→45cm" },
-  { name: "Ana Beatriz Santos", sport: "Salto em distância", assessments: 6, highlight: "RSI 2.12→2.61 (elite)" },
-  { name: "Lucas Almeida", sport: "Basquete", assessments: 7, highlight: "CMJ 52→61cm em 7 meses" },
-  { name: "Camila Ferreira", sport: "Vôlei", assessments: 7, highlight: "Tempo contato 272→204ms" },
-  { name: "Marcos Oliveira", sport: "Rugby • Pós-LCA", assessments: 6, highlight: "Assimetria 30%→10% (retorno)" },
-  { name: "Juliana Martins", sport: "Crossfit", assessments: 6, highlight: "RSI já em nível elite (2.72)" },
-  { name: "Pedro Henrique Ramos", sport: "Futebol americano", assessments: 6, highlight: "Jovem promissor, 18 anos" },
-  { name: "Fernanda Lima", sport: "Velocista 100m", assessments: 6, highlight: "RSI 1.94→2.64, foco em reatividade" },
+  { name: "Mateus Assis",       sport: "Futebol · Atacante",          assessments: 6, highlight: "Explosão e 1º passo — assimetria de tornozelo" },
+  { name: "Gabriel Monteiro",   sport: "Futebol · Meia (pós-lesão)",  assessments: 5, highlight: "Retorno após distensão coxa D — assimetria 33→5%" },
+  { name: "Vitor Hugo Santos",  sport: "Futebol · Zagueiro",          assessments: 6, highlight: "Força e duelos aéreos — RSI limitado pelo peso" },
+  { name: "Kauan Ferreira",     sport: "Futebol · Zagueiro sub-20",   assessments: 5, highlight: "CMJ 40→47cm, ciclo elástico em desenvolvimento" },
+  { name: "Bruno Lacerda",      sport: "Futebol · Ponta/Extremo",     assessments: 6, highlight: "RSI 1.76→2.24, ciclo elástico excepcional" },
+  { name: "Thiago Duarte",      sport: "Futvolei · Profissional",     assessments: 6, highlight: "CMJ 56→64cm, Abalakov 64→73cm (elite)" },
+  { name: "Felipe Barros",      sport: "Futvolei · Semi-profissional", assessments: 5, highlight: "Em evolução para circuito regional 2025" },
 ];
 
 export default function SeedPage() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
-  const [results, setResults] = useState<SeedResult[]>([]);
+  const [results, setResults] = useState<AthleteResult[]>([]);
+  const [aiSummary, setAiSummary] = useState("");
   const [error, setError] = useState("");
 
   const handleSeed = async () => {
@@ -44,7 +45,8 @@ export default function SeedPage() {
         return;
       }
 
-      setResults(data.results ?? []);
+      setResults(data.athletes ?? []);
+      setAiSummary(data.message ?? "");
       setStatus("done");
       setTimeout(() => router.push("/"), 3000);
     } catch {
@@ -83,8 +85,8 @@ export default function SeedPage() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-[#22C55E]/10 border border-[#22C55E]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Database className="w-8 h-8 text-[#22C55E]" />
+          <div className="w-16 h-16 bg-brand-blue-mid/10 border border-brand-blue-light/25 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Database className="w-8 h-8 text-brand-blue-light" />
           </div>
           <h1 className="font-heading text-3xl font-bold text-white tracking-wide mb-2">
             SEED DE DADOS
@@ -122,26 +124,38 @@ export default function SeedPage() {
         {/* Loading / Progress */}
         {(status === "seeding" || status === "clearing") && (
           <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-8 mb-6 text-center">
-            <Loader2 className="w-10 h-10 text-[#22C55E] animate-spin mx-auto mb-4" />
+            <Loader2 className="w-10 h-10 text-brand-blue-light animate-spin mx-auto mb-4" />
             <p className="text-white font-semibold">
-              {status === "seeding" ? "Inserindo atletas e avaliações..." : "Removendo todos os dados..."}
+              {status === "seeding" ? "Inserindo atletas e gerando análises de IA..." : "Removendo todos os dados..."}
             </p>
-            <p className="text-[#475569] text-sm mt-1">Aguarde, isso pode levar alguns segundos.</p>
+            <p className="text-[#475569] text-sm mt-1">
+              {status === "seeding"
+                ? "As análises são geradas em paralelo — pode levar até 60 segundos."
+                : "Aguarde..."}
+            </p>
           </div>
         )}
 
         {/* Success */}
         {status === "done" && (
-          <div className="bg-[#0F172A] border border-[#22C55E]/20 rounded-xl p-6 mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <CheckCircle2 className="w-6 h-6 text-[#22C55E] shrink-0" />
+          <div className="bg-[#0F172A] border border-brand-blue-light/25 rounded-xl p-6 mb-6">
+            <div className="flex items-center gap-3 mb-1">
+              <CheckCircle2 className="w-6 h-6 text-brand-yellow shrink-0" />
               <p className="text-white font-semibold">Dados inseridos com sucesso!</p>
             </div>
-            <div className="space-y-1 mb-4">
+            {aiSummary && (
+              <p className="text-[#94A3B8] text-xs mb-4 pl-9">{aiSummary}</p>
+            )}
+            <div className="space-y-2 mb-4">
               {results.map((r) => (
-                <div key={r.student} className="flex items-center justify-between text-sm">
-                  <span className="text-[#94A3B8]">{r.student}</span>
-                  <span className="text-[#475569]">{r.assessments} avaliações</span>
+                <div key={r.student} className="flex items-center justify-between text-sm gap-3">
+                  <span className="text-[#94A3B8] truncate">{r.student}</span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[#475569] text-xs">{r.assessments} aval.</span>
+                    <span className={`text-xs font-medium ${r.aiStatus.startsWith("✓") ? "text-brand-yellow-glow" : "text-[#EF4444]"}`}>
+                      {r.aiStatus}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -177,7 +191,7 @@ export default function SeedPage() {
           <div className="flex gap-3">
             <Button
               onClick={handleSeed}
-              className="flex-1 bg-[#22C55E] hover:bg-[#16A34A] text-[#020617] font-bold cursor-pointer h-11"
+              className="flex-1 bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer h-11"
             >
               <Database className="w-4 h-4 mr-2" />
               Popular banco de dados

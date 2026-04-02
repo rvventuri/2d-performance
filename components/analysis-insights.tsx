@@ -19,15 +19,15 @@ const colors = {
     title: "text-[#FCA5A5]",
   },
   success: {
-    bg: "bg-[#22C55E]/10",
-    border: "border-[#22C55E]/30",
-    icon: "text-[#22C55E]",
-    title: "text-[#86EFAC]",
+    bg: "bg-brand-blue-mid/15",
+    border: "border-brand-blue-light/30",
+    icon: "text-brand-yellow",
+    title: "text-brand-yellow-glow",
   },
   info: {
-    bg: "bg-[#3B82F6]/10",
-    border: "border-[#3B82F6]/30",
-    icon: "text-[#3B82F6]",
+    bg: "bg-[#1437C9]/12",
+    border: "border-[#2E5BFF]/28",
+    icon: "text-brand-blue-light",
     title: "text-[#93C5FD]",
   },
 };
