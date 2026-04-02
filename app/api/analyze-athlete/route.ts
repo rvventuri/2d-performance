@@ -2,7 +2,6 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { Student, Assessment, METRIC_LABELS, METRIC_UNITS } from "@/lib/types";
 import { createClient } from "@/lib/supabase/server";
-import { jsonrepair } from "jsonrepair";
 
 export const maxDuration = 300;
 
@@ -207,46 +206,41 @@ export async function POST(req: NextRequest) {
 
   const prompt = buildPrompt(student, assessments);
 
-  const encoder = new TextEncoder();
+  try {
+    const message = await client.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 7000,
+      messages: [{ role: "user", content: prompt }],
+    });
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        const anthropicStream = client.messages.stream({
-          model: "claude-sonnet-4-6",
-          max_tokens: 7000,
-          messages: [{ role: "user", content: prompt }],
-        });
+    const raw = message.content
+      .filter((b) => b.type === "text")
+      .map((b) => (b as { type: "text"; text: string }).text)
+      .join("");
 
-        for await (const event of anthropicStream) {
-          if (
-            event.type === "content_block_delta" &&
-            event.delta.type === "text_delta"
-          ) {
-            controller.enqueue(encoder.encode(event.delta.text));
-          }
-        }
-        controller.close();
-      } catch (err) {
-        const message =
-          err instanceof Anthropic.AuthenticationError
-            ? "Chave de API inválida. Verifique ANTHROPIC_API_KEY no .env.local"
-            : err instanceof Anthropic.RateLimitError
-            ? "Limite de requisições atingido. Tente novamente em alguns segundos."
-            : err instanceof Error
-            ? err.message
-            : "Erro desconhecido ao chamar a API";
-        controller.enqueue(encoder.encode(`__ERROR__:${message}`));
-        controller.close();
-      }
-    },
-  });
+    // Extrai o objeto JSON da resposta (ignora texto fora das chaves)
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start === -1 || end === -1) {
+      return NextResponse.json(
+        { error: "Resposta da IA não continha JSON válido. Tente novamente." },
+        { status: 502 }
+      );
+    }
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Transfer-Encoding": "chunked",
-      "X-Content-Type-Options": "nosniff",
-    },
-  });
+    const data = JSON.parse(raw.slice(start, end + 1));
+    return NextResponse.json(data);
+  } catch (err) {
+    const message =
+      err instanceof Anthropic.AuthenticationError
+        ? "Chave de API inválida. Verifique ANTHROPIC_API_KEY no .env.local"
+        : err instanceof Anthropic.RateLimitError
+        ? "Limite de requisições atingido. Tente novamente em alguns segundos."
+        : err instanceof SyntaxError
+        ? "Resposta da IA veio malformada. Tente novamente."
+        : err instanceof Error
+        ? err.message
+        : "Erro desconhecido ao chamar a API";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

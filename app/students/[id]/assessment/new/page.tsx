@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { getStudent, createAssessment } from "@/lib/storage";
@@ -65,22 +65,24 @@ export default function NewAssessmentPage() {
     });
   }, [id, router]);
 
-  // Auto-calculate asymmetry
-  useEffect(() => {
-    const left = Number(metrics.cmjEsquerdo);
-    const right = Number(metrics.cmjDireito);
-    if (left > 0 && right > 0) {
-      const max = Math.max(left, right);
-      const min = Math.min(left, right);
-      const asym = ((max - min) / max) * 100;
-      setMetrics((prev) => ({
-        ...prev,
-        assimetriaPercentual: asym.toFixed(1),
-      }));
-    }
-  }, [metrics.cmjEsquerdo, metrics.cmjDireito]);
-
   const [saving, setSaving] = useState(false);
+
+  const handleMetricChange = useCallback((field: keyof Metrics, value: string) => {
+    setMetrics((prev) => {
+      const updated = { ...prev, [field]: value };
+      // Auto-calculate asymmetry when either CMJ leg value changes
+      if (field === "cmjEsquerdo" || field === "cmjDireito") {
+        const left = Number(field === "cmjEsquerdo" ? value : prev.cmjEsquerdo);
+        const right = Number(field === "cmjDireito" ? value : prev.cmjDireito);
+        if (left > 0 && right > 0) {
+          const max = Math.max(left, right);
+          const min = Math.min(left, right);
+          updated.assimetriaPercentual = ((max - min) / max * 100).toFixed(1);
+        }
+      }
+      return updated;
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,9 +176,7 @@ export default function NewAssessmentPage() {
                         step="0.01"
                         placeholder="—"
                         value={metrics[field]}
-                        onChange={(e) =>
-                          setMetrics((prev) => ({ ...prev, [field]: e.target.value }))
-                        }
+                        onChange={(e) => handleMetricChange(field, e.target.value)}
                         readOnly={isAutoCalc}
                         className={`bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#334155] focus:border-[#22C55E] h-11 ${
                           METRIC_UNITS[field] ? "pr-12" : ""

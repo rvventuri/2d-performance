@@ -60,7 +60,7 @@ function ScoreRing({ score, size = 120 }: { score: number; size?: number }) {
 }
 
 function BenchmarkBar({ metric }: { metric: AiMetricScore }) {
-  const { value, benchmarks, higherIsBetter, score, status } = metric;
+  const { value, benchmarks, higherIsBetter, status } = metric;
   const cfg = STATUS_CONFIG[status];
 
   // Normalize position on bar (0-100%)
@@ -227,46 +227,15 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
         signal: abortRef.current.signal,
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Erro desconhecido" }));
-        setError(err.error || "Erro na análise");
+      const json = await res.json().catch(() => null);
+
+      if (!res.ok || !json) {
+        setError(json?.error || "Erro na análise. Tente novamente.");
         setStatus("error");
         return;
       }
 
-      const reader = res.body?.getReader();
-      if (!reader) throw new Error("Sem stream");
-
-      const decoder = new TextDecoder();
-      let accumulated = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        accumulated += decoder.decode(value, { stream: true });
-      }
-
-      if (accumulated.startsWith("__ERROR__:")) {
-        setError(accumulated.replace("__ERROR__:", ""));
-        setStatus("error");
-        return;
-      }
-
-      const rawText = accumulated
-        .replace(/^```(?:json)?\s*/i, "")
-        .replace(/\s*```$/i, "")
-        .trim();
-
-      let analysisData: AiAnalysisData;
-      try {
-        const { jsonrepair } = await import("jsonrepair");
-        const repaired = jsonrepair(rawText);
-        analysisData = JSON.parse(repaired);
-      } catch {
-        setError("Resposta da IA não pôde ser interpretada. Tente novamente.");
-        setStatus("error");
-        return;
-      }
+      const analysisData: AiAnalysisData = json;
 
       setData(analysisData);
 
