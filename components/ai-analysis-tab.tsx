@@ -45,7 +45,7 @@ function ScoreRing({ score, size = 120 }: { score: number; size?: number }) {
 
   return (
     <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1E293B" strokeWidth={8} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border)" strokeWidth={8} />
       <circle
         cx={size / 2} cy={size / 2} r={r}
         fill="none"
@@ -81,7 +81,7 @@ function BenchmarkBar({ metric }: { metric: AiMetricScore }) {
 
   return (
     <div className="mt-3">
-      <div className="relative h-2 bg-[#1E293B] rounded-full overflow-visible mb-3">
+      <div className="relative h-2 bg-secondary rounded-full overflow-visible mb-3">
         {/* Gradient fill */}
         <div
           className="absolute h-full rounded-full"
@@ -122,9 +122,9 @@ function MetricCard({ metric }: { metric: AiMetricScore }) {
   const cfg = STATUS_CONFIG[metric.status];
 
   return (
-    <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-4">
+    <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-start justify-between mb-1">
-        <span className="text-[#94A3B8] text-xs uppercase tracking-wider">{metric.label}</span>
+        <span className="text-muted-foreground text-xs uppercase tracking-wider">{metric.label}</span>
         <span
           className="text-[10px] font-semibold px-2 py-0.5 rounded-full border"
           style={{ color: cfg.color, borderColor: cfg.color + "40", backgroundColor: cfg.color + "15" }}
@@ -134,23 +134,23 @@ function MetricCard({ metric }: { metric: AiMetricScore }) {
       </div>
 
       <div className="flex items-baseline gap-1.5 mt-1">
-        <span className="font-heading text-2xl font-bold text-white">{metric.value}</span>
-        <span className="text-[#475569] text-sm">{metric.unit}</span>
+        <span className="font-heading text-2xl font-bold text-foreground">{metric.value}</span>
+        <span className="text-muted-foreground text-sm">{metric.unit}</span>
         <span className="ml-auto font-heading text-lg font-bold" style={{ color: cfg.color }}>
           {metric.score}
-          <span className="text-[#475569] text-xs font-normal">/100</span>
+          <span className="text-muted-foreground text-xs font-normal">/100</span>
         </span>
       </div>
 
       <BenchmarkBar metric={metric} />
 
-      <div className="flex items-center justify-between text-[10px] text-[#475569] mt-1">
+      <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1">
         <span>{metric.benchmarks.recreational}{metric.unit} rec.</span>
-        <span className="text-[#3B82F6]">{metric.benchmarks.trained}{metric.unit} trein.</span>
+        <span className="text-brand-blue-light">{metric.benchmarks.trained}{metric.unit} trein.</span>
         <span className="text-brand-yellow">{metric.benchmarks.elite}{metric.unit} elite</span>
       </div>
 
-      <p className="text-[#64748B] text-xs mt-2 leading-relaxed">{metric.interpretation}</p>
+      <p className="text-muted-foreground text-xs mt-2 leading-relaxed">{metric.interpretation}</p>
     </div>
   );
 }
@@ -158,12 +158,12 @@ function MetricCard({ metric }: { metric: AiMetricScore }) {
 const CustomRadarTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number; color: string }> }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-3 text-xs shadow-xl">
+    <div className="bg-secondary border border-border rounded-lg p-3 text-xs shadow-xl">
       {payload.map((p) => (
         <div key={p.name} className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-          <span className="text-[#94A3B8]">{p.name}:</span>
-          <span className="text-white font-bold">{p.value}</span>
+          <span className="text-muted-foreground">{p.name}:</span>
+          <span className="text-foreground font-bold">{p.value}</span>
         </div>
       ))}
     </div>
@@ -175,23 +175,23 @@ const CustomRadarTooltip = ({ active, payload }: { active?: boolean; payload?: A
 function AnalysisSkeleton() {
   return (
     <div className="animate-pulse space-y-4">
-      <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-6">
+      <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-center gap-6">
-          <div className="w-28 h-28 rounded-full bg-[#1E293B]" />
+          <div className="w-28 h-28 rounded-full bg-secondary" />
           <div className="flex-1 space-y-3">
-            <div className="h-4 bg-[#1E293B] rounded w-1/3" />
-            <div className="h-6 bg-[#1E293B] rounded w-1/2" />
-            <div className="h-3 bg-[#1E293B] rounded w-full" />
-            <div className="h-3 bg-[#1E293B] rounded w-3/4" />
+            <div className="h-4 bg-secondary rounded w-1/3" />
+            <div className="h-6 bg-secondary rounded w-1/2" />
+            <div className="h-3 bg-secondary rounded w-full" />
+            <div className="h-3 bg-secondary rounded w-3/4" />
           </div>
         </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-4 h-40">
-            <div className="h-3 bg-[#1E293B] rounded w-2/3 mb-3" />
-            <div className="h-7 bg-[#1E293B] rounded w-1/2 mb-4" />
-            <div className="h-2 bg-[#1E293B] rounded" />
+          <div key={i} className="bg-card border border-border rounded-xl p-4 h-40">
+            <div className="h-3 bg-secondary rounded w-2/3 mb-3" />
+            <div className="h-7 bg-secondary rounded w-1/2 mb-4" />
+            <div className="h-2 bg-secondary rounded" />
           </div>
         ))}
       </div>
@@ -300,10 +300,10 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
   // ── No assessments ──
   if (status === "no-assessments") {
     return (
-      <div className="text-center py-16 bg-[#0F172A] border border-[#1E293B] rounded-xl">
-        <Sparkles className="w-12 h-12 text-[#1E293B] mx-auto mb-4" />
-        <h3 className="font-heading text-xl font-bold text-white mb-2">Nenhuma avaliação</h3>
-        <p className="text-[#94A3B8] text-sm">Registre pelo menos uma avaliação para gerar a análise.</p>
+      <div className="text-center py-16 bg-card border border-border rounded-xl">
+        <Sparkles className="w-12 h-12 text-border mx-auto mb-4" />
+        <h3 className="font-heading text-xl font-bold text-foreground mb-2">Nenhuma avaliação</h3>
+        <p className="text-muted-foreground text-sm">Registre pelo menos uma avaliação para gerar a análise.</p>
       </div>
     );
   }
@@ -317,10 +317,10 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-white font-semibold text-sm">
+            <p className="text-foreground font-semibold text-sm">
               {status === "loading-saved" ? "Carregando análise..." : "Gerando análise com IA..."}
             </p>
-            <p className="text-[#475569] text-xs">
+            <p className="text-muted-foreground text-xs">
               {status === "generating" ? "O preparador virtual está processando as métricas (~20s)" : "Buscando análise salva"}
             </p>
           </div>
@@ -333,13 +333,13 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
   // ── Error ──
   if (status === "error") {
     return (
-      <div className="flex flex-col items-center gap-4 py-16 text-center bg-[#0F172A] border border-[#1E293B] rounded-xl">
-        <div className="w-12 h-12 bg-[#EF4444]/10 rounded-xl flex items-center justify-center">
-          <AlertTriangle className="w-6 h-6 text-[#EF4444]" />
+      <div className="flex flex-col items-center gap-4 py-16 text-center bg-card border border-border rounded-xl">
+        <div className="w-12 h-12 bg-destructive/10 rounded-xl flex items-center justify-center">
+          <AlertTriangle className="w-6 h-6 text-destructive" />
         </div>
         <div>
-          <p className="text-white font-semibold mb-1">Erro na análise</p>
-          <p className="text-[#94A3B8] text-sm max-w-md">{error}</p>
+          <p className="text-foreground font-semibold mb-1">Erro na análise</p>
+          <p className="text-muted-foreground text-sm max-w-md">{error}</p>
         </div>
         <Button onClick={handleRegenerate} className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white cursor-pointer">
           <RefreshCw className="w-4 h-4 mr-2" />Tentar novamente
@@ -365,23 +365,23 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
           <div className="w-7 h-7 bg-gradient-to-br from-brand-blue-dark to-brand-blue-light rounded-lg flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <span className="text-[#475569] text-xs">
+          <span className="text-muted-foreground text-xs">
             {generatedAt ? `Gerada em ${formatDate(generatedAt.split("T")[0])}` : "Análise IA"}
             {" · "}{assessments.length} {assessments.length === 1 ? "avaliação" : "avaliações"}
           </span>
         </div>
         <div className="flex gap-1.5">
-          <Button onClick={handleCopy} variant="ghost" size="sm" className="text-[#475569] hover:text-[#94A3B8] hover:bg-[#1E293B] cursor-pointer h-7 w-7 p-0">
+          <Button onClick={handleCopy} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer h-7 w-7 p-0">
             {copied ? <Check className="w-3.5 h-3.5 text-brand-yellow" /> : <Copy className="w-3.5 h-3.5" />}
           </Button>
-          <Button onClick={handleRegenerate} variant="ghost" size="sm" className="text-[#475569] hover:text-[#94A3B8] hover:bg-[#1E293B] cursor-pointer h-7 w-7 p-0">
+          <Button onClick={handleRegenerate} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer h-7 w-7 p-0">
             <RefreshCw className="w-3.5 h-3.5" />
           </Button>
         </div>
       </div>
 
       {/* ── Hero card: score + profile + summary ── */}
-      <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-5 sm:p-6">
+      <div className="bg-card border border-border rounded-xl p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-5 items-start">
 
           {/* Score ring */}
@@ -391,9 +391,9 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
               <span className="font-heading text-3xl font-bold" style={{ color: scoreColor }}>
                 {data.performanceScore}
               </span>
-              <span className="text-[#475569] text-[10px] mt-0.5">/ 100</span>
+              <span className="text-muted-foreground text-[10px] mt-0.5">/ 100</span>
             </div>
-            <span className="text-[#475569] text-xs mt-1">Escore Geral</span>
+            <span className="text-muted-foreground text-xs mt-1">Escore Geral</span>
           </div>
 
           {/* Profile + summary */}
@@ -406,11 +406,11 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
                 {data.profileType}
               </span>
             </div>
-            <p className="text-[#CBD5E1] text-sm leading-relaxed mb-4">{data.summary}</p>
+            <p className="text-foreground/80 text-sm leading-relaxed mb-4">{data.summary}</p>
 
             {/* Objective alignment */}
             {student.objective && (
-              <div className="bg-[#0D1117] border border-[#1E293B] rounded-lg p-3">
+              <div className="bg-secondary border border-border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5 text-brand-blue-light" />
@@ -420,16 +420,16 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
                     {data.objectiveAlignment.score}%
                   </span>
                 </div>
-                <div className="h-1.5 bg-[#1E293B] rounded-full overflow-hidden mb-2">
+                <div className="h-1.5 bg-border rounded-full overflow-hidden mb-2">
                   <div
                     className="h-full rounded-full transition-all duration-1000"
                     style={{ width: `${data.objectiveAlignment.score}%`, backgroundColor: scoreColor }}
                   />
                 </div>
-                <p className="text-[#475569] text-xs leading-relaxed">{data.objectiveAlignment.keyGap}</p>
+                <p className="text-muted-foreground text-xs leading-relaxed">{data.objectiveAlignment.keyGap}</p>
                 {data.objectiveAlignment.timeline && (
-                  <p className="text-[#334155] text-xs mt-1">
-                    <span className="text-[#475569]">Projeção:</span> {data.objectiveAlignment.timeline}
+                  <p className="text-muted-foreground/60 text-xs mt-1">
+                    <span className="text-muted-foreground">Projeção:</span> {data.objectiveAlignment.timeline}
                   </p>
                 )}
               </div>
@@ -442,21 +442,21 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* Radar */}
-        <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-5">
-          <h3 className="font-heading text-sm font-bold text-[#94A3B8] uppercase tracking-wider mb-4">
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-heading text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">
             Perfil Atlético
           </h3>
           <ResponsiveContainer width="100%" height={260}>
             <RadarChart data={data.radarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
-              <PolarGrid stroke="#1E293B" />
+              <PolarGrid stroke="var(--border)" />
               <PolarAngleAxis
                 dataKey="metric"
-                tick={{ fill: "#64748B", fontSize: 11 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
               />
               <PolarRadiusAxis
                 angle={90}
                 domain={[0, 100]}
-                tick={{ fill: "#334155", fontSize: 9 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 9 }}
                 tickCount={4}
               />
               <Tooltip content={<CustomRadarTooltip />} />
@@ -488,13 +488,13 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
               />
             </RadarChart>
           </ResponsiveContainer>
-          <div className="flex items-center gap-4 justify-center text-xs text-[#475569] mt-1">
+          <div className="flex items-center gap-4 justify-center text-xs text-muted-foreground mt-1">
             <span className="flex items-center gap-1.5">
               <span className="w-5 h-px bg-brand-blue-light inline-block" style={{ borderTop: "1px dashed #2E5BFF" }} />
               Elite
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-5 h-px bg-[#3B82F6] inline-block" />
+              <span className="w-5 h-px bg-brand-blue-light inline-block" />
               Treinado
             </span>
             <span className="flex items-center gap-1.5">
@@ -506,14 +506,14 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
 
         {/* Evolution (if available) */}
         {data.evolution ? (
-          <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center gap-2 mb-4">
-              <h3 className="font-heading text-sm font-bold text-[#94A3B8] uppercase tracking-wider flex-1">
+              <h3 className="font-heading text-sm font-bold text-muted-foreground uppercase tracking-wider flex-1">
                 Evolução
               </h3>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                 data.evolution.trend === "improving" ? "bg-brand-blue-mid/15 text-brand-yellow-glow" :
-                data.evolution.trend === "declining" ? "bg-[#EF4444]/10 text-[#EF4444]" :
+                data.evolution.trend === "declining" ? "bg-destructive/10 text-destructive" :
                 "bg-[#F59E0B]/10 text-[#F59E0B]"
               }`}>
                 {data.evolution.trend === "improving" ? "↑ Progredindo" :
@@ -521,9 +521,9 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
               </span>
             </div>
 
-            <div className="bg-[#0D1117] border border-[#1E293B] rounded-lg px-4 py-3 mb-4">
-              <p className="text-white font-semibold text-sm">{data.evolution.highlight}</p>
-              <p className="text-[#64748B] text-xs mt-1 leading-relaxed">{data.evolution.details}</p>
+            <div className="bg-secondary border border-border rounded-lg px-4 py-3 mb-4">
+              <p className="text-foreground font-semibold text-sm">{data.evolution.highlight}</p>
+              <p className="text-muted-foreground text-xs mt-1 leading-relaxed">{data.evolution.details}</p>
             </div>
 
             <div className="space-y-2.5">
@@ -531,16 +531,16 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
                 <div key={m.label} className="flex items-center gap-3">
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
                     m.direction === "up" ? "bg-brand-blue-mid/15" :
-                    m.direction === "down" ? "bg-[#EF4444]/10" : "bg-[#F59E0B]/10"
+                    m.direction === "down" ? "bg-destructive/10" : "bg-[#F59E0B]/10"
                   }`}>
                     {m.direction === "up" ? <TrendingUp className="w-4 h-4 text-brand-blue-light" /> :
-                     m.direction === "down" ? <TrendingDown className="w-4 h-4 text-[#EF4444]" /> :
+                     m.direction === "down" ? <TrendingDown className="w-4 h-4 text-destructive" /> :
                      <Minus className="w-4 h-4 text-[#F59E0B]" />}
                   </div>
-                  <span className="text-[#94A3B8] text-sm flex-1">{m.label}</span>
+                  <span className="text-muted-foreground text-sm flex-1">{m.label}</span>
                   <span className={`font-heading font-bold text-sm ${
                     m.direction === "up" ? "text-brand-blue-light" :
-                    m.direction === "down" ? "text-[#EF4444]" : "text-[#F59E0B]"
+                    m.direction === "down" ? "text-destructive" : "text-[#F59E0B]"
                   }`}>
                     {m.change > 0 ? "+" : ""}{m.change.toFixed(1)}%
                   </span>
@@ -549,11 +549,11 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
             </div>
           </div>
         ) : (
-          <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-5 flex items-center justify-center">
+          <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-center">
             <div className="text-center">
-              <Zap className="w-8 h-8 text-[#1E293B] mx-auto mb-2" />
-              <p className="text-[#475569] text-sm">Primeira avaliação</p>
-              <p className="text-[#334155] text-xs mt-1">Evolução disponível após a 2ª avaliação</p>
+              <Zap className="w-8 h-8 text-border mx-auto mb-2" />
+              <p className="text-muted-foreground text-sm">Primeira avaliação</p>
+              <p className="text-muted-foreground/60 text-xs mt-1">Evolução disponível após a 2ª avaliação</p>
             </div>
           </div>
         )}
@@ -561,7 +561,7 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
 
       {/* ── Metric cards grid ── */}
       <div>
-        <h3 className="font-heading text-sm font-bold text-[#94A3B8] uppercase tracking-wider mb-3">
+        <h3 className="font-heading text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">
           Métricas vs Benchmark
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -576,19 +576,19 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
 
         {/* Strengths */}
         <div>
-          <h3 className="font-heading text-sm font-bold text-[#94A3B8] uppercase tracking-wider mb-3 flex items-center gap-2">
+          <h3 className="font-heading text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
             <Shield className="w-4 h-4 text-brand-yellow" />Pontos Fortes
           </h3>
           <div className="space-y-2.5">
             {data.strengths.map((s, i) => (
-              <div key={i} className="bg-[#0F172A] border border-brand-blue-light/25 rounded-xl p-4">
+              <div key={i} className="bg-card border border-brand-blue-light/25 rounded-xl p-4">
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-lg bg-brand-blue-mid/15 flex items-center justify-center shrink-0 mt-0.5">
                     <Check className="w-3.5 h-3.5 text-brand-yellow-glow" />
                   </div>
                   <div>
-                    <p className="text-white font-semibold text-sm">{s.title}</p>
-                    <p className="text-[#64748B] text-xs mt-1 leading-relaxed">{s.description}</p>
+                    <p className="text-foreground font-semibold text-sm">{s.title}</p>
+                    <p className="text-muted-foreground text-xs mt-1 leading-relaxed">{s.description}</p>
                   </div>
                 </div>
               </div>
@@ -598,29 +598,29 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
 
         {/* Alerts */}
         <div>
-          <h3 className="font-heading text-sm font-bold text-[#94A3B8] uppercase tracking-wider mb-3 flex items-center gap-2">
+          <h3 className="font-heading text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-[#F59E0B]" />Alertas
           </h3>
           <div className="space-y-2.5">
             {data.alerts.length === 0 ? (
-              <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-4 text-center">
-                <p className="text-[#475569] text-sm">Nenhum alerta crítico identificado.</p>
+              <div className="bg-card border border-border rounded-xl p-4 text-center">
+                <p className="text-muted-foreground text-sm">Nenhum alerta crítico identificado.</p>
               </div>
             ) : data.alerts.map((a, i) => {
               const cfg = PRIORITY_CONFIG[a.priority];
               return (
-                <div key={i} className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-4"
+                <div key={i} className="bg-card border border-border rounded-xl p-4"
                   style={{ borderLeftWidth: 3, borderLeftColor: cfg.color }}>
                   <div className="flex items-start gap-2.5">
                     <span className="text-base shrink-0">{cfg.icon}</span>
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-white font-semibold text-sm">{a.title}</p>
+                        <p className="text-foreground font-semibold text-sm">{a.title}</p>
                         <span className="text-[9px] px-1.5 py-0.5 rounded font-semibold" style={{ color: cfg.color, backgroundColor: cfg.color + "20" }}>
                           {cfg.label}
                         </span>
                       </div>
-                      <p className="text-[#64748B] text-xs leading-relaxed">{a.description}</p>
+                      <p className="text-muted-foreground text-xs leading-relaxed">{a.description}</p>
                     </div>
                   </div>
                 </div>
@@ -632,12 +632,12 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
 
       {/* ── Prescriptions ── */}
       <div>
-        <h3 className="font-heading text-sm font-bold text-[#94A3B8] uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h3 className="font-heading text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
           <Zap className="w-4 h-4 text-brand-yellow" />Prescrição de Treino
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {data.prescriptions.map((p, i) => (
-            <div key={i} className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-5">
+            <div key={i} className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-heading font-bold text-sm"
                   style={{
@@ -647,21 +647,21 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
                   {p.priority}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#475569]">{p.quality}</span>
-                  <p className="text-white font-semibold text-sm leading-tight">{p.title}</p>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{p.quality}</span>
+                  <p className="text-foreground font-semibold text-sm leading-tight">{p.title}</p>
                 </div>
                 {p.frequency && (
-                  <span className="text-[10px] text-[#475569] bg-[#1E293B] px-2 py-0.5 rounded-full shrink-0">
+                  <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full shrink-0">
                     {p.frequency}
                   </span>
                 )}
               </div>
 
-              <p className="text-[#64748B] text-xs leading-relaxed mb-3">{p.rationale}</p>
+              <p className="text-muted-foreground text-xs leading-relaxed mb-3">{p.rationale}</p>
 
               <div className="space-y-1.5">
                 {p.examples.map((ex, j) => (
-                  <div key={j} className="flex items-start gap-2 text-xs text-[#94A3B8]">
+                  <div key={j} className="flex items-start gap-2 text-xs text-muted-foreground">
                     <ChevronRight className="w-3 h-3 text-brand-blue-light shrink-0 mt-0.5" />
                     <span>{ex}</span>
                   </div>
@@ -673,7 +673,7 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
       </div>
 
       {/* ── Footer ── */}
-      <p className="text-[#1E293B] text-xs text-center pb-2">
+      <p className="text-muted-foreground/30 text-xs text-center pb-2">
         Análise gerada por IA (Claude Sonnet) — suporte à decisão, não diagnóstico definitivo · nova análise gerada automaticamente ao inserir avaliação
       </p>
     </div>

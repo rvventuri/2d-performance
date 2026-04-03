@@ -13,10 +13,10 @@ const icons = {
 
 const colors = {
   warning: {
-    bg: "bg-[#EF4444]/10",
-    border: "border-[#EF4444]/30",
-    icon: "text-[#EF4444]",
-    title: "text-[#FCA5A5]",
+    bg: "bg-destructive/10",
+    border: "border-destructive/30",
+    icon: "text-destructive",
+    title: "text-destructive",
   },
   success: {
     bg: "bg-brand-blue-mid/15",
@@ -25,17 +25,17 @@ const colors = {
     title: "text-brand-yellow-glow",
   },
   info: {
-    bg: "bg-[#1437C9]/12",
-    border: "border-[#2E5BFF]/28",
+    bg: "bg-brand-blue-mid/10",
+    border: "border-brand-blue-light/25",
     icon: "text-brand-blue-light",
-    title: "text-[#93C5FD]",
+    title: "text-brand-blue-light",
   },
 };
 
 export default function AnalysisInsights({ insights }: AnalysisInsightsProps) {
   if (insights.length === 0) {
     return (
-      <div className="text-center py-8 text-[#475569] text-sm">
+      <div className="text-center py-8 text-muted-foreground text-sm">
         Insira mais dados para gerar insights automáticos.
       </div>
     );
@@ -56,7 +56,7 @@ export default function AnalysisInsights({ insights }: AnalysisInsightsProps) {
               <p className={`font-heading font-bold text-sm ${style.title} mb-0.5`}>
                 {insight.title}
               </p>
-              <p className="text-[#CBD5E1] text-sm leading-relaxed">{insight.description}</p>
+              <p className="text-foreground/80 text-sm leading-relaxed">{insight.description}</p>
             </div>
           </div>
         );

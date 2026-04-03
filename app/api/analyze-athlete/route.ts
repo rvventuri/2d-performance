@@ -1,43 +1,74 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { Student, Assessment, METRIC_LABELS, METRIC_UNITS } from "@/lib/types";
+import { Student, Assessment, ResolvedMetricConfig } from "@/lib/types";
 import { createClient } from "@/lib/supabase/server";
+import { GetTrainerConfigUseCase } from "@/application/trainer/GetTrainerConfigUseCase";
+import { SupabaseTrainerProfileRepository } from "@/infrastructure/supabase/TrainerProfileRepository";
+import { SupabaseMetricConfigRepository } from "@/infrastructure/supabase/MetricConfigRepository";
+import { resolveMetricConfigs } from "@/domain/trainer/services/MetricConfigResolver";
+import {
+  buildBenchmarkSection,
+  buildWeightNote,
+} from "@/domain/trainer/services/TrainerContextBuilder";
 
 export const maxDuration = 300;
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-function buildPrompt(student: Student, assessments: Assessment[]): string {
+function buildPrompt(
+  student: Student,
+  assessments: Assessment[],
+  metrics: ResolvedMetricConfig[],
+  trainerContext: string
+): string {
   const latest = assessments[assessments.length - 1];
   const previous = assessments.length > 1 ? assessments[assessments.length - 2] : null;
 
-  const formatMetric = (key: string, value: number | null) => {
+  const metricsMap: Record<string, ResolvedMetricConfig> = {};
+  for (const m of metrics) metricsMap[m.key] = m;
+
+  const formatMetricValue = (key: string, value: number | null) => {
     if (value === null) return null;
-    const unit = METRIC_UNITS[key as keyof typeof METRIC_UNITS] || "";
-    const label = METRIC_LABELS[key as keyof typeof METRIC_LABELS] || key;
-    return `  - ${label}: ${value}${unit}`;
+    const m = metricsMap[key];
+    if (!m || !m.isEnabled) return null;
+    return `  - ${m.label}: ${value}${m.unit}`;
   };
 
-  const metricsLines = (assessment: Assessment) =>
-    Object.entries(assessment.metrics)
-      .map(([k, v]) => formatMetric(k, v as number | null))
-      .filter(Boolean)
-      .join("\n");
+  const metricsLines = (assessment: Assessment) => {
+    const defaultLines = Object.entries(assessment.metrics)
+      .map(([k, v]) => formatMetricValue(k, v as number | null))
+      .filter(Boolean);
+
+    const customLines = Object.entries(assessment.customMetrics ?? {})
+      .map(([k, v]) => formatMetricValue(k, v))
+      .filter(Boolean);
+
+    return [...defaultLines, ...customLines].join("\n");
+  };
 
   const evolutionLines = () => {
     if (!previous) return "  (Primeira avaliação — sem comparativo anterior)";
-    return Object.entries(latest.metrics)
-      .filter(([, v]) => v !== null)
-      .map(([k, v]) => {
-        const prev = previous.metrics[k as keyof typeof previous.metrics];
-        if (prev === null || prev === undefined) return null;
-        const curr = v as number;
-        const diff = curr - (prev as number);
-        const pct = ((diff / Math.abs(prev as number)) * 100).toFixed(1);
-        const unit = METRIC_UNITS[k as keyof typeof METRIC_UNITS] || "";
-        const label = METRIC_LABELS[k as keyof typeof METRIC_LABELS] || k;
+    const allKeys = [
+      ...Object.keys(latest.metrics),
+      ...Object.keys(latest.customMetrics ?? {}),
+    ];
+    return allKeys
+      .map((k) => {
+        const currVal =
+          (latest.metrics as unknown as Record<string, number | null>)[k] ??
+          (latest.customMetrics ?? {})[k] ??
+          null;
+        const prevVal =
+          (previous.metrics as unknown as Record<string, number | null>)[k] ??
+          (previous.customMetrics ?? {})[k] ??
+          null;
+        if (currVal === null || prevVal === null) return null;
+        const m = metricsMap[k];
+        if (!m || !m.isEnabled) return null;
+        const diff = currVal - prevVal;
+        const pct = ((diff / Math.abs(prevVal)) * 100).toFixed(1);
         const sign = diff >= 0 ? "+" : "";
-        return `  - ${label}: ${curr}${unit} (${sign}${diff.toFixed(2)}${unit} / ${sign}${pct}%)`;
+        return `  - ${m.label}: ${currVal}${m.unit} (${sign}${diff.toFixed(2)}${m.unit} / ${sign}${pct}%)`;
       })
       .filter(Boolean)
       .join("\n");
@@ -50,13 +81,17 @@ function buildPrompt(student: Student, assessments: Assessment[]): string {
           .map(
             (a, i) =>
               `  Avaliação ${i + 1} — ${a.date}:\n` +
-              Object.entries(a.metrics)
+              [
+                ...Object.entries(a.metrics),
+                ...Object.entries(a.customMetrics ?? {}),
+              ]
                 .filter(([, v]) => v !== null)
                 .map(([k, v]) => {
-                  const unit = METRIC_UNITS[k as keyof typeof METRIC_UNITS] || "";
-                  const label = METRIC_LABELS[k as keyof typeof METRIC_LABELS] || k;
-                  return `    ${label}: ${v}${unit}`;
+                  const m = metricsMap[k];
+                  if (!m || !m.isEnabled) return null;
+                  return `    ${m.label}: ${v}${m.unit}`;
                 })
+                .filter(Boolean)
                 .join("\n")
           )
           .join("\n\n")
@@ -66,7 +101,15 @@ function buildPrompt(student: Student, assessments: Assessment[]): string {
     ? `OBJETIVO DO ATLETA: "${student.objective}"\nEste objetivo deve guiar toda a análise. Cada score, insight e prescrição deve ser diretamente conectado a ele.`
     : `OBJETIVO DO ATLETA: Não informado. Foque em performance geral e prevenção de lesões.`;
 
+  const trainerSection = trainerContext
+    ? `\n## Contexto do preparador físico\n\n${trainerContext}\n\nEste contexto deve guiar toda a análise, especialmente o foco prioritário e as prescrições.`
+    : "";
+
+  const benchmarkSection = buildBenchmarkSection(metrics);
+  const weightNote = buildWeightNote(metrics);
+
   return `Você é um preparador físico de alto rendimento especializado em avaliação neuromuscular e biomecânica do salto.
+${trainerSection}
 
 ${objectiveContext}
 
@@ -74,14 +117,8 @@ ${objectiveContext}
 
 Use esses benchmarks para calcular os scores (0–100) e percentis de cada métrica:
 
-CMJ (cm, maior = melhor): Recreativo=30, Treinado=42, Elite=60, Classe Mundial=70
-SJ (cm, maior = melhor): Recreativo=25, Treinado=38, Elite=55, Classe Mundial=65
-Abalakov (cm, maior = melhor): Recreativo=34, Treinado=47, Elite=65, Classe Mundial=75
-RSI (adimensional, maior = melhor): Recreativo=0.8, Treinado=1.5, Elite=2.5, Classe Mundial=3.0
-Tempo de Contato (ms, MENOR = melhor): Recreativo=300, Treinado=230, Elite=170, Classe Mundial=140
-Altura DJ (cm, maior = melhor): Recreativo=25, Treinado=35, Elite=48, Classe Mundial=55
-Assimetria % (MENOR = melhor, risco >10%): Excelente=3, Treinado=7, Alerta=12, Crítico=20+
-Salto Horizontal (cm, maior = melhor): Recreativo=175, Treinado=230, Elite=285, Classe Mundial=320
+${benchmarkSection}
+${weightNote}
 
 ## Cálculo do score (0–100)
 - 0–20: crítico (abaixo do recreativo)
@@ -129,7 +166,7 @@ Mantenha os textos CURTOS (máx 1 frase por campo de texto) para garantir que o 
   },
   "metricScores": [
     {
-      "key": "<cmj|sj|abalakov|rsi|tempoContato|alturaSaltoDJ|cmjEsquerdo|cmjDireito|assimetriaPercentual|saltoHorizontal>",
+      "key": "<metric_key conforme configurado>",
       "label": "<nome curto>",
       "value": <número>,
       "unit": "<unidade>",
@@ -204,7 +241,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const prompt = buildPrompt(student, assessments);
+  // Load trainer config (fail-safe: falls back to defaults if anything throws)
+  let resolvedMetrics: ResolvedMetricConfig[];
+  let trainerContext: string;
+
+  try {
+    const useCase = new GetTrainerConfigUseCase(
+      new SupabaseTrainerProfileRepository(supabase, user.id),
+      new SupabaseMetricConfigRepository(supabase, user.id)
+    );
+    const config = await useCase.execute(user.id);
+    resolvedMetrics = config.resolvedMetrics;
+    trainerContext = config.trainerContext;
+  } catch {
+    resolvedMetrics = resolveMetricConfigs([]);
+    trainerContext = "";
+  }
+
+  const prompt = buildPrompt(student, assessments, resolvedMetrics, trainerContext);
 
   try {
     const message = await client.messages.create({
@@ -218,7 +272,6 @@ export async function POST(req: NextRequest) {
       .map((b) => (b as { type: "text"; text: string }).text)
       .join("");
 
-    // Extrai o objeto JSON da resposta (ignora texto fora das chaves)
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}");
     if (start === -1 || end === -1) {

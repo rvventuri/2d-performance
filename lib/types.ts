@@ -5,6 +5,7 @@ export interface Student {
   weight: number;
   height: number;
   objective: string;
+  photoUrl: string | null;
   createdAt: string;
 }
 
@@ -26,6 +27,7 @@ export interface Assessment {
   studentId: string;
   date: string;
   metrics: Metrics;
+  customMetrics?: Record<string, number | null>;
 }
 
 export const METRIC_LABELS: Record<keyof Metrics, string> = {
@@ -119,6 +121,70 @@ export interface AiAnalysisData {
   alerts: AiAlert[];
   evolution: AiEvolution | null;
   prescriptions: AiPrescription[];
+}
+
+// ─── Share Links ─────────────────────────────────────────────────────────────
+
+export interface ShareLink {
+  id: string;
+  studentId: string;
+  userId: string;
+  token: string;
+  hasPassword: boolean;
+  createdAt: string;
+}
+
+export interface ShareAthleteData {
+  student: Pick<Student, "name" | "age" | "weight" | "height" | "objective" | "photoUrl">;
+  assessments: Assessment[];
+  aiAnalysis: AiAnalysisData | null;
+}
+
+// ─── Trainer Personalization ──────────────────────────────────────────────────
+
+export interface TrainerProfile {
+  id: string;
+  userId: string;
+  coachingPhilosophy: string;
+  sportContext: string;
+  athleteProfiles: string;
+  priorityFocus: string;
+  customInstructions: string;
+  updatedAt: string;
+}
+
+export interface MetricConfig {
+  id: string;
+  userId: string;
+  metricKey: string;
+  label: string;
+  unit: string;
+  higherIsBetter: boolean;
+  isCustom: boolean;
+  isEnabled: boolean;
+  benchRecreational: number | null;
+  benchTrained: number | null;
+  benchElite: number | null;
+  weight: number;
+  displayOrder: number;
+  createdAt: string;
+}
+
+export interface DefaultMetricSpec {
+  key: string;
+  label: string;
+  unit: string;
+  higherIsBetter: boolean;
+  benchRecreational: number;
+  benchTrained: number;
+  benchElite: number;
+}
+
+export interface ResolvedMetricConfig extends DefaultMetricSpec {
+  isEnabled: boolean;
+  weight: number;
+  isCustom: boolean;
+  displayOrder: number;
 }
 
 export const METRIC_UNITS: Record<keyof Metrics, string> = {

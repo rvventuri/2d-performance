@@ -11,7 +11,7 @@ export default function EvolutionCard({ evolutions }: EvolutionCardProps) {
 
   if (withData.length === 0) {
     return (
-      <div className="text-center py-8 text-[#475569] text-sm">
+      <div className="text-center py-8 text-muted-foreground text-sm">
         Nenhuma métrica registrada nessa avaliação.
       </div>
     );
@@ -26,18 +26,18 @@ export default function EvolutionCard({ evolutions }: EvolutionCardProps) {
         const unit = METRIC_UNITS[ev.key as keyof Metrics];
 
         return (
-          <div key={ev.key} className="bg-[#1E293B] rounded-xl p-4">
-            <p className="text-[#94A3B8] text-xs uppercase tracking-wider font-medium mb-2">
+          <div key={ev.key} className="bg-secondary rounded-xl p-4">
+            <p className="text-muted-foreground text-xs uppercase tracking-wider font-medium mb-2">
               {METRIC_LABELS[ev.key as keyof Metrics]}
             </p>
             <div className="flex items-end justify-between">
               <div>
-                <span className="font-heading text-2xl font-bold text-white">
+                <span className="font-heading text-2xl font-bold text-foreground">
                   {ev.current?.toFixed(ev.key === "rsi" ? 2 : 1)}
                 </span>
-                {unit && <span className="text-[#94A3B8] text-sm ml-1">{unit}</span>}
+                {unit && <span className="text-muted-foreground text-sm ml-1">{unit}</span>}
                 {hasPrev && (
-                  <p className="text-[#475569] text-xs mt-1">
+                  <p className="text-muted-foreground text-xs mt-1">
                     Anterior: {ev.previous?.toFixed(ev.key === "rsi" ? 2 : 1)}{unit}
                   </p>
                 )}
@@ -48,8 +48,8 @@ export default function EvolutionCard({ evolutions }: EvolutionCardProps) {
                     isPositive
                       ? "text-brand-blue-light bg-brand-blue-mid/15"
                       : isNegative
-                      ? "text-[#EF4444] bg-[#EF4444]/10"
-                      : "text-[#94A3B8] bg-[#94A3B8]/10"
+                      ? "text-destructive bg-destructive/10"
+                      : "text-muted-foreground bg-muted-foreground/10"
                   }`}
                 >
                   {isPositive ? (

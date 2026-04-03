@@ -48,7 +48,7 @@ export default function SeedPage() {
       setResults(data.athletes ?? []);
       setAiSummary(data.message ?? "");
       setStatus("done");
-      setTimeout(() => router.push("/"), 3000);
+      setTimeout(() => router.push("/dashboard"), 3000);
     } catch {
       setError("Erro de conexão. Verifique se está autenticado.");
       setStatus("error");
@@ -70,7 +70,7 @@ export default function SeedPage() {
       }
 
       setStatus("cleared");
-      setTimeout(() => router.push("/"), 2000);
+      setTimeout(() => router.push("/dashboard"), 2000);
     } catch {
       setError("Erro de conexão.");
       setStatus("error");
@@ -80,7 +80,7 @@ export default function SeedPage() {
   const totalAssessments = ATHLETES_PREVIEW.reduce((s, a) => s + a.assessments, 0);
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
 
         {/* Header */}
@@ -88,33 +88,33 @@ export default function SeedPage() {
           <div className="w-16 h-16 bg-brand-blue-mid/10 border border-brand-blue-light/25 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Database className="w-8 h-8 text-brand-blue-light" />
           </div>
-          <h1 className="font-heading text-3xl font-bold text-white tracking-wide mb-2">
+          <h1 className="font-heading text-3xl font-bold text-foreground tracking-wide mb-2">
             SEED DE DADOS
           </h1>
-          <p className="text-[#94A3B8] text-sm max-w-md mx-auto">
+          <p className="text-muted-foreground text-sm max-w-md mx-auto">
             Popula o banco com {ATHLETES_PREVIEW.length} atletas reais e {totalAssessments} avaliações para demonstrar o sistema completo.
           </p>
         </div>
 
         {/* Preview dos atletas */}
         {status === "idle" && (
-          <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl mb-6 overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-[#1E293B]">
-              <Users className="w-4 h-4 text-[#94A3B8]" />
-              <span className="text-[#94A3B8] text-sm font-medium">Atletas que serão inseridos</span>
-              <span className="ml-auto text-[#475569] text-xs">{totalAssessments} avaliações no total</span>
+          <div className="bg-card border border-border rounded-xl mb-6 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+              <Users className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground text-sm font-medium">Atletas que serão inseridos</span>
+              <span className="ml-auto text-muted-foreground text-xs">{totalAssessments} avaliações no total</span>
             </div>
-            <div className="divide-y divide-[#1E293B]">
+            <div className="divide-y divide-border">
               {ATHLETES_PREVIEW.map((a) => (
                 <div key={a.name} className="flex items-center gap-3 px-4 py-3">
-                  <div className="w-8 h-8 bg-[#1E293B] rounded-lg flex items-center justify-center shrink-0">
-                    <BarChart3 className="w-4 h-4 text-[#475569]" />
+                  <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center shrink-0">
+                    <BarChart3 className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium">{a.name}</p>
-                    <p className="text-[#475569] text-xs">{a.sport} · {a.highlight}</p>
+                    <p className="text-foreground text-sm font-medium">{a.name}</p>
+                    <p className="text-muted-foreground text-xs">{a.sport} · {a.highlight}</p>
                   </div>
-                  <span className="text-[#334155] text-xs shrink-0">{a.assessments} aval.</span>
+                  <span className="text-muted-foreground/50 text-xs shrink-0">{a.assessments} aval.</span>
                 </div>
               ))}
             </div>
@@ -123,12 +123,12 @@ export default function SeedPage() {
 
         {/* Loading / Progress */}
         {(status === "seeding" || status === "clearing") && (
-          <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-8 mb-6 text-center">
+          <div className="bg-card border border-border rounded-xl p-8 mb-6 text-center">
             <Loader2 className="w-10 h-10 text-brand-blue-light animate-spin mx-auto mb-4" />
-            <p className="text-white font-semibold">
+            <p className="text-foreground font-semibold">
               {status === "seeding" ? "Inserindo atletas e gerando análises de IA..." : "Removendo todos os dados..."}
             </p>
-            <p className="text-[#475569] text-sm mt-1">
+            <p className="text-muted-foreground text-sm mt-1">
               {status === "seeding"
                 ? "As análises são geradas em paralelo — pode levar até 60 segundos."
                 : "Aguarde..."}
@@ -138,48 +138,48 @@ export default function SeedPage() {
 
         {/* Success */}
         {status === "done" && (
-          <div className="bg-[#0F172A] border border-brand-blue-light/25 rounded-xl p-6 mb-6">
+          <div className="bg-card border border-brand-blue-light/25 rounded-xl p-6 mb-6">
             <div className="flex items-center gap-3 mb-1">
               <CheckCircle2 className="w-6 h-6 text-brand-yellow shrink-0" />
-              <p className="text-white font-semibold">Dados inseridos com sucesso!</p>
+              <p className="text-foreground font-semibold">Dados inseridos com sucesso!</p>
             </div>
             {aiSummary && (
-              <p className="text-[#94A3B8] text-xs mb-4 pl-9">{aiSummary}</p>
+              <p className="text-muted-foreground text-xs mb-4 pl-9">{aiSummary}</p>
             )}
             <div className="space-y-2 mb-4">
               {results.map((r) => (
                 <div key={r.student} className="flex items-center justify-between text-sm gap-3">
-                  <span className="text-[#94A3B8] truncate">{r.student}</span>
+                  <span className="text-muted-foreground truncate">{r.student}</span>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-[#475569] text-xs">{r.assessments} aval.</span>
-                    <span className={`text-xs font-medium ${r.aiStatus.startsWith("✓") ? "text-brand-yellow-glow" : "text-[#EF4444]"}`}>
+                    <span className="text-muted-foreground text-xs">{r.assessments} aval.</span>
+                    <span className={`text-xs font-medium ${r.aiStatus.startsWith("✓") ? "text-brand-yellow-glow" : "text-destructive"}`}>
                       {r.aiStatus}
                     </span>
                   </div>
                 </div>
               ))}
             </div>
-            <p className="text-[#475569] text-xs">Redirecionando para o dashboard...</p>
+            <p className="text-muted-foreground text-xs">Redirecionando para o dashboard...</p>
           </div>
         )}
 
         {/* Cleared */}
         {status === "cleared" && (
-          <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-8 mb-6 text-center">
-            <CheckCircle2 className="w-8 h-8 text-[#94A3B8] mx-auto mb-3" />
-            <p className="text-white font-semibold">Todos os dados foram removidos.</p>
-            <p className="text-[#475569] text-sm mt-1">Redirecionando...</p>
+          <div className="bg-card border border-border rounded-xl p-8 mb-6 text-center">
+            <CheckCircle2 className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+            <p className="text-foreground font-semibold">Todos os dados foram removidos.</p>
+            <p className="text-muted-foreground text-sm mt-1">Redirecionando...</p>
           </div>
         )}
 
         {/* Error */}
         {status === "error" && (
-          <div className="bg-[#EF4444]/5 border border-[#EF4444]/20 rounded-xl p-5 mb-6 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-[#EF4444] shrink-0 mt-0.5" />
+          <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-5 mb-6 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
             <div>
-              <p className="text-white font-semibold text-sm mb-1">Erro ao executar operação</p>
-              <p className="text-[#FCA5A5] text-sm">{error}</p>
-              <p className="text-[#475569] text-xs mt-2">
+              <p className="text-foreground font-semibold text-sm mb-1">Erro ao executar operação</p>
+              <p className="text-destructive text-sm">{error}</p>
+              <p className="text-muted-foreground text-xs mt-2">
                 Verifique se você está autenticado e se o SCHEMA.sql foi executado no Supabase (incluindo a tabela ai_analyses).
               </p>
             </div>
@@ -199,7 +199,7 @@ export default function SeedPage() {
             <Button
               onClick={handleClear}
               variant="outline"
-              className="border-[#1E293B] text-[#475569] hover:text-[#EF4444] hover:border-[#EF4444]/30 hover:bg-[#EF4444]/5 cursor-pointer h-11"
+              className="border-border text-muted-foreground hover:text-destructive hover:border-destructive/30 hover:bg-destructive/5 cursor-pointer h-11"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Limpar tudo

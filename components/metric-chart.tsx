@@ -10,13 +10,17 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { Assessment, Metrics, METRIC_LABELS, METRIC_UNITS } from "@/lib/types";
+import { Assessment } from "@/lib/types";
 import { formatDateShort } from "@/lib/utils";
 
 interface MetricChartProps {
   assessments: Assessment[];
-  metricKey: keyof Metrics;
+  metricKey: string;
+  label: string;
+  unit: string;
   color?: string;
+  /** If true, reads from assessment.customMetrics; otherwise from assessment.metrics */
+  isCustom?: boolean;
 }
 
 const CustomTooltip = ({
@@ -32,11 +36,11 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-3 shadow-xl">
-        <p className="text-[#94A3B8] text-xs mb-1">{label}</p>
-        <p className="text-white font-heading text-xl font-bold">
+      <div className="bg-secondary border border-border rounded-lg p-3 shadow-xl">
+        <p className="text-muted-foreground text-xs mb-1">{label}</p>
+        <p className="text-foreground font-heading text-xl font-bold">
           {payload[0].value.toFixed(2)}
-          {unit && <span className="text-[#94A3B8] text-sm ml-1">{unit}</span>}
+          {unit && <span className="text-muted-foreground text-sm ml-1">{unit}</span>}
         </p>
       </div>
     );
@@ -44,20 +48,31 @@ const CustomTooltip = ({
   return null;
 };
 
-export default function MetricChart({ assessments, metricKey, color = "#2E5BFF" }: MetricChartProps) {
+export default function MetricChart({
+  assessments,
+  metricKey,
+  label,
+  unit,
+  color = "#2E5BFF",
+  isCustom = false,
+}: MetricChartProps) {
+  const getValue = (a: Assessment): number | null => {
+    if (isCustom) {
+      return (a.customMetrics ?? {})[metricKey] ?? null;
+    }
+    return (a.metrics as unknown as Record<string, number | null>)[metricKey] ?? null;
+  };
+
   const data = assessments
-    .filter((a) => a.metrics[metricKey] !== null)
+    .filter((a) => getValue(a) !== null)
     .map((a) => ({
       date: formatDateShort(a.date),
-      value: a.metrics[metricKey] as number,
+      value: getValue(a) as number,
     }));
-
-  const unit = METRIC_UNITS[metricKey];
-  const label = METRIC_LABELS[metricKey];
 
   if (data.length === 0) {
     return (
-      <div className="h-32 flex items-center justify-center text-[#475569] text-sm">
+      <div className="h-32 flex items-center justify-center text-muted-foreground text-sm">
         Sem dados para {label}
       </div>
     );
@@ -71,24 +86,24 @@ export default function MetricChart({ assessments, metricKey, color = "#2E5BFF" 
   return (
     <div>
       <div className="flex items-baseline justify-between mb-3">
-        <span className="text-[#94A3B8] text-xs uppercase tracking-wider font-medium">{label}</span>
-        <span className="font-heading text-2xl font-bold text-white">
+        <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">{label}</span>
+        <span className="font-heading text-2xl font-bold text-foreground">
           {values[values.length - 1].toFixed(1)}
-          {unit && <span className="text-[#94A3B8] text-sm ml-1">{unit}</span>}
+          {unit && <span className="text-muted-foreground text-sm ml-1">{unit}</span>}
         </span>
       </div>
       <ResponsiveContainer width="100%" height={120}>
         <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#475569", fontSize: 11 }}
+            tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             domain={[min * 0.95, max * 1.05]}
-            tick={{ fill: "#475569", fontSize: 10 }}
+            tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
             width={35}
@@ -97,9 +112,9 @@ export default function MetricChart({ assessments, metricKey, color = "#2E5BFF" 
           {data.length > 1 && (
             <ReferenceLine
               y={avg}
-              stroke="#334155"
+              stroke="var(--border)"
               strokeDasharray="4 4"
-              label={{ value: "avg", position: "right", fill: "#475569", fontSize: 10 }}
+              label={{ value: "avg", position: "right", fill: "var(--muted-foreground)", fontSize: 10 }}
             />
           )}
           <Line
@@ -113,10 +128,10 @@ export default function MetricChart({ assessments, metricKey, color = "#2E5BFF" 
         </LineChart>
       </ResponsiveContainer>
       {data.length > 1 && (
-        <div className="flex gap-4 mt-2 text-xs text-[#475569]">
-          <span>Min: <span className="text-[#94A3B8]">{min.toFixed(1)}{unit}</span></span>
-          <span>Máx: <span className="text-[#94A3B8]">{max.toFixed(1)}{unit}</span></span>
-          <span>Média: <span className="text-[#94A3B8]">{avg.toFixed(1)}{unit}</span></span>
+        <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+          <span>Min: <span className="text-foreground">{min.toFixed(1)}{unit}</span></span>
+          <span>Máx: <span className="text-foreground">{max.toFixed(1)}{unit}</span></span>
+          <span>Média: <span className="text-foreground">{avg.toFixed(1)}{unit}</span></span>
         </div>
       )}
     </div>

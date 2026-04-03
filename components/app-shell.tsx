@@ -6,12 +6,12 @@ import Navbar from "@/components/navbar";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLogin = pathname === "/login";
+  const isPublic = pathname === "/login" || pathname === "/register" || pathname === "/" || pathname.startsWith("/share/");
 
   return (
-    <div className="min-h-screen bg-[#020617]">
-      {!isLogin && <Navbar />}
-      <main className={cn(!isLogin && "pt-16")}>{children}</main>
+    <div className="min-h-screen bg-background">
+      {!isPublic && <Navbar />}
+      <main className={cn(!isPublic && "pt-16")}>{children}</main>
     </div>
   );
 }

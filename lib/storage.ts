@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import { Student, Assessment, Metrics } from "./types";
+import { Student, Assessment, Metrics, MetricConfig, TrainerProfile } from "./types";
 
 export interface AiAnalysis {
   id: string;
@@ -43,6 +43,7 @@ function rowToStudent(row: any): Student {
     weight: row.weight ?? 0,
     height: row.height ?? 0,
     objective: row.objective ?? "",
+    photoUrl: row.photo_url ?? null,
     createdAt: row.created_at,
   };
 }
@@ -126,6 +127,7 @@ export async function createStudent(
       weight: data.weight || null,
       height: data.height || null,
       objective: data.objective || null,
+      photo_url: data.photoUrl ?? null,
     })
     .select()
     .single();
@@ -146,6 +148,7 @@ export async function updateStudent(
       ...(data.weight !== undefined && { weight: data.weight || null }),
       ...(data.height !== undefined && { height: data.height || null }),
       ...(data.objective !== undefined && { objective: data.objective || null }),
+      ...("photoUrl" in data && { photo_url: data.photoUrl ?? null }),
     })
     .eq("id", id)
     .select()
@@ -154,8 +157,48 @@ export async function updateStudent(
   return rowToStudent(row);
 }
 
+export async function uploadAthletePhoto(
+  studentId: string,
+  file: File
+): Promise<string> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Não autenticado");
+
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const path = `${user.id}/${studentId}/photo.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("athlete-photos")
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (uploadError) throw new Error(`Erro ao enviar foto: ${uploadError.message}`);
+
+  const { data } = supabase.storage.from("athlete-photos").getPublicUrl(path);
+  // Cache-bust para forçar reload quando a foto é trocada
+  return `${data.publicUrl}?t=${Date.now()}`;
+}
+
+export async function deleteAthletePhoto(studentId: string): Promise<void> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  // Remove todos os arquivos do diretório do atleta (independente da extensão)
+  const { data: files } = await supabase.storage
+    .from("athlete-photos")
+    .list(`${user.id}/${studentId}`);
+
+  if (files && files.length > 0) {
+    const paths = files.map((f) => `${user.id}/${studentId}/${f.name}`);
+    await supabase.storage.from("athlete-photos").remove(paths);
+  }
+}
+
 export async function deleteStudent(id: string): Promise<void> {
   const supabase = createClient();
+  // Remove foto do storage antes de deletar o registro
+  await deleteAthletePhoto(id).catch(() => {});
   // assessments deletadas em cascata pelo FK
   const { error } = await supabase.from("students").delete().eq("id", id);
   if (error) throw normalizeSupabaseError(error);
@@ -173,7 +216,49 @@ export async function getStudentAssessments(
     .eq("student_id", studentId)
     .order("date", { ascending: true });
   if (error) throw normalizeSupabaseError(error);
-  return (data ?? []).map(rowToAssessment);
+
+  const assessments = (data ?? []).map(rowToAssessment);
+  if (assessments.length === 0) return assessments;
+
+  // Join custom metric values
+  const ids = assessments.map((a) => a.id);
+  const { data: cvRows } = await supabase
+    .from("custom_metric_values")
+    .select("*")
+    .in("assessment_id", ids);
+
+  const cvByAssessment: Record<string, Record<string, number | null>> = {};
+  for (const cv of cvRows ?? []) {
+    if (!cvByAssessment[cv.assessment_id]) cvByAssessment[cv.assessment_id] = {};
+    cvByAssessment[cv.assessment_id][cv.metric_key] = cv.value ?? null;
+  }
+
+  return assessments.map((a) => ({
+    ...a,
+    customMetrics: cvByAssessment[a.id] ?? {},
+  }));
+}
+
+export async function saveCustomMetricValues(
+  assessmentId: string,
+  values: Record<string, number | null>
+): Promise<void> {
+  if (Object.keys(values).length === 0) return;
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Não autenticado");
+
+  const rows = Object.entries(values).map(([metricKey, value]) => ({
+    assessment_id: assessmentId,
+    user_id: user.id,
+    metric_key: metricKey,
+    value,
+  }));
+
+  const { error } = await supabase
+    .from("custom_metric_values")
+    .upsert(rows, { onConflict: "assessment_id,metric_key" });
+  if (error) throw normalizeSupabaseError(error);
 }
 
 export async function createAssessment(
@@ -246,6 +331,61 @@ export async function saveAiAnalysis(
     last_assessment_id: lastAssessmentId,
   });
   if (error) throw normalizeSupabaseError(error);
+}
+
+// ─── Trainer Config (client-side) ────────────────────────────────────────────
+
+export async function getTrainerProfile(): Promise<TrainerProfile | null> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data, error } = await supabase
+    .from("trainer_profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+  if (error) {
+    if (isNoRowError(error)) return null;
+    return null;
+  }
+  return {
+    id: data.id,
+    userId: data.user_id,
+    coachingPhilosophy: data.coaching_philosophy ?? "",
+    sportContext: data.sport_context ?? "",
+    athleteProfiles: data.athlete_profiles ?? "",
+    priorityFocus: data.priority_focus ?? "",
+    customInstructions: data.custom_instructions ?? "",
+    updatedAt: data.updated_at,
+  };
+}
+
+export async function getMetricConfigs(): Promise<MetricConfig[]> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data, error } = await supabase
+    .from("metric_configs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("display_order", { ascending: true });
+  if (error) return [];
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    metricKey: row.metric_key,
+    label: row.label,
+    unit: row.unit ?? "",
+    higherIsBetter: row.higher_is_better,
+    isCustom: row.is_custom,
+    isEnabled: row.is_enabled,
+    benchRecreational: row.bench_recreational ?? null,
+    benchTrained: row.bench_trained ?? null,
+    benchElite: row.bench_elite ?? null,
+    weight: Number(row.weight),
+    displayOrder: row.display_order ?? 0,
+    createdAt: row.created_at,
+  }));
 }
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────────

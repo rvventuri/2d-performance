@@ -880,6 +880,7 @@ export async function POST() {
         weight: athlete.weight,
         height: athlete.height,
         objective: athlete.objective,
+        photoUrl: null,
         createdAt: studentRow.created_at,
       };
 

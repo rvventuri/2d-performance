@@ -38,10 +38,14 @@ export async function proxy(request: NextRequest) {
     // Se o Supabase falhar, trata como não autenticado
   }
 
-  const publicRoutes = ["/login"];
-  if (publicRoutes.includes(pathname)) {
-    if (user) {
-      return NextResponse.redirect(new URL("/", request.url));
+  const publicRoutes = ["/", "/login", "/register"];
+  if (
+    publicRoutes.includes(pathname) ||
+    pathname.startsWith("/share/") ||
+    pathname.startsWith("/auth/")
+  ) {
+    if (user && pathname === "/login") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return supabaseResponse;
   }

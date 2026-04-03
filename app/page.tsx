@@ -1,182 +1,920 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { getStudents, getStudentAssessments } from "@/lib/storage";
-import { Student } from "@/lib/types";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 import {
-  Search, Plus, User, ChevronRight,
-  Activity, Calendar, TrendingUp, Users, Loader2,
+  ChevronRight,
+  Zap,
+  BarChart3,
+  Brain,
+  TrendingUp,
+  Shield,
+  ArrowRight,
+  Activity,
+  Target,
+  Layers,
 } from "lucide-react";
-import { formatDate } from "@/lib/utils";
-import { toast } from "sonner";
 
-export default function Dashboard() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [search, setSearch] = useState("");
-  const [assessmentCounts, setAssessmentCounts] = useState<Record<string, number>>({});
-  const [lastDates, setLastDates] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
+// ─── Hooks ───────────────────────────────────────────────────────────────────
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const all = await getStudents();
-      setStudents(all);
-      const counts: Record<string, number> = {};
-      const dates: Record<string, string> = {};
-      await Promise.all(
-        all.map(async (s) => {
-          const ass = await getStudentAssessments(s.id);
-          counts[s.id] = ass.length;
-          if (ass.length > 0) dates[s.id] = ass[ass.length - 1].date;
-        })
-      );
-      setAssessmentCounts(counts);
-      setLastDates(dates);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Erro ao carregar alunos";
-      toast.error(msg);
-      setStudents([]);
-      setAssessmentCounts({});
-      setLastDates({});
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); observer.disconnect(); } },
+      { threshold }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
 
-  const filtered = students.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase())
-  );
+  return { ref, inView };
+}
+
+function useCountUp(target: number, duration = 1800, active = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    let start = 0;
+    const step = target / (duration / 16);
+    const id = setInterval(() => {
+      start += step;
+      if (start >= target) { setCount(target); clearInterval(id); }
+      else setCount(Math.floor(start));
+    }, 16);
+    return () => clearInterval(id);
+  }, [target, duration, active]);
+  return count;
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function Particles() {
+  const particles = Array.from({ length: 22 }, (_, i) => ({
+    id: i,
+    left: `${(i * 4.5 + 3) % 100}%`,
+    top: `${(i * 7.3 + 10) % 90}%`,
+    size: i % 3 === 0 ? 3 : i % 3 === 1 ? 2 : 1.5,
+    delay: `${(i * 0.4) % 5}s`,
+    duration: `${6 + (i % 4)}s`,
+    opacity: 0.15 + (i % 5) * 0.08,
+  }));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="font-heading text-4xl font-bold text-white tracking-wide mb-1">DASHBOARD</h1>
-        <p className="text-[#94A3B8] text-sm">Gerencie seus alunos e acompanhe a evolução de performance</p>
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p) => (
+        <span
+          key={p.id}
+          className="absolute rounded-full bg-brand-blue-light"
+          style={{
+            left: p.left,
+            top: p.top,
+            width: p.size,
+            height: p.size,
+            opacity: p.opacity,
+            animation: `particle-drift ${p.duration} ${p.delay} ease-in-out infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function StatCounter({
+  value,
+  suffix,
+  label,
+  active,
+}: {
+  value: number;
+  suffix: string;
+  label: string;
+  active: boolean;
+}) {
+  const count = useCountUp(value, 1600, active);
+  return (
+    <div className="text-center">
+      <p className="font-heading text-5xl sm:text-6xl font-black text-foreground">
+        {count}
+        <span className="text-brand-yellow">{suffix}</span>
+      </p>
+      <p className="text-muted-foreground text-sm mt-1 uppercase tracking-widest font-medium">{label}</p>
+    </div>
+  );
+}
+
+// ─── Landing Page ─────────────────────────────────────────────────────────────
+
+export default function LandingPage() {
+  const statsSection = useInView(0.3);
+  const problemSection = useInView(0.2);
+  const featuresSection = useInView(0.1);
+  const aiSection = useInView(0.2);
+  const metricsSection = useInView(0.2);
+  const sportsSection = useInView(0.2);
+  const ctaSection = useInView(0.3);
+
+  return (
+    <div className="min-h-screen bg-background overflow-x-hidden">
+
+      {/* ── NAV PÚBLICA ─────────────────────────────────────────────────── */}
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border backdrop-blur-md bg-background/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Link href="/">
+              <Image
+                src="/logosemfundo.png"
+                alt="2D Performance"
+                width={120}
+                height={40}
+                className="h-9 w-auto object-contain object-left"
+                priority
+              />
+            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors hidden sm:block"
+              >
+                Entrar
+              </Link>
+              <Link
+                href="/login"
+                className="bg-brand-yellow text-brand-shadow text-sm font-bold px-4 py-2 rounded-lg hover:bg-brand-yellow-glow transition-colors"
+              >
+                Começar Grátis
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── HERO ────────────────────────────────────────────────────────── */}
+      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+        {/* Background grid */}
+        <div className="absolute inset-0 hero-grid opacity-60" />
+
+        {/* Radial glow */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(20,55,201,0.18) 0%, rgba(46,91,255,0.08) 45%, transparent 75%)",
+            animation: "radial-pulse 8s ease-in-out infinite",
+          }}
+        />
+        {/* Second glow — yellow accent */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            bottom: "10%",
+            right: "15%",
+            width: 300,
+            height: 300,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(255,212,0,0.07) 0%, transparent 70%)",
+          }}
+        />
+
+        <Particles />
+
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-brand-blue-mid/15 border border-brand-blue-light/25 rounded-full px-4 py-1.5 mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow animate-pulse inline-block" />
+            <span className="text-brand-blue-light text-xs font-semibold uppercase tracking-widest">
+              Avaliação de Performance Esportiva com IA
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1
+            className="font-heading font-black text-foreground mb-6 leading-none tracking-tight"
+            style={{ fontSize: "clamp(3rem, 8vw, 6rem)", lineHeight: 1.0 }}
+          >
+            CADA SALTO{" "}
+            <span
+              className="text-gradient bg-brand-gradient"
+              style={{ WebkitTextFillColor: "transparent" }}
+            >
+              É UM DADO.
+            </span>
+            <br />
+            CADA DADO{" "}
+            <span className="text-brand-yellow text-glow">É UMA DECISÃO.</span>
+          </h1>
+
+          <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+            Transforme avaliações biomecânicas em inteligência. O{" "}
+            <span className="text-foreground font-semibold">2D Performance</span> usa IA para decifrar
+            a performance do seu atleta — salto por salto, avaliação por avaliação — e entregar
+            os insights que mudam o planejamento.
+          </p>
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/login"
+              className="group relative bg-brand-yellow text-brand-shadow font-black text-base px-8 py-4 rounded-xl hover:bg-brand-yellow-glow transition-all duration-200 animate-pulse-glow flex items-center gap-2"
+            >
+              Começar Agora — É Grátis
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <a
+              href="#features"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+            >
+              Ver como funciona
+              <ChevronRight className="w-4 h-4" />
+            </a>
+          </div>
+
+          {/* Floating mock UI */}
+          <div
+            className="relative mt-16 mx-auto max-w-3xl animate-float"
+            style={{ animationDelay: "0.5s" }}
+          >
+            <div
+              className="rounded-2xl overflow-hidden border border-brand-blue-light/20"
+              style={{
+                boxShadow:
+                  "0 0 0 1px rgba(46,91,255,0.15), 0 32px 80px rgba(11,31,102,0.6), 0 0 120px rgba(20,55,201,0.12)",
+              }}
+            >
+              {/* Mock toolbar */}
+              <div className="bg-card px-4 py-3 flex items-center gap-2 border-b border-border">
+                <span className="w-3 h-3 rounded-full bg-destructive/70" />
+                <span className="w-3 h-3 rounded-full bg-brand-yellow/70" />
+                <span className="w-3 h-3 rounded-full bg-[#22C55E]/70" />
+                <div className="flex-1 mx-4 bg-secondary rounded-md h-6 flex items-center px-3">
+                  <span className="text-muted-foreground text-xs">2d.performance/dashboard</span>
+                </div>
+              </div>
+
+              {/* Mock dashboard content */}
+              <div className="bg-background p-6">
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {[
+                    { label: "Atletas", value: "12", color: "#1437C9" },
+                    { label: "Avaliações", value: "47", color: "#2E5BFF" },
+                    { label: "Com histórico", value: "9", color: "#FFD400" },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-card border border-border rounded-xl p-3">
+                      <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{s.label}</p>
+                      <p
+                        className="font-heading text-2xl font-bold"
+                        style={{ color: s.color }}
+                      >
+                        {s.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Mock athlete list */}
+                <div className="space-y-2">
+                  {[
+                    { name: "Mateus Assis", sport: "Futebol · Atacante", status: "IA Analisada", statusColor: "#FFD400" },
+                    { name: "Thiago Duarte", sport: "Futvolei · Profissional", status: "Em evolução", statusColor: "#22C55E" },
+                    { name: "Gabriel Monteiro", sport: "Futebol · Meia", status: "Alerta ativo", statusColor: "#EF4444" },
+                  ].map((a) => (
+                    <div
+                      key={a.name}
+                      className="bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-3"
+                    >
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                        style={{ backgroundColor: "#1437C91a", color: "#2E5BFF" }}
+                      >
+                        {a.name[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-foreground text-sm font-semibold truncate">{a.name}</p>
+                        <p className="text-muted-foreground text-xs">{a.sport}</p>
+                      </div>
+                      <span
+                        className="text-xs font-semibold shrink-0"
+                        style={{ color: a.statusColor }}
+                      >
+                        {a.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Glow under the card */}
+            <div
+              className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-12 pointer-events-none"
+              style={{
+                background: "radial-gradient(ellipse, rgba(20,55,201,0.35) 0%, transparent 70%)",
+                filter: "blur(12px)",
+              }}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ── STATS BAR ───────────────────────────────────────────────────── */}
+      <div
+        ref={statsSection.ref}
+        className="relative py-20 border-y border-white/5"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(11,31,102,0.25), rgba(20,55,201,0.15), rgba(11,31,102,0.25))",
+        }}
+      >
+        <div className="max-w-4xl mx-auto px-4 grid grid-cols-2 sm:grid-cols-4 gap-10">
+          <StatCounter value={500} suffix="+" label="Avaliações realizadas" active={statsSection.inView} />
+          <StatCounter value={12} suffix="+" label="Métricas biomecânicas" active={statsSection.inView} />
+          <StatCounter value={3} suffix="x" label="Mais rápido que planilha" active={statsSection.inView} />
+          <StatCounter value={100} suffix="%" label="Análise por IA" active={statsSection.inView} />
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-        {[
-          { icon: Users, color: "#1437C9", label: "Alunos", value: students.length },
-          { icon: Activity, color: "#2E5BFF", label: "Avaliações", value: Object.values(assessmentCounts).reduce((a, b) => a + b, 0) },
-          { icon: TrendingUp, color: "#FFD400", label: "Com histórico", value: Object.values(assessmentCounts).filter((c) => c >= 2).length },
-        ].map(({ icon: Icon, color, label, value }, i) => (
-          <div key={i} className={`bg-[#0F172A] border border-[#1E293B] rounded-xl p-4 ${i === 2 ? "col-span-2 sm:col-span-1" : ""}`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}1a` }}>
-                <Icon className="w-5 h-5" style={{ color }} />
+      {/* ── PROBLEMA → SOLUÇÃO ──────────────────────────────────────────── */}
+      <section
+        ref={problemSection.ref}
+        className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <div
+          className="grid lg:grid-cols-2 gap-12 items-center"
+          style={{
+            opacity: problemSection.inView ? 1 : 0,
+            transform: problemSection.inView ? "none" : "translateY(32px)",
+            transition: "opacity 0.7s ease, transform 0.7s ease",
+          }}
+        >
+          {/* Problema */}
+          <div className="bg-card border border-destructive/20 rounded-2xl p-8 relative overflow-hidden">
+            <div
+              className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
+              style={{
+                background: "radial-gradient(circle, rgba(239,68,68,0.06) 0%, transparent 70%)",
+              }}
+            />
+            <p className="text-destructive text-xs font-bold uppercase tracking-widest mb-4">Antes do 2D</p>
+            <h2 className="font-heading text-3xl font-bold text-foreground mb-6 leading-tight">
+              Seu atleta está evoluindo.
+              <br />
+              <span className="text-destructive">Mas você tem certeza disso?</span>
+            </h2>
+            <ul className="space-y-4">
+              {[
+                "Dados de avaliação espalhados em papel, WhatsApp e planilhas",
+                "Análise manual que demora horas — ou simplesmente não acontece",
+                "Sem visualização de evolução ao longo do tempo",
+                "Relatórios genéricos que não falam sobre o atleta específico",
+                "Assimetrias e alertas que passam despercebidos entre avaliações",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3 text-muted-foreground text-sm">
+                  <span className="w-5 h-5 rounded-full bg-destructive/10 border border-destructive/25 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Solução */}
+          <div className="bg-card border border-brand-blue-light/20 rounded-2xl p-8 relative overflow-hidden">
+            <div
+              className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
+              style={{
+                background: "radial-gradient(circle, rgba(46,91,255,0.08) 0%, transparent 70%)",
+              }}
+            />
+            <p className="text-brand-yellow text-xs font-bold uppercase tracking-widest mb-4">Com o 2D Performance</p>
+            <h2 className="font-heading text-3xl font-bold text-foreground mb-6 leading-tight">
+              Dados organizados.
+              <br />
+              <span className="text-brand-blue-light">Decisões certeiras.</span>
+            </h2>
+            <ul className="space-y-4">
+              {[
+                "Avaliações estruturadas por atleta, com histórico completo e acessível",
+                "IA analisa todo o histórico e entrega insights em segundos",
+                "Gráficos de evolução que mostram exatamente o quanto o atleta cresceu",
+                "Relatório personalizado com pontos fortes, alertas e próximos passos",
+                "Assimetrias e padrões detectados automaticamente a cada avaliação",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3 text-muted-foreground text-sm">
+                  <span className="w-5 h-5 rounded-full bg-brand-blue-mid/15 border border-brand-blue-light/30 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow" />
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES ────────────────────────────────────────────────────── */}
+      <section
+        id="features"
+        ref={featuresSection.ref}
+        className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <div className="text-center mb-16">
+          <p className="text-brand-blue-light text-xs font-bold uppercase tracking-widest mb-3">Funcionalidades</p>
+          <h2 className="font-heading text-5xl sm:text-6xl font-black text-foreground mb-4">
+            TUDO QUE UM TREINADOR
+            <br />
+            <span className="text-brand-yellow">DE ELITE PRECISA</span>
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            Do cadastro do atleta à análise de IA — uma plataforma que faz o trabalho pesado enquanto você foca no que importa.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {[
+            {
+              icon: Activity,
+              title: "Avaliações Estruturadas",
+              description:
+                "CMJ, SJ, Abalakov, RSI, assimetria e muito mais. Dados organizados, histórico sempre acessível.",
+              color: "#2E5BFF",
+              delay: 0,
+            },
+            {
+              icon: Brain,
+              title: "Análise por IA",
+              description:
+                "Claude analisa todo o histórico do atleta e entrega um relatório em linguagem humana: pontos fortes, alertas e próximos passos.",
+              color: "#FFD400",
+              delay: 100,
+            },
+            {
+              icon: TrendingUp,
+              title: "Evolução Visual",
+              description:
+                "Gráficos de linha que mostram exatamente quanto o atleta cresceu entre cada avaliação ao longo do tempo.",
+              color: "#2E5BFF",
+              delay: 200,
+            },
+            {
+              icon: Target,
+              title: "Relatório de Performance",
+              description:
+                "Insights automáticos, benchmarks por nível e recomendações personalizadas baseadas no objetivo do atleta.",
+              color: "#FFD400",
+              delay: 300,
+            },
+          ].map(({ icon: Icon, title, description, color, delay }) => (
+            <div
+              key={title}
+              className="group bg-card border border-border hover:border-brand-blue-light/30 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
+              style={{
+                opacity: featuresSection.inView ? 1 : 0,
+                transform: featuresSection.inView ? "none" : "translateY(28px)",
+                transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms, border-color 0.3s`,
+                boxShadow: "0 4px 24px rgba(10,10,10,0.4)",
+              }}
+            >
+              <div
+                className="absolute top-0 right-0 w-32 h-32 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: `radial-gradient(circle, ${color}10 0%, transparent 70%)`,
+                }}
+              />
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
+                style={{ backgroundColor: `${color}1a`, boxShadow: `0 0 0 1px ${color}25` }}
+              >
+                <Icon className="w-6 h-6" style={{ color }} />
               </div>
-              <div>
-                <p className="text-[#94A3B8] text-xs font-medium uppercase tracking-wider">{label}</p>
-                <p className="font-heading text-2xl font-bold text-white">
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin text-[#475569]" /> : value}
-                </p>
+              <h3 className="font-heading text-xl font-bold text-foreground mb-3">{title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── AI SPOTLIGHT ────────────────────────────────────────────────── */}
+      <section
+        ref={aiSection.ref}
+        className="py-24 relative overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(11,31,102,0.5) 0%, rgba(20,55,201,0.2) 50%, rgba(11,31,102,0.5) 100%)",
+        }}
+      >
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 80% at 50% 50%, rgba(46,91,255,0.08) 0%, transparent 70%)",
+          }}
+        />
+        <div className="hero-grid absolute inset-0 opacity-30" />
+
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-16 items-center">
+          {/* Text */}
+          <div
+            style={{
+              opacity: aiSection.inView ? 1 : 0,
+              transform: aiSection.inView ? "none" : "translateX(-32px)",
+              transition: "opacity 0.7s ease, transform 0.7s ease",
+            }}
+          >
+            <div className="inline-flex items-center gap-2 bg-brand-yellow/10 border border-brand-yellow/25 rounded-full px-3 py-1 mb-6">
+              <Brain className="w-3.5 h-3.5 text-brand-yellow" />
+              <span className="text-brand-yellow text-xs font-bold uppercase tracking-widest">Inteligência Artificial</span>
+            </div>
+
+            <h2 className="font-heading text-5xl sm:text-6xl font-black text-white mb-6 leading-none">
+              O TREINADOR DEFINE
+              <br />O OLHO CLÍNICO.
+              <br />
+              <span className="text-brand-yellow">A IA FAZ O</span>
+              <br />
+              <span className="text-brand-yellow">TRABALHO PESADO.</span>
+            </h2>
+
+            <p className="text-white/70 text-lg leading-relaxed mb-8">
+              Você avalia. O 2D lê todo o histórico do atleta, identifica padrões que o olho humano perde e entrega um laudo completo — em linguagem humana, sem você precisar escrever uma linha.
+            </p>
+
+            <ul className="space-y-3 mb-10">
+              {[
+                "Análise de tendências entre múltiplas avaliações",
+                "Identificação automática de assimetrias e alertas",
+                "Recomendações personalizadas por esporte e objetivo",
+                "Comparação com benchmarks recreacional, treinado e elite",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-3 text-sm text-white/70">
+                  <span className="w-5 h-5 rounded-full bg-brand-yellow/15 border border-brand-yellow/30 flex items-center justify-center shrink-0">
+                    <Zap className="w-2.5 h-2.5 text-brand-yellow" />
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 bg-brand-yellow text-brand-shadow font-black px-6 py-3 rounded-xl hover:bg-brand-yellow-glow transition-colors"
+            >
+              Experimentar agora
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Mock AI analysis card */}
+          <div
+            className="animate-float-slow"
+            style={{
+              opacity: aiSection.inView ? 1 : 0,
+              transform: aiSection.inView ? "none" : "translateX(32px)",
+              transition: "opacity 0.7s ease 0.2s, transform 0.7s ease 0.2s",
+            }}
+          >
+            <div
+              className="bg-card border border-brand-blue-light/20 rounded-2xl overflow-hidden"
+              style={{
+                boxShadow: "0 0 0 1px rgba(46,91,255,0.12), 0 24px 60px rgba(11,31,102,0.5)",
+              }}
+            >
+              {/* Card header */}
+              <div className="bg-brand-blue-dark/40 border-b border-brand-blue-light/15 px-5 py-4 flex items-center gap-3">
+                <div className="w-8 h-8 bg-brand-yellow/15 rounded-lg flex items-center justify-center">
+                  <Brain className="w-4 h-4 text-brand-yellow" />
+                </div>
+                <div>
+                  <p className="text-foreground text-sm font-semibold">Análise IA · Mateus Assis</p>
+                  <p className="text-muted-foreground text-xs">Gerado agora · Futebol · Atacante</p>
+                </div>
+                <div className="ml-auto flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-brand-yellow animate-pulse" />
+                  <span className="text-brand-yellow text-xs font-bold">IA</span>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Score bar */}
+                <div>
+                  <div className="flex justify-between text-xs mb-2">
+                    <span className="text-muted-foreground">Score geral de performance</span>
+                    <span className="text-brand-yellow font-bold">78 / 100</span>
+                  </div>
+                  <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: "78%",
+                        background: "linear-gradient(90deg, #0b1f66, #1437c9, #2e5bff)",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Metrics summary */}
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "CMJ", value: "47 cm", status: "elite", color: "#FFD400" },
+                    { label: "RSI", value: "1.82", status: "treinado", color: "#2E5BFF" },
+                    { label: "Assimetria", value: "8%", status: "alerta", color: "#EF4444" },
+                    { label: "Abalakov", value: "52 cm", status: "elite", color: "#FFD400" },
+                  ].map((m) => (
+                    <div key={m.label} className="bg-secondary/50 rounded-lg px-3 py-2">
+                      <p className="text-muted-foreground text-xs">{m.label}</p>
+                      <p className="text-foreground text-sm font-bold">{m.value}</p>
+                      <span className="text-xs font-semibold" style={{ color: m.color }}>
+                        ↑ {m.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Insight text */}
+                <div className="bg-brand-blue-mid/10 border border-brand-blue-light/20 rounded-xl p-4">
+                  <p className="text-brand-yellow text-xs font-bold mb-2 uppercase tracking-wider">Insight Principal</p>
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    Mateus apresentou evolução consistente no CMJ nas últimas 3 avaliações (+7cm). A assimetria de tornozelo (8%) está acima do limite seguro — recomenda-se trabalho de fortalecimento unilateral antes da próxima periodização.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Search + New */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
-          <Input
-            placeholder="Buscar aluno..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-[#0F172A] border-[#1E293B] text-white placeholder:text-[#475569] focus:border-brand-blue-light transition-colors"
-          />
         </div>
-        <Link href="/students/new">
-          <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-semibold cursor-pointer shrink-0">
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Aluno
-          </Button>
-        </Link>
-      </div>
+      </section>
 
-      {/* List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-brand-blue-light" />
+      {/* ── MÉTRICAS SHOWCASE ───────────────────────────────────────────── */}
+      <section
+        ref={metricsSection.ref}
+        className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <div
+          className="text-center mb-14"
+          style={{
+            opacity: metricsSection.inView ? 1 : 0,
+            transform: metricsSection.inView ? "none" : "translateY(24px)",
+            transition: "opacity 0.6s ease, transform 0.6s ease",
+          }}
+        >
+          <p className="text-brand-blue-light text-xs font-bold uppercase tracking-widest mb-3">Métricas</p>
+          <h2 className="font-heading text-5xl font-black text-foreground mb-4">
+            O QUE VOCÊ AVALIA
+          </h2>
+          <p className="text-muted-foreground max-w-lg mx-auto">
+            Métricas biomecânicas validadas cientificamente para avaliação de performance neuromuscular e salto.
+          </p>
         </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20 bg-[#0F172A] border border-[#1E293B] rounded-xl">
-          {students.length === 0 ? (
-            <>
-              <div className="w-16 h-16 bg-[#1E293B] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-[#94A3B8]" />
+
+        <div className="flex flex-wrap justify-center gap-3">
+          {[
+            { label: "CMJ", desc: "Counter Movement Jump", hot: true },
+            { label: "SJ", desc: "Squat Jump" },
+            { label: "Abalakov", desc: "Salto com auxílio de braços", hot: true },
+            { label: "RSI", desc: "Reactive Strength Index", hot: true },
+            { label: "Tempo de Contato", desc: "Drop Jump" },
+            { label: "Altura do Salto DJ", desc: "Drop Jump" },
+            { label: "CMJ Esquerdo", desc: "Assimetria unilateral" },
+            { label: "CMJ Direito", desc: "Assimetria unilateral" },
+            { label: "Assimetria %", desc: "Índice bilateral", hot: true },
+            { label: "Salto Horizontal", desc: "Distância" },
+            { label: "Métricas Custom", desc: "Crie as suas próprias" },
+          ].map(({ label, desc, hot }, i) => (
+            <div
+              key={label}
+              className="group cursor-default"
+              style={{
+                opacity: metricsSection.inView ? 1 : 0,
+                transform: metricsSection.inView ? "none" : "scale(0.92)",
+                transition: `opacity 0.5s ease ${i * 50}ms, transform 0.5s ease ${i * 50}ms`,
+              }}
+            >
+              <div
+                className={`
+                  relative px-5 py-3 rounded-xl border transition-all duration-200
+                  ${hot
+                    ? "bg-brand-yellow/8 border-brand-yellow/30 hover:border-brand-yellow/60 hover:bg-brand-yellow/12"
+                    : "bg-card border-border hover:border-brand-blue-light/35 hover:bg-brand-blue-mid/10"
+                  }
+                `}
+              >
+                <p className={`font-heading text-lg font-bold ${hot ? "text-brand-yellow" : "text-foreground"}`}>
+                  {label}
+                </p>
+                <p className="text-muted-foreground text-xs mt-0.5">{desc}</p>
+                {hot && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-brand-yellow text-brand-shadow text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                    ★
+                  </span>
+                )}
               </div>
-              <h3 className="font-heading text-xl font-bold text-white mb-2">Nenhum aluno cadastrado</h3>
-              <p className="text-[#94A3B8] text-sm mb-6">Comece cadastrando seu primeiro aluno para iniciar as avaliações.</p>
-              <Link href="/students/new">
-                <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-semibold cursor-pointer">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Cadastrar Primeiro Aluno
-                </Button>
-              </Link>
-            </>
-          ) : (
-            <p className="text-[#94A3B8]">Nenhum aluno encontrado para &ldquo;{search}&rdquo;</p>
-          )}
+            </div>
+          ))}
         </div>
-      ) : (
-        <div className="grid gap-3">
-          {filtered.map((student) => {
-            const count = assessmentCounts[student.id] ?? 0;
-            const lastDate = lastDates[student.id];
-            return (
-              <Link key={student.id} href={`/students/${student.id}`}>
-                <div className="bg-[#0F172A] border border-[#1E293B] hover:border-brand-blue-light/35 rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 group">
-                  <div className="w-12 h-12 bg-[#1E293B] rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-blue-mid/15 transition-colors">
-                    <User className="w-6 h-6 text-[#94A3B8] group-hover:text-brand-blue-light transition-colors" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="font-heading text-lg font-bold text-white truncate">{student.name}</h3>
-                      <Badge variant="secondary" className="bg-[#1E293B] text-[#94A3B8] text-xs border-0 shrink-0">
-                        {student.age} anos
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-[#94A3B8]">
-                      <span className="flex items-center gap-1">
-                        <Activity className="w-3 h-3" />
-                        {count} {count === 1 ? "avaliação" : "avaliações"}
-                      </span>
-                      {lastDate && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          Última: {formatDate(lastDate)}
-                        </span>
-                      )}
-                      {student.objective && (
-                        <span className="hidden sm:block truncate max-w-xs">{student.objective}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {count >= 2 && (
-                      <Badge className="bg-brand-blue-mid/15 text-brand-yellow-glow border-brand-blue-light/25 text-xs hidden sm:flex">
-                        <TrendingUp className="w-3 h-3 mr-1" />
-                        Histórico
-                      </Badge>
-                    )}
-                    <ChevronRight className="w-5 h-5 text-[#1E293B] group-hover:text-brand-blue-light transition-colors" />
+      </section>
+
+      {/* ── ESPORTES ────────────────────────────────────────────────────── */}
+      <section
+        ref={sportsSection.ref}
+        className="py-20 border-y border-white/5"
+        style={{
+          background: "linear-gradient(180deg, rgba(11,31,102,0.15) 0%, transparent 100%)",
+        }}
+      >
+        <div className="max-w-5xl mx-auto px-4 text-center">
+          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-10 font-medium">
+            Otimizado para
+          </p>
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
+            {[
+              { label: "Futebol", icon: "⚽", ready: true },
+              { label: "Futvolei", icon: "🏐", ready: true },
+              { label: "Basquete", icon: "🏀", ready: false },
+              { label: "Atletismo", icon: "🏃", ready: false },
+              { label: "CrossFit", icon: "🏋️", ready: false },
+            ].map(({ label, icon, ready }, i) => (
+              <div
+                key={label}
+                className="flex flex-col items-center gap-2"
+                style={{
+                  opacity: sportsSection.inView ? (ready ? 1 : 0.4) : 0,
+                  transform: sportsSection.inView ? "none" : "translateY(20px)",
+                  transition: `opacity 0.5s ease ${i * 80}ms, transform 0.5s ease ${i * 80}ms`,
+                }}
+              >
+                <div
+                  className={`
+                    w-16 h-16 rounded-2xl flex items-center justify-center text-2xl border
+                    ${ready
+                      ? "bg-brand-blue-mid/15 border-brand-blue-light/30"
+                      : "bg-card border-border"
+                    }
+                  `}
+                >
+                  {icon}
+                </div>
+                <p className={`text-sm font-semibold ${ready ? "text-foreground" : "text-muted-foreground"}`}>
+                  {label}
+                </p>
+                {!ready && (
+                  <span className="text-muted-foreground text-xs">Em breve</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── COMO FUNCIONA ───────────────────────────────────────────────── */}
+      <section className="py-24 max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-16">
+          <p className="text-brand-blue-light text-xs font-bold uppercase tracking-widest mb-3">Processo</p>
+          <h2 className="font-heading text-5xl font-black text-foreground">
+            SIMPLES ASSIM
+          </h2>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-6">
+          {[
+            {
+              step: "01",
+              icon: Layers,
+              title: "Cadastre o Atleta",
+              description: "Nome, esporte, objetivo e foto. Em menos de 1 minuto seu atleta já está na plataforma.",
+              color: "#2E5BFF",
+            },
+            {
+              step: "02",
+              icon: BarChart3,
+              title: "Registre a Avaliação",
+              description: "Insira os dados biomecânicos coletados. A plataforma organiza, calcula e salva tudo automaticamente.",
+              color: "#FFD400",
+            },
+            {
+              step: "03",
+              icon: Shield,
+              title: "Receba a Análise",
+              description: "Com um clique, a IA analisa o histórico completo e entrega um laudo detalhado e acionável.",
+              color: "#2E5BFF",
+            },
+          ].map(({ step, icon: Icon, title, description, color }) => (
+            <div key={step} className="relative">
+              <div className="bg-card border border-border rounded-2xl p-6 h-full">
+                <div className="flex items-center gap-3 mb-4">
+                  <span
+                    className="font-heading text-4xl font-black"
+                    style={{
+                      background: `linear-gradient(135deg, ${color}60, ${color}20)`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}
+                  >
+                    {step}
+                  </span>
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: `${color}15`, boxShadow: `0 0 0 1px ${color}25` }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color }} />
                   </div>
                 </div>
-              </Link>
-            );
-          })}
+                <h3 className="font-heading text-xl font-bold text-foreground mb-2">{title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      </section>
+
+      {/* ── CTA FINAL ───────────────────────────────────────────────────── */}
+      <section
+        ref={ctaSection.ref}
+        className="py-28 relative overflow-hidden"
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #0b1f66 0%, #1437c9 50%, #0b1f66 100%)",
+          }}
+        />
+        <div className="hero-grid absolute inset-0 opacity-20" />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 80% at 50% 50%, rgba(46,91,255,0.15) 0%, transparent 70%)",
+          }}
+        />
+        <Particles />
+
+        <div
+          className="relative z-10 max-w-3xl mx-auto px-4 text-center"
+          style={{
+            opacity: ctaSection.inView ? 1 : 0,
+            transform: ctaSection.inView ? "none" : "translateY(32px)",
+            transition: "opacity 0.7s ease, transform 0.7s ease",
+          }}
+        >
+          <div className="inline-flex items-center gap-2 bg-white/8 border border-white/15 rounded-full px-4 py-1.5 mb-8">
+            <Zap className="w-3.5 h-3.5 text-brand-yellow" />
+            <span className="text-white/70 text-xs font-semibold uppercase tracking-widest">
+              Setup em menos de 5 minutos
+            </span>
+          </div>
+
+          <h2 className="font-heading font-black text-white mb-6 leading-none" style={{ fontSize: "clamp(2.5rem,6vw,4.5rem)" }}>
+            SEU PRÓXIMO ATLETA
+            <br />DE ALTO RENDIMENTO
+            <br />
+            <span className="text-brand-yellow">COMEÇA COM UM DADO.</span>
+          </h2>
+
+          <p className="text-white/60 text-lg mb-10">
+            Plataforma completa. Sem planilhas, sem papel, sem achismo.
+          </p>
+
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-3 bg-brand-yellow text-brand-shadow font-black text-lg px-10 py-5 rounded-2xl hover:bg-brand-yellow-glow transition-all duration-200 animate-pulse-glow"
+          >
+            CRIAR CONTA GRÁTIS
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+
+          <p className="text-white/30 text-xs mt-6">
+            Sem cartão de crédito · Sem limite de atletas no teste
+          </p>
+        </div>
+      </section>
+
+      {/* ── FOOTER ──────────────────────────────────────────────────────── */}
+      <footer className="border-t border-border py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Image
+            src="/logosemfundo.png"
+            alt="2D Performance"
+            width={100}
+            height={34}
+            className="h-8 w-auto object-contain opacity-70"
+          />
+          <p className="text-muted-foreground text-xs">
+            © {new Date().getFullYear()} 2D Performance · Avaliação de performance esportiva com IA
+          </p>
+          <div className="flex items-center gap-5">
+            <Link href="/login" className="text-muted-foreground hover:text-foreground text-xs transition-colors">
+              Entrar
+            </Link>
+            <Link href="/login" className="text-muted-foreground hover:text-foreground text-xs transition-colors">
+              Criar conta
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

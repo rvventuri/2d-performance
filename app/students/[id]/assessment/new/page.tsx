@@ -3,38 +3,39 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { getStudent, createAssessment } from "@/lib/storage";
-import { Student, Metrics, METRIC_LABELS, METRIC_UNITS } from "@/lib/types";
+import { getStudent, createAssessment, getMetricConfigs, saveCustomMetricValues } from "@/lib/storage";
+import { Student, Metrics } from "@/lib/types";
+import { resolveMetricConfigs, getEnabledMetrics } from "@/domain/trainer/services/MetricConfigResolver";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, ClipboardPlus, Info, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const METRIC_GROUPS = [
+const DEFAULT_METRIC_GROUPS = [
   {
     title: "Saltos Bilaterais",
     description: "Métricas de salto vertical bilateral",
     color: "#1437C9",
-    fields: ["cmj", "sj", "abalakov"] as (keyof Metrics)[],
+    fields: ["cmj", "sj", "abalakov"],
   },
   {
     title: "Reatividade",
     description: "Drop Jump e capacidade reativa",
     color: "#2E5BFF",
-    fields: ["rsi", "tempoContato", "alturaSaltoDJ"] as (keyof Metrics)[],
+    fields: ["rsi", "tempoContato", "alturaSaltoDJ"],
   },
   {
     title: "Assimetria",
     description: "Comparativo entre membros",
     color: "#F59E0B",
-    fields: ["cmjEsquerdo", "cmjDireito", "assimetriaPercentual"] as (keyof Metrics)[],
+    fields: ["cmjEsquerdo", "cmjDireito", "assimetriaPercentual"],
   },
   {
     title: "Salto Horizontal",
     description: "Potência em extensão horizontal",
     color: "#EC4899",
-    fields: ["saltoHorizontal"] as (keyof Metrics)[],
+    fields: ["saltoHorizontal"],
   },
 ];
 
@@ -57,20 +58,38 @@ export default function NewAssessmentPage() {
     assimetriaPercentual: "",
     saltoHorizontal: "",
   });
+  const [customMetricValues, setCustomMetricValues] = useState<Record<string, string>>({});
+  const [resolvedMetrics, setResolvedMetrics] = useState<ReturnType<typeof resolveMetricConfigs>>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    getStudent(id).then((s) => {
-      if (!s) { router.push("/"); return; }
+    Promise.all([
+      getStudent(id),
+      getMetricConfigs(),
+    ]).then(([s, configs]) => {
+      if (!s) { router.push("/dashboard"); return; }
       setStudent(s);
+      setResolvedMetrics(resolveMetricConfigs(configs));
     });
   }, [id, router]);
 
-  const [saving, setSaving] = useState(false);
+  const enabledDefaultKeys = new Set(
+    getEnabledMetrics(resolvedMetrics)
+      .filter((m) => !m.isCustom)
+      .map((m) => m.key)
+  );
+
+  const enabledCustomMetrics = getEnabledMetrics(resolvedMetrics).filter((m) => m.isCustom);
+
+  const metricLabel = (key: string) =>
+    resolvedMetrics.find((m) => m.key === key)?.label ?? key;
+
+  const metricUnit = (key: string) =>
+    resolvedMetrics.find((m) => m.key === key)?.unit ?? "";
 
   const handleMetricChange = useCallback((field: keyof Metrics, value: string) => {
     setMetrics((prev) => {
       const updated = { ...prev, [field]: value };
-      // Auto-calculate asymmetry when either CMJ leg value changes
       if (field === "cmjEsquerdo" || field === "cmjDireito") {
         const left = Number(field === "cmjEsquerdo" ? value : prev.cmjEsquerdo);
         const right = Number(field === "cmjDireito" ? value : prev.cmjDireito);
@@ -98,9 +117,20 @@ export default function NewAssessmentPage() {
       assimetriaPercentual: metrics.assimetriaPercentual !== "" ? Number(metrics.assimetriaPercentual) : null,
       saltoHorizontal: metrics.saltoHorizontal !== "" ? Number(metrics.saltoHorizontal) : null,
     };
+
     setSaving(true);
     try {
-      await createAssessment({ studentId: id, date, metrics: parsedMetrics });
+      const assessment = await createAssessment({ studentId: id, date, metrics: parsedMetrics });
+
+      // Save custom metric values if any were entered
+      const parsedCustom: Record<string, number | null> = {};
+      for (const [key, val] of Object.entries(customMetricValues)) {
+        if (val !== "") parsedCustom[key] = Number(val);
+      }
+      if (Object.keys(parsedCustom).length > 0) {
+        await saveCustomMetricValues(assessment.id, parsedCustom);
+      }
+
       toast.success("Avaliação registrada com sucesso!");
       router.push(`/students/${id}`);
     } catch (err) {
@@ -119,85 +149,136 @@ export default function NewAssessmentPage() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-6">
         <Link href={`/students/${id}`}>
-          <Button variant="ghost" size="sm" className="text-[#94A3B8] hover:text-white hover:bg-[#1E293B] cursor-pointer mb-4">
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
         </Link>
-        <h1 className="font-heading text-3xl font-bold text-white tracking-wide">NOVA AVALIAÇÃO</h1>
-        <p className="text-[#94A3B8] text-sm mt-1">{student.name}</p>
+        <h1 className="font-heading text-3xl font-bold text-foreground tracking-wide">NOVA AVALIAÇÃO</h1>
+        <p className="text-muted-foreground text-sm mt-1">{student.name}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Date */}
-        <div className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-5">
+        <div className="bg-card border border-border rounded-xl p-5">
           <div className="space-y-2 max-w-xs">
-            <Label className="text-[#94A3B8] text-sm font-medium uppercase tracking-wider">
+            <Label className="text-muted-foreground text-sm font-medium uppercase tracking-wider">
               Data da Avaliação
             </Label>
             <Input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="bg-[#1E293B] border-[#1E293B] text-white focus:border-brand-blue-light h-11 [color-scheme:dark]"
+              className="bg-secondary border-border text-foreground focus:border-brand-blue-light h-11"
             />
           </div>
         </div>
 
-        {/* Metric groups */}
-        {METRIC_GROUPS.map((group) => (
+        {/* Default metric groups (filtered by enabled metrics) */}
+        {DEFAULT_METRIC_GROUPS.map((group) => {
+          const visibleFields = group.fields.filter((f) => enabledDefaultKeys.has(f));
+          if (visibleFields.length === 0) return null;
+          return (
+            <div
+              key={group.title}
+              className="bg-card border border-border rounded-xl p-5"
+              style={{ borderLeftWidth: "3px", borderLeftColor: group.color }}
+            >
+              <div className="mb-4">
+                <h3 className="font-heading text-lg font-bold text-foreground tracking-wide">{group.title}</h3>
+                <p className="text-muted-foreground text-xs mt-0.5">{group.description}</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {visibleFields.map((field) => {
+                  const isAutoCalc = field === "assimetriaPercentual" && metrics.cmjEsquerdo !== "" && metrics.cmjDireito !== "";
+                  const unit = metricUnit(field);
+                  const label = metricLabel(field);
+                  return (
+                    <div key={field} className="space-y-2">
+                      <Label
+                        htmlFor={field}
+                        className="text-muted-foreground text-xs font-medium uppercase tracking-wider flex items-center gap-1"
+                      >
+                        {label}
+                        {isAutoCalc && (
+                          <span className="text-brand-blue-light text-xs normal-case font-normal">(auto)</span>
+                        )}
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id={field}
+                          type="number"
+                          step="0.01"
+                          placeholder="—"
+                          value={metrics[field as keyof Metrics]}
+                          onChange={(e) => handleMetricChange(field as keyof Metrics, e.target.value)}
+                          readOnly={isAutoCalc}
+                          className={`bg-secondary border-border text-foreground placeholder:text-muted-foreground/40 focus:border-brand-blue-light h-11 ${
+                            unit ? "pr-12" : ""
+                          } ${isAutoCalc ? "opacity-70 cursor-default" : ""}`}
+                        />
+                        {unit && (
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
+                            {unit}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Custom metrics group */}
+        {enabledCustomMetrics.length > 0 && (
           <div
-            key={group.title}
-            className="bg-[#0F172A] border border-[#1E293B] rounded-xl p-5"
-            style={{ borderLeftWidth: "3px", borderLeftColor: group.color }}
+            className="bg-card border border-border rounded-xl p-5"
+            style={{ borderLeftWidth: "3px", borderLeftColor: "#8B5CF6" }}
           >
             <div className="mb-4">
-              <h3 className="font-heading text-lg font-bold text-white tracking-wide">{group.title}</h3>
-              <p className="text-[#94A3B8] text-xs mt-0.5">{group.description}</p>
+              <h3 className="font-heading text-lg font-bold text-foreground tracking-wide">Métricas Personalizadas</h3>
+              <p className="text-muted-foreground text-xs mt-0.5">Métricas específicas do seu método de avaliação</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {group.fields.map((field) => {
-                const isAutoCalc = field === "assimetriaPercentual" && metrics.cmjEsquerdo !== "" && metrics.cmjDireito !== "";
-                return (
-                  <div key={field} className="space-y-2">
-                    <Label
-                      htmlFor={field}
-                      className="text-[#94A3B8] text-xs font-medium uppercase tracking-wider flex items-center gap-1"
-                    >
-                      {METRIC_LABELS[field]}
-                      {isAutoCalc && (
-                        <span className="text-brand-blue-light text-xs normal-case font-normal">(auto)</span>
-                      )}
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id={field}
-                        type="number"
-                        step="0.01"
-                        placeholder="—"
-                        value={metrics[field]}
-                        onChange={(e) => handleMetricChange(field, e.target.value)}
-                        readOnly={isAutoCalc}
-                        className={`bg-[#1E293B] border-[#1E293B] text-white placeholder:text-[#334155] focus:border-brand-blue-light h-11 ${
-                          METRIC_UNITS[field] ? "pr-12" : ""
-                        } ${isAutoCalc ? "opacity-70 cursor-default" : ""}`}
-                      />
-                      {METRIC_UNITS[field] && (
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#475569] text-xs">
-                          {METRIC_UNITS[field]}
-                        </span>
-                      )}
-                    </div>
+              {enabledCustomMetrics.map((m) => (
+                <div key={m.key} className="space-y-2">
+                  <Label
+                    htmlFor={`custom_${m.key}`}
+                    className="text-muted-foreground text-xs font-medium uppercase tracking-wider"
+                  >
+                    {m.label}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id={`custom_${m.key}`}
+                      type="number"
+                      step="0.01"
+                      placeholder="—"
+                      value={customMetricValues[m.key] ?? ""}
+                      onChange={(e) =>
+                        setCustomMetricValues((prev) => ({ ...prev, [m.key]: e.target.value }))
+                      }
+                      className={`bg-secondary border-border text-foreground placeholder:text-muted-foreground/40 focus:border-brand-blue-light h-11 ${
+                        m.unit ? "pr-12" : ""
+                      }`}
+                    />
+                    {m.unit && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
+                        {m.unit}
+                      </span>
+                    )}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
-        ))}
+        )}
 
-        <div className="flex items-center gap-2 p-3 bg-[#0F172A] border border-[#1E293B]/50 rounded-lg">
+        <div className="flex items-center gap-2 p-3 bg-card border border-border/50 rounded-lg">
           <Info className="w-4 h-4 text-brand-blue-light shrink-0" />
-          <p className="text-[#94A3B8] text-xs">
+          <p className="text-muted-foreground text-xs">
             Campos não preenchidos serão ignorados na análise. A assimetria é calculada automaticamente a partir do CMJ esquerdo e direito.
           </p>
         </div>
@@ -212,7 +293,7 @@ export default function NewAssessmentPage() {
             {saving ? "Salvando..." : "Salvar Avaliação"}
           </Button>
           <Link href={`/students/${id}`}>
-            <Button type="button" variant="outline" className="border-[#1E293B] text-[#94A3B8] hover:text-white hover:bg-[#1E293B] cursor-pointer h-12">
+            <Button type="button" variant="outline" className="border-border text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer h-12">
               Cancelar
             </Button>
           </Link>
