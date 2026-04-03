@@ -288,6 +288,18 @@ CREATE INDEX IF NOT EXISTS idx_share_links_student_id
   ON public.share_links(student_id);
 
 -- ============================================================
+-- MIGRAÇÃO: Background AI Analysis — status e Realtime
+-- Execute no SQL Editor do Supabase caso o schema já exista.
+-- ============================================================
+
+-- 1. Coluna de status da análise
+ALTER TABLE public.ai_analyses
+  ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'done';
+
+-- 2. Habilita Realtime na tabela para o AiAnalysisTab escutar mudanças
+ALTER PUBLICATION supabase_realtime ADD TABLE public.ai_analyses;
+
+-- ============================================================
 -- MIGRAÇÃO: Foto do atleta
 -- Execute os blocos abaixo no SQL Editor do Supabase caso o
 -- schema já tenha sido criado anteriormente.

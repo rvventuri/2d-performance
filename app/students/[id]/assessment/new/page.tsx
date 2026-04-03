@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect, useCallback, useTransition } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getStudent, createAssessment, getMetricConfigs, saveCustomMetricValues } from "@/lib/storage";
+import { getStudent, getMetricConfigs } from "@/lib/storage";
 import { Student, Metrics } from "@/lib/types";
+import { createAssessmentAction } from "../_actions";
 import { resolveMetricConfigs, getEnabledMetrics } from "@/domain/trainer/services/MetricConfigResolver";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,6 @@ const DEFAULT_METRIC_GROUPS = [
 ];
 
 export default function NewAssessmentPage() {
-  const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
@@ -60,18 +60,18 @@ export default function NewAssessmentPage() {
   });
   const [customMetricValues, setCustomMetricValues] = useState<Record<string, string>>({});
   const [resolvedMetrics, setResolvedMetrics] = useState<ReturnType<typeof resolveMetricConfigs>>([]);
-  const [saving, setSaving] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     Promise.all([
       getStudent(id),
       getMetricConfigs(),
     ]).then(([s, configs]) => {
-      if (!s) { router.push("/dashboard"); return; }
+      if (!s) { window.location.href = "/dashboard"; return; }
       setStudent(s);
       setResolvedMetrics(resolveMetricConfigs(configs));
     });
-  }, [id, router]);
+  }, [id]);
 
   const enabledDefaultKeys = new Set(
     getEnabledMetrics(resolvedMetrics)
@@ -103,7 +103,7 @@ export default function NewAssessmentPage() {
     });
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsedMetrics: Metrics = {
       cmj: metrics.cmj !== "" ? Number(metrics.cmj) : null,
@@ -118,25 +118,24 @@ export default function NewAssessmentPage() {
       saltoHorizontal: metrics.saltoHorizontal !== "" ? Number(metrics.saltoHorizontal) : null,
     };
 
-    setSaving(true);
-    try {
-      const assessment = await createAssessment({ studentId: id, date, metrics: parsedMetrics });
-
-      // Save custom metric values if any were entered
-      const parsedCustom: Record<string, number | null> = {};
-      for (const [key, val] of Object.entries(customMetricValues)) {
-        if (val !== "") parsedCustom[key] = Number(val);
-      }
-      if (Object.keys(parsedCustom).length > 0) {
-        await saveCustomMetricValues(assessment.id, parsedCustom);
-      }
-
-      toast.success("Avaliação registrada com sucesso!");
-      router.push(`/students/${id}`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao salvar avaliação");
-      setSaving(false);
+    const parsedCustom: Record<string, number | null> = {};
+    for (const [key, val] of Object.entries(customMetricValues)) {
+      if (val !== "") parsedCustom[key] = Number(val);
     }
+
+    startTransition(async () => {
+      try {
+        await createAssessmentAction({
+          studentId: id,
+          date,
+          metrics: parsedMetrics,
+          customMetrics: parsedCustom,
+        });
+        // redirect() inside the action navigates automatically
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Erro ao salvar avaliação");
+      }
+    });
   };
 
   if (!student) return (
@@ -286,11 +285,11 @@ export default function NewAssessmentPage() {
         <div className="flex gap-3">
           <Button
             type="submit"
-            disabled={saving}
+            disabled={isPending}
             className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer flex-1 h-12 text-base"
           >
-            {saving ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <ClipboardPlus className="w-5 h-5 mr-2" />}
-            {saving ? "Salvando..." : "Salvar Avaliação"}
+            {isPending ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <ClipboardPlus className="w-5 h-5 mr-2" />}
+            {isPending ? "Salvando..." : "Salvar Avaliação"}
           </Button>
           <Link href={`/students/${id}`}>
             <Button type="button" variant="outline" className="border-border text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer h-12">

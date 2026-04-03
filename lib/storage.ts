@@ -9,12 +9,15 @@ import type {
   MetricConfigRow,
 } from "./supabase/database.types";
 
+export type AiAnalysisStatus = 'pending' | 'running' | 'done' | 'error';
+
 export interface AiAnalysis {
   id: string;
   studentId: string;
   content: string;
   lastAssessmentId: string | null;
   generatedAt: string;
+  status: AiAnalysisStatus;
 }
 
 /** PostgREST: tabela não exposta / não existe no projeto — rode SCHEMA.sql no SQL Editor do Supabase. */
@@ -316,13 +319,15 @@ export async function getAiAnalysis(studentId: string): Promise<AiAnalysis | nul
     content: row.content,
     lastAssessmentId: row.last_assessment_id ?? null,
     generatedAt: row.generated_at,
+    status: (row.status ?? 'done') as AiAnalysisStatus,
   };
 }
 
 export async function saveAiAnalysis(
   studentId: string,
   content: string,
-  lastAssessmentId: string | null
+  lastAssessmentId: string | null,
+  status: AiAnalysisStatus = 'done'
 ): Promise<void> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -336,6 +341,27 @@ export async function saveAiAnalysis(
     user_id: user.id,
     content,
     last_assessment_id: lastAssessmentId,
+    status,
+  });
+  if (error) throw normalizeSupabaseError(error);
+}
+
+export async function createPendingAnalysis(
+  studentId: string,
+  lastAssessmentId: string
+): Promise<void> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Não autenticado");
+
+  await supabase.from("ai_analyses").delete().eq("student_id", studentId);
+
+  const { error } = await supabase.from("ai_analyses").insert({
+    student_id: studentId,
+    user_id: user.id,
+    content: "{}",
+    last_assessment_id: lastAssessmentId,
+    status: "pending",
   });
   if (error) throw normalizeSupabaseError(error);
 }

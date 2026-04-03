@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Student, Assessment, AiAnalysisData, AiMetricScore, MetricStatus } from "@/lib/types";
-import { getAiAnalysis, saveAiAnalysis } from "@/lib/storage";
+import { getAiAnalysis } from "@/lib/storage";
+import AnalysisLoading from "@/components/analysis-loading";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ResponsiveContainer, Tooltip,
@@ -17,7 +18,13 @@ import { formatDate } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Status = "loading-saved" | "generating" | "done" | "error" | "no-assessments";
+type Status =
+  | "loading-saved"
+  | "background-pending"
+  | "generating"
+  | "done"
+  | "error"
+  | "no-assessments";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -170,52 +177,27 @@ const CustomRadarTooltip = ({ active, payload }: { active?: boolean; payload?: A
   );
 };
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
-
-function AnalysisSkeleton() {
-  return (
-    <div className="animate-pulse space-y-4">
-      <div className="bg-card border border-border rounded-xl p-6">
-        <div className="flex items-center gap-6">
-          <div className="w-28 h-28 rounded-full bg-secondary" />
-          <div className="flex-1 space-y-3">
-            <div className="h-4 bg-secondary rounded w-1/3" />
-            <div className="h-6 bg-secondary rounded w-1/2" />
-            <div className="h-3 bg-secondary rounded w-full" />
-            <div className="h-3 bg-secondary rounded w-3/4" />
-          </div>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-card border border-border rounded-xl p-4 h-40">
-            <div className="h-3 bg-secondary rounded w-2/3 mb-3" />
-            <div className="h-7 bg-secondary rounded w-1/2 mb-4" />
-            <div className="h-2 bg-secondary rounded" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 interface Props { student: Student; assessments: Assessment[] }
 
 export default function AiAnalysisTab({ student, assessments }: Props) {
-  const [status, setStatus]       = useState<Status>("loading-saved");
-  const [data, setData]           = useState<AiAnalysisData | null>(null);
-  const [error, setError]         = useState("");
-  const [generatedAt, setGenAt]   = useState<string | null>(null);
-  const [copied, setCopied]       = useState(false);
-  const abortRef                  = useRef<AbortController | null>(null);
-  const latestAssessment          = assessments.length > 0 ? assessments[assessments.length - 1] : null;
+  const [status, setStatus]               = useState<Status>("loading-saved");
+  const [data, setData]                   = useState<AiAnalysisData | null>(null);
+  const [error, setError]                 = useState("");
+  const [generatedAt, setGenAt]           = useState<string | null>(null);
+  const [copied, setCopied]               = useState(false);
+  const [streamText, setStreamText]       = useState("");
+  const [generatingStartedAt, setGenStartedAt] = useState<string | null>(null);
+  const abortRef                          = useRef<AbortController | null>(null);
+  const latestAssessment                  = assessments.length > 0 ? assessments[assessments.length - 1] : null;
 
   const generate = useCallback(async () => {
     if (!latestAssessment) return;
     setData(null);
     setError("");
+    setStreamText("");
+    setGenStartedAt(new Date().toISOString());
     setStatus("generating");
     abortRef.current = new AbortController();
 
@@ -223,30 +205,75 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
       const res = await fetch("/api/analyze-athlete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student, assessments }),
+        body: JSON.stringify({ student, assessments, stream: true }),
         signal: abortRef.current.signal,
       });
 
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok || !json) {
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
         setError(json?.error || "Erro na análise. Tente novamente.");
         setStatus("error");
         return;
       }
 
-      const analysisData: AiAnalysisData = json;
-
-      setData(analysisData);
-
-      try {
-        await saveAiAnalysis(student.id, JSON.stringify(analysisData), latestAssessment.id);
-        setGenAt(new Date().toISOString());
-      } catch {
-        toast.error("Análise gerada, mas não foi possível salvar no banco.");
+      const reader = res.body?.getReader();
+      if (!reader) {
+        setError("Erro ao iniciar stream. Tente novamente.");
+        setStatus("error");
+        return;
       }
 
-      setStatus("done");
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Split on newlines; keep any incomplete line in the buffer
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr) continue;
+
+          try {
+            const event = JSON.parse(jsonStr) as {
+              text?: string;
+              done?: boolean;
+              data?: AiAnalysisData;
+              error?: string;
+            };
+
+            if (event.error) {
+              setError(event.error);
+              setStatus("error");
+              return;
+            }
+
+            if (event.text) {
+              setStreamText((prev) => prev + event.text);
+            }
+
+            if (event.done && event.data) {
+              setData(event.data);
+              setGenAt(new Date().toISOString());
+              setStatus("done");
+              return;
+            }
+          } catch {
+            // Malformed SSE chunk — skip
+          }
+        }
+      }
+
+      // Stream ended without a done event — treat as error
+      setError("Stream encerrado inesperadamente. Tente novamente.");
+      setStatus("error");
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       setError("Erro ao conectar com a API. Verifique sua ANTHROPIC_API_KEY.");
@@ -254,6 +281,7 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
     }
   }, [student, assessments, latestAssessment]);
 
+  // Initial load: check DB for existing or in-progress analysis
   useEffect(() => {
     if (assessments.length === 0) { setStatus("no-assessments"); return; }
 
@@ -263,10 +291,21 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
       try {
         const saved = await getAiAnalysis(student.id);
         if (cancelled) return;
-        const needsRegen = !saved || saved.lastAssessmentId !== latestAssessment?.id;
-        if (needsRegen) {
+
+        if (!saved) {
+          // No analysis record at all — trigger one from the tab (legacy path)
           generate();
-        } else {
+          return;
+        }
+
+        if (saved.status === "pending" || saved.status === "running") {
+          // Background job is in progress — show loading and poll
+          setStatus("background-pending");
+          return;
+        }
+
+        if (saved.status === "done" && saved.lastAssessmentId === latestAssessment?.id) {
+          // Analysis is current
           try {
             setData(JSON.parse(saved.content) as AiAnalysisData);
             setGenAt(saved.generatedAt);
@@ -274,7 +313,11 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
           } catch {
             generate();
           }
+          return;
         }
+
+        // Analysis is outdated or errored — re-generate from the tab
+        generate();
       } catch {
         if (!cancelled) generate();
       }
@@ -286,6 +329,40 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [student.id, latestAssessment?.id]);
+
+  // Polling: when a background analysis is in progress, check every 3s
+  useEffect(() => {
+    if (status !== "background-pending") return;
+
+    const interval = setInterval(async () => {
+      try {
+        const saved = await getAiAnalysis(student.id);
+
+        if (!saved || saved.status === "error") {
+          clearInterval(interval);
+          setError("A análise em background falhou. Tente gerar novamente.");
+          setStatus("error");
+          return;
+        }
+
+        if (saved.status === "done") {
+          clearInterval(interval);
+          try {
+            setData(JSON.parse(saved.content) as AiAnalysisData);
+            setGenAt(saved.generatedAt);
+            setStatus("done");
+          } catch {
+            setError("Erro ao processar resultado da análise. Tente novamente.");
+            setStatus("error");
+          }
+        }
+      } catch {
+        // Network hiccup — keep polling
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [status, student.id]);
 
   const handleRegenerate = () => { abortRef.current?.abort(); generate(); };
 
@@ -308,25 +385,26 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
     );
   }
 
-  // ── Generating ──
-  if (status === "loading-saved" || status === "generating") {
+  // ── Loading-saved (very brief — just checking DB) ──
+  if (status === "loading-saved") {
     return (
-      <div>
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-9 h-9 bg-gradient-to-br from-brand-blue-dark to-brand-blue-light rounded-xl flex items-center justify-center animate-pulse">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <p className="text-foreground font-semibold text-sm">
-              {status === "loading-saved" ? "Carregando análise..." : "Gerando análise com IA..."}
-            </p>
-            <p className="text-muted-foreground text-xs">
-              {status === "generating" ? "O preparador virtual está processando as métricas (~20s)" : "Buscando análise salva"}
-            </p>
-          </div>
+      <div className="flex items-center gap-3 py-10 justify-center">
+        <div className="w-8 h-8 bg-gradient-to-br from-brand-blue-dark to-brand-blue-light rounded-xl flex items-center justify-center animate-pulse">
+          <Sparkles className="w-4 h-4 text-white" />
         </div>
-        <AnalysisSkeleton />
+        <p className="text-muted-foreground text-sm">Carregando análise...</p>
       </div>
+    );
+  }
+
+  // ── Background pending or streaming generate ──
+  if (status === "generating" || status === "background-pending") {
+    return (
+      <AnalysisLoading
+        mode={status === "background-pending" ? "background" : "streaming"}
+        streamText={streamText}
+        startedAt={generatingStartedAt ?? undefined}
+      />
     );
   }
 

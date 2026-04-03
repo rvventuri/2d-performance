@@ -223,6 +223,15 @@ export interface AnalysisResult {
   data: AiAnalysisData;
 }
 
+export function parseAnalysisJson(raw: string): AiAnalysisData {
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start === -1 || end === -1) {
+    throw new Error("Resposta da IA não continha JSON válido. Tente novamente.");
+  }
+  return JSON.parse(raw.slice(start, end + 1)) as AiAnalysisData;
+}
+
 export async function runAnalysis(
   student: Student,
   assessments: Assessment[],
@@ -243,12 +252,42 @@ export async function runAnalysis(
     .map((b) => (b as { type: "text"; text: string }).text)
     .join("");
 
-  const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}");
-  if (start === -1 || end === -1) {
-    throw new Error("Resposta da IA não continha JSON válido. Tente novamente.");
+  const data = parseAnalysisJson(raw);
+  return { data };
+}
+
+/**
+ * Streaming variant — yields text chunks as they arrive from Claude.
+ * The caller is responsible for accumulating the full text, parsing JSON,
+ * and persisting the result.
+ */
+export async function* streamAnalysis(
+  student: Student,
+  assessments: Assessment[],
+  metrics: ResolvedMetricConfig[],
+  trainerContext: string
+): AsyncGenerator<string, AiAnalysisData, unknown> {
+  const anthropic = getClient();
+  const prompt = buildAnalysisPrompt(student, assessments, metrics, trainerContext);
+
+  let accumulated = "";
+
+  const stream = anthropic.messages.stream({
+    model: "claude-sonnet-4-6",
+    max_tokens: 7000,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  for await (const event of stream) {
+    if (
+      event.type === "content_block_delta" &&
+      event.delta.type === "text_delta"
+    ) {
+      const chunk = event.delta.text;
+      accumulated += chunk;
+      yield chunk;
+    }
   }
 
-  const data = JSON.parse(raw.slice(start, end + 1)) as AiAnalysisData;
-  return { data };
+  return parseAnalysisJson(accumulated);
 }
