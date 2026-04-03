@@ -795,6 +795,10 @@ async function pooled<T>(
 // ─── Route ────────────────────────────────────────────────────────────────────
 
 export async function POST() {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Disponível apenas em ambiente de desenvolvimento." }, { status: 403 });
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -962,6 +966,10 @@ export async function POST() {
 }
 
 export async function DELETE() {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Disponível apenas em ambiente de desenvolvimento." }, { status: 403 });
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

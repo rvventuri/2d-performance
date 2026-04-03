@@ -1,8 +1,8 @@
 import { TrainerProfile } from "@/lib/types";
 import { ITrainerProfileRepository } from "@/domain/trainer/repositories/ITrainerProfileRepository";
+import type { TrainerProfileRow } from "@/lib/supabase/database.types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToTrainerProfile(row: any): TrainerProfile {
+function rowToTrainerProfile(row: TrainerProfileRow): TrainerProfile {
   return {
     id: row.id,
     userId: row.user_id,
@@ -32,7 +32,7 @@ export class SupabaseTrainerProfileRepository
       if (error.code === "PGRST116") return null;
       throw new Error(error.message);
     }
-    return rowToTrainerProfile(data);
+    return rowToTrainerProfile(data as TrainerProfileRow);
   }
 
   async upsert(
@@ -57,6 +57,6 @@ export class SupabaseTrainerProfileRepository
       .single();
 
     if (error) throw new Error(error.message);
-    return rowToTrainerProfile(data);
+    return rowToTrainerProfile(data as TrainerProfileRow);
   }
 }

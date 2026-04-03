@@ -1,5 +1,13 @@
 import { createClient } from "@/lib/supabase/client";
 import { Student, Assessment, Metrics, MetricConfig, TrainerProfile } from "./types";
+import type {
+  StudentRow,
+  AssessmentRow,
+  CustomMetricValueRow,
+  AiAnalysisRow,
+  TrainerProfileRow,
+  MetricConfigRow,
+} from "./supabase/database.types";
 
 export interface AiAnalysis {
   id: string;
@@ -34,8 +42,7 @@ function isNoRowError(error: { code?: string; message?: string }) {
 
 // ─── Mappers ─────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToStudent(row: any): Student {
+function rowToStudent(row: StudentRow): Student {
   return {
     id: row.id,
     name: row.name,
@@ -48,8 +55,7 @@ function rowToStudent(row: any): Student {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToAssessment(row: any): Assessment {
+function rowToAssessment(row: AssessmentRow): Assessment {
   const metrics: Metrics = {
     cmj: row.cmj,
     sj: row.sj,
@@ -228,7 +234,7 @@ export async function getStudentAssessments(
     .in("assessment_id", ids);
 
   const cvByAssessment: Record<string, Record<string, number | null>> = {};
-  for (const cv of cvRows ?? []) {
+  for (const cv of (cvRows ?? []) as CustomMetricValueRow[]) {
     if (!cvByAssessment[cv.assessment_id]) cvByAssessment[cv.assessment_id] = {};
     cvByAssessment[cv.assessment_id][cv.metric_key] = cv.value ?? null;
   }
@@ -303,12 +309,13 @@ export async function getAiAnalysis(studentId: string): Promise<AiAnalysis | nul
     if (isNoRowError(error)) return null;
     throw normalizeSupabaseError(error);
   }
+  const row = data as AiAnalysisRow;
   return {
-    id: data.id,
-    studentId: data.student_id,
-    content: data.content,
-    lastAssessmentId: data.last_assessment_id ?? null,
-    generatedAt: data.generated_at,
+    id: row.id,
+    studentId: row.student_id,
+    content: row.content,
+    lastAssessmentId: row.last_assessment_id ?? null,
+    generatedAt: row.generated_at,
   };
 }
 
@@ -348,15 +355,16 @@ export async function getTrainerProfile(): Promise<TrainerProfile | null> {
     if (isNoRowError(error)) return null;
     return null;
   }
+  const row = data as TrainerProfileRow;
   return {
-    id: data.id,
-    userId: data.user_id,
-    coachingPhilosophy: data.coaching_philosophy ?? "",
-    sportContext: data.sport_context ?? "",
-    athleteProfiles: data.athlete_profiles ?? "",
-    priorityFocus: data.priority_focus ?? "",
-    customInstructions: data.custom_instructions ?? "",
-    updatedAt: data.updated_at,
+    id: row.id,
+    userId: row.user_id,
+    coachingPhilosophy: row.coaching_philosophy ?? "",
+    sportContext: row.sport_context ?? "",
+    athleteProfiles: row.athlete_profiles ?? "",
+    priorityFocus: row.priority_focus ?? "",
+    customInstructions: row.custom_instructions ?? "",
+    updatedAt: row.updated_at,
   };
 }
 
@@ -370,22 +378,25 @@ export async function getMetricConfigs(): Promise<MetricConfig[]> {
     .eq("user_id", user.id)
     .order("display_order", { ascending: true });
   if (error) return [];
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    userId: row.user_id,
-    metricKey: row.metric_key,
-    label: row.label,
-    unit: row.unit ?? "",
-    higherIsBetter: row.higher_is_better,
-    isCustom: row.is_custom,
-    isEnabled: row.is_enabled,
-    benchRecreational: row.bench_recreational ?? null,
-    benchTrained: row.bench_trained ?? null,
-    benchElite: row.bench_elite ?? null,
-    weight: Number(row.weight),
-    displayOrder: row.display_order ?? 0,
-    createdAt: row.created_at,
-  }));
+  return (data ?? []).map((r) => {
+    const row = r as MetricConfigRow;
+    return {
+      id: row.id,
+      userId: row.user_id,
+      metricKey: row.metric_key,
+      label: row.label,
+      unit: row.unit ?? "",
+      higherIsBetter: row.higher_is_better,
+      isCustom: row.is_custom,
+      isEnabled: row.is_enabled,
+      benchRecreational: row.bench_recreational ?? null,
+      benchTrained: row.bench_trained ?? null,
+      benchElite: row.bench_elite ?? null,
+      weight: Number(row.weight),
+      displayOrder: row.display_order ?? 0,
+      createdAt: row.created_at,
+    };
+  });
 }
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────────

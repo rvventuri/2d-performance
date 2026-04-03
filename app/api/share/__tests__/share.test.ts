@@ -140,9 +140,9 @@ describe("POST /api/share", () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(body.token).toBe("tok123");
-    expect(body.hasPassword).toBe(false);
-    expect(body.url).toContain("/share/tok123");
+    expect(body.data.token).toBe("tok123");
+    expect(body.data.hasPassword).toBe(false);
+    expect(body.data.url).toContain("/share/tok123");
     expect(bcrypt.hash).not.toHaveBeenCalled();
   });
 
@@ -158,7 +158,7 @@ describe("POST /api/share", () => {
     const body = await res.json();
 
     expect(bcrypt.hash).toHaveBeenCalledWith("secreta123", 10);
-    expect(body.hasPassword).toBe(true);
+    expect(body.data.hasPassword).toBe(true);
   });
 
   it("retorna 500 quando insert falha", async () => {
@@ -193,14 +193,14 @@ describe("GET /api/share", () => {
     expect(res.status).toBe(400);
   });
 
-  it("retorna null quando link não existe", async () => {
+  it("retorna data:null quando link não existe", async () => {
     vi.mocked(createServerClient).mockResolvedValue(
       makeServerSupabase({ linkData: null }) as never
     );
     const req = makeRequest("GET", "http://localhost/api/share?studentId=student-1");
     const res = await GET(req);
     const body = await res.json();
-    expect(body).toBeNull();
+    expect(body.data).toBeNull();
   });
 
   it("retorna metadados com hasPassword=false para link público", async () => {
@@ -212,9 +212,9 @@ describe("GET /api/share", () => {
     const req = makeRequest("GET", "http://localhost/api/share?studentId=student-1");
     const res = await GET(req);
     const body = await res.json();
-    expect(body.hasPassword).toBe(false);
-    expect(body.token).toBe("tok-pub");
-    expect(body.url).toContain("/share/tok-pub");
+    expect(body.data.hasPassword).toBe(false);
+    expect(body.data.token).toBe("tok-pub");
+    expect(body.data.url).toContain("/share/tok-pub");
   });
 
   it("retorna hasPassword=true para link com senha", async () => {
@@ -226,7 +226,7 @@ describe("GET /api/share", () => {
     const req = makeRequest("GET", "http://localhost/api/share?studentId=student-1");
     const res = await GET(req);
     const body = await res.json();
-    expect(body.hasPassword).toBe(true);
+    expect(body.data.hasPassword).toBe(true);
   });
 });
 
@@ -252,7 +252,23 @@ describe("DELETE /api/share", () => {
   });
 
   it("retorna 204 ao revogar com sucesso", async () => {
-    vi.mocked(createServerClient).mockResolvedValue(makeServerSupabase() as never);
+    const supabaseMock = makeServerSupabase();
+    // Support multiple chained .eq() calls; last call resolves with no error
+    const deleteQuery: Record<string, unknown> = {};
+    deleteQuery.delete = vi.fn().mockReturnValue(deleteQuery);
+    deleteQuery.eq = vi.fn().mockImplementation(() => {
+      // Return self until the awaited result is needed
+      const partial = { ...deleteQuery };
+      // Allow one more .eq() chained call which resolves to { error: null }
+      partial.eq = vi.fn().mockResolvedValue({ error: null });
+      return partial;
+    });
+    supabaseMock.from = vi.fn((table: string) => {
+      if (table === "share_links") return deleteQuery;
+      // fallback to auth mock
+      return { auth: supabaseMock.auth };
+    });
+    vi.mocked(createServerClient).mockResolvedValue(supabaseMock as never);
     const req = makeRequest("DELETE", "http://localhost/api/share?studentId=student-1");
     const res = await DELETE(req);
     expect(res.status).toBe(204);

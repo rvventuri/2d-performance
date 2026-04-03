@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import MetricChart from "@/components/metric-chart";
-import { Assessment, AiAnalysisData, METRIC_LABELS } from "@/lib/types";
+import { Assessment, AiAnalysisData, ShareAthleteData, METRIC_LABELS } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { use } from "react";
 import {
@@ -21,17 +21,6 @@ import {
   Target,
   Activity,
 } from "lucide-react";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-interface AthletePublicData {
-  name: string;
-  age: number;
-  weight: number;
-  height: number;
-  objective: string;
-  photoUrl: string | null;
-}
 
 // ─── Metric colour map ────────────────────────────────────────────────────────
 
@@ -182,7 +171,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
 
   const [phase, setPhase] = useState<Phase>("loading");
   const [pwError, setPwError] = useState<string | undefined>();
-  const [student, setStudent] = useState<AthletePublicData | null>(null);
+  const [student, setStudent] = useState<ShareAthleteData["student"] | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [aiAnalysis, setAiAnalysis] = useState<AiAnalysisData | null>(null);
 

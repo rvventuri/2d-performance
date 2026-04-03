@@ -44,7 +44,11 @@ export default function ShareDialog({ open, onClose, studentId, studentName }: S
     setCreatingNew(false);
     fetch(`/api/share?studentId=${studentId}`)
       .then((r) => r.json())
-      .then((data) => { setExisting(data ?? null); if (!data) setCreatingNew(true); })
+      .then((res) => {
+        const link = res?.data ?? null;
+        setExisting(link);
+        if (!link) setCreatingNew(true);
+      })
       .catch(() => { setExisting(null); setCreatingNew(true); })
       .finally(() => setLoading(false));
   }, [open, studentId]);
@@ -58,9 +62,9 @@ export default function ShareDialog({ open, onClose, studentId, studentName }: S
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId, ...(withPassword && password.trim() ? { password: password.trim() } : {}) }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erro ao gerar link");
-      setExisting(data);
+      const res2 = await res.json();
+      if (!res.ok) throw new Error(res2.error ?? "Erro ao gerar link");
+      setExisting(res2.data ?? null);
       setCreatingNew(false);
       setPassword("");
       toast.success("Link gerado!");
