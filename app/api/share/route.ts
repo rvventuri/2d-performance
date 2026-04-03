@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
   }
 
   console.log(`${TAG} link criado token=${link.token}`);
-  const baseUrl = request.nextUrl.origin;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
   return NextResponse.json({
     token: link.token,
     url: `${baseUrl}/share/${link.token}`,
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
 
   if (!link) return NextResponse.json(null);
 
-  const baseUrl = request.nextUrl.origin;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
   return NextResponse.json({
     token: link.token,
     url: `${baseUrl}/share/${link.token}`,
