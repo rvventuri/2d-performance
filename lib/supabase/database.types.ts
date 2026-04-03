@@ -52,6 +52,9 @@ export interface AiAnalysisRow {
   last_assessment_id: string | null;
   generated_at: string;
   status: string; // 'pending' | 'running' | 'done' | 'error'
+  duration_ms: number | null;
+  input_tokens: number | null;
+  output_tokens: number | null;
 }
 
 export interface TrainerProfileRow {

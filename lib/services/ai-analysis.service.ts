@@ -221,6 +221,9 @@ Inclua apenas métricas com dados disponíveis. Máximo 3 strengths, 3 alerts, 4
 
 export interface AnalysisResult {
   data: AiAnalysisData;
+  durationMs: number;
+  inputTokens: number;
+  outputTokens: number;
 }
 
 export function parseAnalysisJson(raw: string): AiAnalysisData {
@@ -241,11 +244,13 @@ export async function runAnalysis(
   const anthropic = getClient();
   const prompt = buildAnalysisPrompt(student, assessments, metrics, trainerContext);
 
+  const startTime = Date.now();
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 7000,
     messages: [{ role: "user", content: prompt }],
   });
+  const durationMs = Date.now() - startTime;
 
   const raw = message.content
     .filter((b) => b.type === "text")
@@ -253,25 +258,31 @@ export async function runAnalysis(
     .join("");
 
   const data = parseAnalysisJson(raw);
-  return { data };
+  return {
+    data,
+    durationMs,
+    inputTokens: message.usage.input_tokens,
+    outputTokens: message.usage.output_tokens,
+  };
 }
 
 /**
  * Streaming variant — yields text chunks as they arrive from Claude.
  * The caller is responsible for accumulating the full text, parsing JSON,
- * and persisting the result.
+ * and persisting the result. The generator return value includes usage metrics.
  */
 export async function* streamAnalysis(
   student: Student,
   assessments: Assessment[],
   metrics: ResolvedMetricConfig[],
   trainerContext: string
-): AsyncGenerator<string, AiAnalysisData, unknown> {
+): AsyncGenerator<string, AnalysisResult, unknown> {
   const anthropic = getClient();
   const prompt = buildAnalysisPrompt(student, assessments, metrics, trainerContext);
 
   let accumulated = "";
 
+  const startTime = Date.now();
   const stream = anthropic.messages.stream({
     model: "claude-sonnet-4-6",
     max_tokens: 7000,
@@ -289,5 +300,13 @@ export async function* streamAnalysis(
     }
   }
 
-  return parseAnalysisJson(accumulated);
+  const durationMs = Date.now() - startTime;
+  const finalMessage = await stream.finalMessage();
+
+  return {
+    data: parseAnalysisJson(accumulated),
+    durationMs,
+    inputTokens: finalMessage.usage.input_tokens,
+    outputTokens: finalMessage.usage.output_tokens,
+  };
 }

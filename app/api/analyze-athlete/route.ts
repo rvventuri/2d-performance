@@ -188,8 +188,8 @@ export async function POST(req: NextRequest) {
             const next = await gen.next();
 
             if (next.done) {
-              // next.value is AiAnalysisData (the generator's return value)
-              const analysisData = next.value;
+              // next.value is AnalysisResult (the generator's return value)
+              const { data: analysisData, durationMs, inputTokens, outputTokens } = next.value;
 
               // Persist to DB
               await supabase
@@ -202,6 +202,9 @@ export async function POST(req: NextRequest) {
                 content: JSON.stringify(analysisData),
                 last_assessment_id: latestAssessment?.id ?? null,
                 status: "done",
+                duration_ms: durationMs,
+                input_tokens: inputTokens,
+                output_tokens: outputTokens,
               });
 
               send({ done: true, data: analysisData });
@@ -242,7 +245,7 @@ export async function POST(req: NextRequest) {
   // ── Non-streaming path (background server calls) ───────────────────────────
 
   try {
-    const { data } = await runAnalysis(student, assessments, resolvedMetrics, trainerContext);
+    const { data, durationMs, inputTokens, outputTokens } = await runAnalysis(student, assessments, resolvedMetrics, trainerContext);
 
     // Persist result with status 'done'
     const latestAssessment = assessments[assessments.length - 1];
@@ -253,6 +256,9 @@ export async function POST(req: NextRequest) {
       content: JSON.stringify(data),
       last_assessment_id: latestAssessment?.id ?? null,
       status: "done",
+      duration_ms: durationMs,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
     });
 
     return NextResponse.json(data);

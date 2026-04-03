@@ -58,6 +58,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  if (pathname.startsWith("/admin")) {
+    const isAdmin = user.app_metadata?.is_admin === true;
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
   return supabaseResponse;
 }
 

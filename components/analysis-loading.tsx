@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import {
-  Database, BarChart2, Target, TrendingUp, Shield, Zap, Sparkles,
+  Database, BarChart2, Target, TrendingUp, Shield, Zap, Sparkles, CheckCircle2,
 } from "lucide-react";
 
 // ─── Stage definitions ────────────────────────────────────────────────────────
@@ -70,7 +70,6 @@ interface Props {
 export default function AnalysisLoading({ mode, streamText = "", startedAt }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const [activeStage, setActiveStage] = useState(0);
-  const [prevStage, setPrevStage] = useState(-1);
   const consoleRef = useRef<HTMLDivElement>(null);
 
   const [startTime] = useState<number>(() => startedAt ? new Date(startedAt).getTime() : Date.now());
@@ -87,10 +86,7 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
       for (let i = STAGES.length - 1; i >= 0; i--) {
         if (secs >= STAGES[i].startAt) { next = i; break; }
       }
-      setActiveStage((prev) => {
-        if (next !== prev) setPrevStage(prev);
-        return next;
-      });
+      setActiveStage(next);
     };
 
     tick();
@@ -106,8 +102,6 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
   }, [streamText]);
 
   const progress = Math.min((elapsed / TOTAL_ESTIMATED) * 100, 96);
-  const stage = STAGES[activeStage];
-  const Icon = stage.icon;
 
   const formatTime = (s: number) => {
     if (s < 60) return `${s}s`;
@@ -149,65 +143,80 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
             </div>
           </div>
 
-          {/* Active stage */}
-          <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-brand-blue-mid/15 border border-brand-blue-light/20 flex items-center justify-center shrink-0 mt-0.5">
-              <Icon className="w-6 h-6 text-brand-blue-light animate-pulse" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-foreground font-semibold text-base leading-tight mb-1">
-                {stage.label}
-                <span className="inline-flex gap-0.5 ml-2 relative top-[-1px]">
-                  <span className="w-1 h-1 rounded-full bg-brand-blue-light animate-bounce [animation-delay:0ms]" />
-                  <span className="w-1 h-1 rounded-full bg-brand-blue-light animate-bounce [animation-delay:150ms]" />
-                  <span className="w-1 h-1 rounded-full bg-brand-blue-light animate-bounce [animation-delay:300ms]" />
-                </span>
-              </p>
-              <p className="text-muted-foreground text-sm">{stage.detail}</p>
-            </div>
-          </div>
-
-          {/* Stage pipeline */}
-          <div className="grid grid-cols-7 gap-1">
+          {/* Vertical stepper */}
+          <div className="space-y-0">
             {STAGES.map((s, i) => {
               const StageIcon = s.icon;
               const isDone = i < activeStage;
               const isActive = i === activeStage;
-              const isPending = i > activeStage;
+              const isLast = i === STAGES.length - 1;
 
               return (
-                <div key={i} className="flex flex-col items-center gap-1.5">
-                  <div
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 ${
-                      isDone
-                        ? "bg-brand-blue-mid/20 border border-brand-blue-light/30"
-                        : isActive
-                        ? "bg-brand-blue-mid/25 border border-brand-blue-light/50 scale-110"
-                        : "bg-secondary border border-border/50"
-                    }`}
-                  >
-                    <StageIcon
-                      className={`w-3.5 h-3.5 transition-colors duration-500 ${
-                        isDone
-                          ? "text-brand-blue-light"
-                          : isActive
-                          ? "text-brand-blue-light"
-                          : "text-muted-foreground/30"
-                      }`}
-                    />
+                <div key={i}>
+                  <div className="flex items-start gap-3">
+                    {/* Icon column */}
+                    <div className="flex flex-col items-center shrink-0">
+                      <div
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 ${
+                          isDone
+                            ? "bg-brand-blue-mid/15 border border-brand-blue-light/25"
+                            : isActive
+                            ? "bg-brand-blue-mid/20 border border-brand-blue-light/40"
+                            : "bg-secondary border border-border/40"
+                        }`}
+                      >
+                        {isDone ? (
+                          <CheckCircle2 className="w-4 h-4 text-brand-blue-light transition-colors duration-500" />
+                        ) : (
+                          <StageIcon
+                            className={`w-4 h-4 transition-colors duration-500 ${
+                              isActive
+                                ? "text-brand-blue-light animate-pulse"
+                                : "text-muted-foreground/25"
+                            }`}
+                          />
+                        )}
+                      </div>
+                      {/* Vertical connector */}
+                      {!isLast && (
+                        <div
+                          className={`w-0.5 h-4 rounded-full mt-1 transition-all duration-700 ${
+                            isDone
+                              ? "bg-brand-blue-light/40"
+                              : isActive
+                              ? "bg-brand-blue-light/20"
+                              : "bg-border/30"
+                          }`}
+                          aria-hidden="true"
+                        />
+                      )}
+                    </div>
+
+                    {/* Text column */}
+                    <div className={`flex-1 min-w-0 ${isLast ? "pb-0" : "pb-4"}`}>
+                      <p
+                        className={`text-sm leading-tight transition-all duration-500 ${
+                          isDone
+                            ? "text-muted-foreground"
+                            : isActive
+                            ? "text-foreground font-semibold"
+                            : "text-muted-foreground/35"
+                        }`}
+                      >
+                        {s.label}
+                        {isActive && (
+                          <span className="inline-flex gap-0.5 ml-2 relative top-[-1px]">
+                            <span className="w-1 h-1 rounded-full bg-brand-blue-light animate-bounce [animation-delay:0ms]" />
+                            <span className="w-1 h-1 rounded-full bg-brand-blue-light animate-bounce [animation-delay:150ms]" />
+                            <span className="w-1 h-1 rounded-full bg-brand-blue-light animate-bounce [animation-delay:300ms]" />
+                          </span>
+                        )}
+                      </p>
+                      {isActive && (
+                        <p className="text-muted-foreground text-xs mt-0.5">{s.detail}</p>
+                      )}
+                    </div>
                   </div>
-                  {/* Connector line between stages */}
-                  {i < STAGES.length - 1 && (
-                    <div
-                      className={`hidden sm:block absolute`}
-                      aria-hidden="true"
-                    />
-                  )}
-                  <div
-                    className={`h-0.5 w-full rounded-full transition-all duration-700 ${
-                      isDone ? "bg-brand-blue-light/50" : isActive ? "bg-brand-blue-light/30" : "bg-border/40"
-                    }`}
-                  />
                 </div>
               );
             })}

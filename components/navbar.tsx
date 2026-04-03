@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Users, Plus, LogOut, ChevronDown, Settings, Sun, Moon } from "lucide-react";
+import { Users, Plus, LogOut, ChevronDown, Settings, Sun, Moon, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -39,6 +39,7 @@ export default function Navbar() {
 
   const emailInitial = user?.email?.[0]?.toUpperCase() ?? "?";
   const emailShort = user?.email ?? "";
+  const isAdmin = user?.app_metadata?.is_admin === true;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
@@ -85,6 +86,22 @@ export default function Navbar() {
                 Configurações
               </Button>
             </Link>
+
+            {isAdmin && (
+              <Link href="/admin">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer transition-colors duration-150 hidden sm:flex",
+                    pathname.startsWith("/admin") && "text-foreground bg-accent"
+                  )}
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  Admin
+                </Button>
+              </Link>
+            )}
 
             {mounted && (
               <Button

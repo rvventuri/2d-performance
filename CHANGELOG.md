@@ -6,6 +6,21 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ---
 
+## [Unreleased] — 2026-04-03 (2)
+
+### Added
+- **Painel Admin**: nova seção `/admin` com métricas de uso da plataforma (trainers, alunos, avaliações, análises de IA por status, top trainers), acessível apenas a usuários com `app_metadata.is_admin = true`
+- **Proteção de rota Admin**: `proxy.ts` redireciona para `/dashboard` usuários sem flag de admin ao tentar acessar `/admin`
+- **Link Admin na Navbar**: ícone de escudo aparece apenas para administradores; estado ativo sincronizado com pathname
+- **Monitoramento de uso da IA**: colunas `duration_ms`, `input_tokens` e `output_tokens` adicionadas à tabela `ai_analyses`; valores capturados e persistidos nas rotas `POST /api/analyze-athlete` e na Server Action de avaliação
+- **Tipos de domínio Admin**: interfaces `AdminTrainerStat`, `AiUsageStats` e `AdminMetrics` em `lib/types.ts`
+- **Repositório e Use Cases Admin**: `domain/admin/`, `application/admin/` e `infrastructure/supabase/AdminRepository.ts` seguindo a arquitetura DDD
+- Endpoint de desenvolvimento `/api/dev/make-admin` para promover usuários a admin em ambiente local
+
+### Changed
+- `components/analysis-loading.tsx`: pipeline de estágios redesenhado de grade horizontal para **stepper vertical** com ícone `CheckCircle2` nos estágios concluídos e conector animado entre etapas; estado `prevStage` e variável `stage`/`Icon` redundantes removidos
+- `lib/services/ai-analysis.service.ts`: `streamAnalysis` agora retorna `AnalysisResult` (com métricas de uso) em vez de `AiAnalysisData` diretamente; `runAnalysis` enriquecido com `durationMs`, `inputTokens` e `outputTokens`
+
 ## [Unreleased] — 2026-04-03
 
 ### Added

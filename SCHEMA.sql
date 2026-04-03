@@ -313,6 +313,16 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('athlete-photos', 'athlete-photos', true)
 ON CONFLICT DO NOTHING;
 
+-- ============================================================
+-- MIGRAÇÃO: AI Usage Monitoring — duração e tokens
+-- Execute no SQL Editor do Supabase caso o schema já exista.
+-- ============================================================
+
+ALTER TABLE public.ai_analyses
+  ADD COLUMN IF NOT EXISTS duration_ms   INTEGER,
+  ADD COLUMN IF NOT EXISTS input_tokens  INTEGER,
+  ADD COLUMN IF NOT EXISTS output_tokens INTEGER;
+
 -- 3. Políticas RLS do bucket
 DO $$
 BEGIN

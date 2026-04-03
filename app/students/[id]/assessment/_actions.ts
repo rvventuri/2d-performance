@@ -150,7 +150,7 @@ async function runBackgroundAnalysis(
     }
 
     // Run analysis
-    const { data: analysisData } = await runAnalysis(
+    const { data: analysisData, durationMs, inputTokens, outputTokens } = await runAnalysis(
       student,
       assessmentsWithCustom,
       resolvedMetrics,
@@ -167,6 +167,9 @@ async function runBackgroundAnalysis(
       content: JSON.stringify(analysisData),
       last_assessment_id: latestAssessment.id,
       status: "done",
+      duration_ms: durationMs,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
     });
   } catch {
     // Mark as error so the UI can surface a retry button

@@ -179,3 +179,30 @@ export interface ResolvedMetricConfig extends DefaultMetricSpec {
 
 // Re-exported from lib/constants.ts — import directly from there for new code.
 export { METRIC_UNITS } from "./constants";
+
+// ─── Admin ────────────────────────────────────────────────────────────────────
+
+export interface AdminTrainerStat {
+  userId: string;
+  name: string;
+  email: string;
+  studentCount: number;
+  assessmentCount: number;
+}
+
+export interface AiUsageStats {
+  avgDurationMs: number | null;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+}
+
+export interface AdminMetrics {
+  totalTrainers: number;
+  newTrainersLast30Days: number;
+  totalStudents: number;
+  totalAssessments: number;
+  aiAnalysesByStatus: { done: number; pending: number; running: number; error: number };
+  aiUsageStats: AiUsageStats;
+  signupsPerMonth: { month: string; count: number }[];
+  topTrainers: AdminTrainerStat[];
+}
