@@ -1,0 +1,74 @@
+---
+description: Arquitetura DDD do projeto — fluxo obrigatório de camadas ao criar ou editar features
+alwaysApply: true
+---
+
+# Arquitetura em Camadas (DDD)
+
+Este projeto segue separação estrita de responsabilidades:
+
+```
+domain/          → lógica de negócio pura (sem I/O)
+application/     → use cases (orquestram repositórios)
+infrastructure/  → implementações concretas (Supabase)
+app/             → Next.js pages, API routes, Server Actions
+components/      → UI
+```
+
+## Fluxo para Nova Feature
+
+1. **Interface do repositório** em `domain/X/repositories/IX.ts`
+2. **Use case** em `application/X/XUseCase.ts` (recebe repositório via construtor)
+3. **Implementação Supabase** em `infrastructure/supabase/XRepository.ts`
+4. **Consumo** em Server Component ou Server Action em `app/`
+
+## Regras Rígidas
+
+- **Nunca** colocar lógica de negócio em `app/`, `components/` ou `lib/`
+- **Nunca** importar Supabase diretamente em `domain/` ou `application/`
+- Use cases recebem repositórios via injeção de dependência no construtor
+- Value objects ficam em `domain/X/value-objects/`
+- Serviços de domínio puros ficam em `domain/X/services/`
+
+## Exemplo Correto
+
+```typescript
+// domain/student/repositories/IStudentRepository.ts
+export interface IStudentRepository {
+  getAll(): Promise<Student[]>;
+  getById(id: string): Promise<Student | null>;
+}
+
+// application/student/GetStudentsUseCase.ts
+export class GetStudentsUseCase {
+  constructor(private readonly repo: IStudentRepository) {}
+  async execute(userId: string): Promise<Student[]> {
+    return this.repo.getAll();
+  }
+}
+
+// infrastructure/supabase/StudentRepository.ts
+export class SupabaseStudentRepository implements IStudentRepository {
+  constructor(private readonly supabase: any, private readonly userId: string) {}
+  async getAll() { /* query supabase */ }
+}
+
+// app/dashboard/page.tsx (Server Component)
+const supabase = await createClient();
+const { data: { user } } = await supabase.auth.getUser();
+const repo = new SupabaseStudentRepository(supabase, user.id);
+const useCase = new GetStudentsUseCase(repo);
+const students = await useCase.execute(user.id);
+```
+
+## Mappers (snake_case ↔ camelCase)
+
+Ficam dentro do arquivo do repositório em `infrastructure/supabase/`:
+
+```typescript
+function rowToStudent(row: StudentRow): Student {
+  return { id: row.id, name: row.name, photoUrl: row.photo_url ?? null };
+}
+```
+
+Não duplicar mappers — importar do mesmo arquivo se necessário.

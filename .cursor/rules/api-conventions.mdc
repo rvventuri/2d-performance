@@ -1,0 +1,71 @@
+---
+description: Convenções para rotas de API em app/api/ — respostas, auth, guards dev-only
+globs: app/api/**/*.ts
+alwaysApply: false
+---
+
+# Convenções de API Routes
+
+## Formato de resposta
+
+Sempre usar os helpers de `lib/api.ts`. Nunca usar `NextResponse.json()` diretamente:
+
+```typescript
+import { apiOk, apiError } from "@/lib/api";
+
+// Sucesso → { data: T }
+return apiOk(result);
+return apiOk(result, 201);
+
+// Erro → { error: string }
+return apiError("Não autorizado", 401);
+return apiError("Recurso não encontrado", 404);
+return apiError("Erro interno", 500);
+```
+
+## Autenticação obrigatória
+
+Toda rota autenticada deve verificar sessão como **primeira operação**:
+
+```typescript
+export async function POST(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return apiError("Não autorizado", 401);
+
+  // resto do handler...
+}
+```
+
+## Guard para rotas dev-only
+
+Rotas de seed e ferramentas de desenvolvimento devem checar o ambiente:
+
+```typescript
+if (process.env.NODE_ENV === "production") {
+  return apiError("Não disponível em produção", 403);
+}
+```
+
+## maxDuration
+
+Máximo recomendado: **120 segundos**. Nunca usar 300 para rotas de análise comuns.
+Usar AbortSignal interno se a operação puder travar:
+
+```typescript
+export const maxDuration = 120;
+```
+
+## Autenticação por Bearer token (background jobs)
+
+A rota `/api/analyze-athlete` aceita Bearer token para chamadas server-to-server:
+
+```typescript
+const authHeader = req.headers.get("authorization");
+const token = authHeader?.replace("Bearer ", "");
+// usar supabase.auth.getUser(token) para validar
+```
+
+## Logs em produção
+
+Não usar `console.log` com dados do usuário (`user.id`, tokens, IDs). Usar `console.error` apenas para falhas reais.

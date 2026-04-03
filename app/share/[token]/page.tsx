@@ -177,7 +177,6 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
 
   const fetchData = useCallback(
     async (password?: string) => {
-      setPhase("loading");
       try {
         const body: Record<string, string> = {};
         if (password) body.password = password;
@@ -212,7 +211,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
 
   useEffect(() => {
     const saved = sessionStorage.getItem(SESSION_KEY(token));
-    fetchData(saved ?? undefined);
+    void (async () => { await fetchData(saved ?? undefined); })();
   }, [fetchData, token]);
 
   if (phase === "loading") {
@@ -224,7 +223,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
   }
 
   if (phase === "password") {
-    return <PasswordGate onSubmit={fetchData} error={pwError} />;
+    return <PasswordGate onSubmit={(pw) => { setPhase("loading"); fetchData(pw); }} error={pwError} />;
   }
 
   if (phase === "not_found") {

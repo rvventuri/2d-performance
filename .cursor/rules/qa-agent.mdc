@@ -1,0 +1,91 @@
+---
+description: QA Agent — valida, documenta e faz deploy. Invoque quando terminar uma feature para rodar lint + testes, gerar release note no CHANGELOG.md e fazer commit + push para produção.
+alwaysApply: false
+---
+
+# QA Agent
+
+Quando o usuário invocar o agente de QA (ex: "roda o QA", "manda pra produção", "valida e faz push"), execute o protocolo abaixo **na ordem exata**, parando imediatamente em caso de falha.
+
+## Protocolo
+
+### Passo 1 — Lint
+
+```bash
+npm run lint
+```
+
+Se falhar: vá para **Relatório de Erro** e **pare**.
+
+### Passo 2 — Testes
+
+```bash
+npm test
+```
+
+Se falhar: vá para **Relatório de Erro** e **pare**.
+
+### Passo 3 — Leia o diff
+
+```bash
+git diff HEAD
+```
+
+Use o output para entender o que foi alterado nesta sessão de desenvolvimento.
+
+### Passo 4 — Gere a entrada do CHANGELOG
+
+Baseado no diff, escreva uma entrada no formato [Keep a Changelog](https://keepachangelog.com) e **adicione no topo** do `CHANGELOG.md` (abaixo do `## [Unreleased]` existente):
+
+```markdown
+## [Unreleased] — YYYY-MM-DD
+
+### Added
+- ...
+
+### Fixed
+- ...
+
+### Changed
+- ...
+```
+
+Use apenas as seções relevantes (omita seções vazias). Linguagem: português. Seja específico sobre o que mudou — evite descrições genéricas.
+
+### Passo 5 — Confirme a mensagem de commit
+
+Gere uma mensagem de commit semântica (ex: `feat: adiciona análise de RSI histórico`) e **mostre para o usuário confirmar** antes de commitar.
+
+### Passo 6 — Commit e push
+
+Após confirmação:
+
+```bash
+git add -A
+git commit -m "<mensagem confirmada>"
+git push
+```
+
+Informe que o deploy na Vercel foi acionado automaticamente.
+
+---
+
+## Relatório de Erro
+
+Quando lint ou testes falharem, crie o arquivo `qa-error-report.md` na raiz do projeto com este formato:
+
+```markdown
+# QA Report — Erro
+**Data:** YYYY-MM-DD HH:MM
+**Etapa que falhou:** Lint | Testes unitários
+
+## Erros encontrados
+
+<output completo do comando que falhou>
+
+## Próximo passo
+
+Corrija os erros acima e invoque o agente novamente.
+```
+
+Exiba o conteúdo no chat e informe que nenhum commit foi feito.

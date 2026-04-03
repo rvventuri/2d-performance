@@ -1,0 +1,95 @@
+---
+description: Convenções React/Next.js — Server Components, Server Actions, mutações e estado
+globs: app/**/*.tsx,components/**/*.tsx,app/**/_actions.ts
+alwaysApply: false
+---
+
+# Convenções Next.js / React
+
+## Server vs Client Components
+
+Preferir **Server Components** por padrão. Usar `"use client"` apenas quando necessário:
+
+- Estado local (`useState`, `useReducer`)
+- Efeitos (`useEffect`)
+- Event handlers (`onClick`, `onChange`)
+- Hooks de browser (`useRouter`, `useSearchParams`)
+
+```typescript
+// Server Component (padrão) — sem diretiva no topo
+export default async function StudentPage({ params }) {
+  const supabase = await createClient();
+  const student = await getStudent(params.id);
+  return <StudentDetailClient student={student} />;
+}
+
+// Client Component — somente quando precisar de interatividade
+"use client";
+export function StudentDetailClient({ student }) { ... }
+```
+
+## Mutações — sempre Server Actions
+
+Mutações de dados (criar, editar, deletar) devem ser **Server Actions** em `app/X/_actions.ts`:
+
+```typescript
+// app/students/_actions.ts
+"use server";
+import { createClient } from "@/lib/supabase/server";
+
+export async function createStudentAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Não autorizado");
+
+  const repo = new SupabaseStudentRepository(supabase, user.id);
+  const useCase = new CreateStudentUseCase(repo);
+  return useCase.execute({ name: formData.get("name") as string });
+}
+```
+
+Nunca fazer mutations direto no Supabase a partir de Client Components.
+
+## Sincronizar estado após mutação
+
+Usar `router.refresh()` para re-executar o Server Component pai e atualizar props:
+
+```typescript
+"use client";
+import { useRouter } from "next/navigation";
+
+const router = useRouter();
+
+async function handleDelete() {
+  await deleteStudentAction(student.id);
+  router.refresh(); // re-roda o Server Component — sem queries adicionais
+}
+```
+
+Não fazer queries adicionais no cliente após uma mutação. O Server Component já busca os dados frescos.
+
+## Organização de componentes
+
+| Diretório | O que vai aqui |
+|---|---|
+| `components/ui/` | Primitivos shadcn/ui (Button, Card, Dialog, etc.) |
+| `components/` | Componentes de feature compartilhados |
+| `app/X/_components/` | Componentes específicos da rota X |
+| `app/X/_actions.ts` | Server Actions da rota X |
+
+## Loading e Error states
+
+Usar `loading.tsx` e `error.tsx` dentro das pastas de rota do Next.js para estados automáticos de carregamento e erro.
+
+## Formulários com Server Actions
+
+```typescript
+// Binding de Server Action em formulário
+<form action={createStudentAction}>
+  <input name="name" />
+  <button type="submit">Criar</button>
+</form>
+
+// Ou via useActionState para feedback de erro/loading
+const [state, action, isPending] = useActionState(createStudentAction, null);
+```

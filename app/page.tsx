@@ -111,13 +111,13 @@ function StatCounter({
 // ─── Landing Page ─────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
-  const statsSection = useInView(0.3);
-  const problemSection = useInView(0.2);
-  const featuresSection = useInView(0.1);
-  const aiSection = useInView(0.2);
-  const metricsSection = useInView(0.2);
-  const sportsSection = useInView(0.2);
-  const ctaSection = useInView(0.3);
+  const { ref: statsSectionRef, inView: statsInView } = useInView(0.3);
+  const { ref: problemSectionRef, inView: problemInView } = useInView(0.2);
+  const { ref: featuresSectionRef, inView: featuresInView } = useInView(0.1);
+  const { ref: aiSectionRef, inView: aiInView } = useInView(0.2);
+  const { ref: metricsSectionRef, inView: metricsInView } = useInView(0.2);
+  const { ref: sportsSectionRef, inView: sportsInView } = useInView(0.2);
+  const { ref: ctaSectionRef, inView: ctaInView } = useInView(0.3);
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -324,7 +324,7 @@ export default function LandingPage() {
 
       {/* ── STATS BAR ───────────────────────────────────────────────────── */}
       <div
-        ref={statsSection.ref}
+        ref={statsSectionRef}
         className="relative py-20 border-y border-white/5"
         style={{
           background:
@@ -332,23 +332,23 @@ export default function LandingPage() {
         }}
       >
         <div className="max-w-4xl mx-auto px-4 grid grid-cols-2 sm:grid-cols-4 gap-10">
-          <StatCounter value={500} suffix="+" label="Avaliações realizadas" active={statsSection.inView} />
-          <StatCounter value={12} suffix="+" label="Métricas biomecânicas" active={statsSection.inView} />
-          <StatCounter value={3} suffix="x" label="Mais rápido que planilha" active={statsSection.inView} />
-          <StatCounter value={100} suffix="%" label="Análise por IA" active={statsSection.inView} />
+          <StatCounter value={500} suffix="+" label="Avaliações realizadas" active={statsInView} />
+          <StatCounter value={12} suffix="+" label="Métricas biomecânicas" active={statsInView} />
+          <StatCounter value={3} suffix="x" label="Mais rápido que planilha" active={statsInView} />
+          <StatCounter value={100} suffix="%" label="Análise por IA" active={statsInView} />
         </div>
       </div>
 
       {/* ── PROBLEMA → SOLUÇÃO ──────────────────────────────────────────── */}
       <section
-        ref={problemSection.ref}
+        ref={problemSectionRef}
         className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
         <div
           className="grid lg:grid-cols-2 gap-12 items-center"
           style={{
-            opacity: problemSection.inView ? 1 : 0,
-            transform: problemSection.inView ? "none" : "translateY(32px)",
+            opacity: problemInView ? 1 : 0,
+            transform: problemInView ? "none" : "translateY(32px)",
             transition: "opacity 0.7s ease, transform 0.7s ease",
           }}
         >
@@ -421,7 +421,7 @@ export default function LandingPage() {
       {/* ── FEATURES ────────────────────────────────────────────────────── */}
       <section
         id="features"
-        ref={featuresSection.ref}
+        ref={featuresSectionRef}
         className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
         <div className="text-center mb-16">
@@ -475,8 +475,8 @@ export default function LandingPage() {
               key={title}
               className="group bg-card border border-border hover:border-brand-blue-light/30 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
               style={{
-                opacity: featuresSection.inView ? 1 : 0,
-                transform: featuresSection.inView ? "none" : "translateY(28px)",
+                opacity: featuresInView ? 1 : 0,
+                transform: featuresInView ? "none" : "translateY(28px)",
                 transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms, border-color 0.3s`,
                 boxShadow: "0 4px 24px rgba(10,10,10,0.4)",
               }}
@@ -502,7 +502,7 @@ export default function LandingPage() {
 
       {/* ── AI SPOTLIGHT ────────────────────────────────────────────────── */}
       <section
-        ref={aiSection.ref}
+        ref={aiSectionRef}
         className="py-24 relative overflow-hidden"
         style={{
           background:
@@ -522,8 +522,8 @@ export default function LandingPage() {
           {/* Text */}
           <div
             style={{
-              opacity: aiSection.inView ? 1 : 0,
-              transform: aiSection.inView ? "none" : "translateX(-32px)",
+              opacity: aiInView ? 1 : 0,
+              transform: aiInView ? "none" : "translateX(-32px)",
               transition: "opacity 0.7s ease, transform 0.7s ease",
             }}
           >
@@ -574,8 +574,8 @@ export default function LandingPage() {
           <div
             className="animate-float-slow"
             style={{
-              opacity: aiSection.inView ? 1 : 0,
-              transform: aiSection.inView ? "none" : "translateX(32px)",
+              opacity: aiInView ? 1 : 0,
+              transform: aiInView ? "none" : "translateX(32px)",
               transition: "opacity 0.7s ease 0.2s, transform 0.7s ease 0.2s",
             }}
           >
@@ -651,14 +651,14 @@ export default function LandingPage() {
 
       {/* ── MÉTRICAS SHOWCASE ───────────────────────────────────────────── */}
       <section
-        ref={metricsSection.ref}
+        ref={metricsSectionRef}
         className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
         <div
           className="text-center mb-14"
           style={{
-            opacity: metricsSection.inView ? 1 : 0,
-            transform: metricsSection.inView ? "none" : "translateY(24px)",
+            opacity: metricsInView ? 1 : 0,
+            transform: metricsInView ? "none" : "translateY(24px)",
             transition: "opacity 0.6s ease, transform 0.6s ease",
           }}
         >
@@ -689,8 +689,8 @@ export default function LandingPage() {
               key={label}
               className="group cursor-default"
               style={{
-                opacity: metricsSection.inView ? 1 : 0,
-                transform: metricsSection.inView ? "none" : "scale(0.92)",
+                opacity: metricsInView ? 1 : 0,
+                transform: metricsInView ? "none" : "scale(0.92)",
                 transition: `opacity 0.5s ease ${i * 50}ms, transform 0.5s ease ${i * 50}ms`,
               }}
             >
@@ -720,7 +720,7 @@ export default function LandingPage() {
 
       {/* ── ESPORTES ────────────────────────────────────────────────────── */}
       <section
-        ref={sportsSection.ref}
+        ref={sportsSectionRef}
         className="py-20 border-y border-white/5"
         style={{
           background: "linear-gradient(180deg, rgba(11,31,102,0.15) 0%, transparent 100%)",
@@ -742,8 +742,8 @@ export default function LandingPage() {
                 key={label}
                 className="flex flex-col items-center gap-2"
                 style={{
-                  opacity: sportsSection.inView ? (ready ? 1 : 0.4) : 0,
-                  transform: sportsSection.inView ? "none" : "translateY(20px)",
+                  opacity: sportsInView ? (ready ? 1 : 0.4) : 0,
+                  transform: sportsInView ? "none" : "translateY(20px)",
                   transition: `opacity 0.5s ease ${i * 80}ms, transform 0.5s ease ${i * 80}ms`,
                 }}
               >
@@ -833,7 +833,7 @@ export default function LandingPage() {
 
       {/* ── CTA FINAL ───────────────────────────────────────────────────── */}
       <section
-        ref={ctaSection.ref}
+        ref={ctaSectionRef}
         className="py-28 relative overflow-hidden"
       >
         <div
@@ -855,8 +855,8 @@ export default function LandingPage() {
         <div
           className="relative z-10 max-w-3xl mx-auto px-4 text-center"
           style={{
-            opacity: ctaSection.inView ? 1 : 0,
-            transform: ctaSection.inView ? "none" : "translateY(32px)",
+            opacity: ctaInView ? 1 : 0,
+            transform: ctaInView ? "none" : "translateY(32px)",
             transition: "opacity 0.7s ease, transform 0.7s ease",
           }}
         >

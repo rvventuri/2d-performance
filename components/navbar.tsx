@@ -7,7 +7,7 @@ import { Users, Plus, LogOut, ChevronDown, Settings, Sun, Moon } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import type { User } from "@supabase/supabase-js";
 
@@ -35,8 +35,7 @@ export default function Navbar() {
   };
 
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
 
   const emailInitial = user?.email?.[0]?.toUpperCase() ?? "?";
   const emailShort = user?.email ?? "";

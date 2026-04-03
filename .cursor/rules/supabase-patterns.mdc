@@ -1,0 +1,65 @@
+---
+description: Padrões de uso do Supabase — qual cliente usar em cada contexto do projeto
+globs: app/**/*.ts,app/**/*.tsx,infrastructure/**/*.ts,lib/supabase/**
+alwaysApply: false
+---
+
+# Padrões Supabase
+
+## Qual cliente usar
+
+| Contexto | Import |
+|---|---|
+| Server Component, API route, Server Action | `import { createClient } from "@/lib/supabase/server"` |
+| Client Component (browser) | `import { createClient } from "@/lib/supabase/client"` |
+| Operação privilegiada (service role) | `import { createAdminClient } from "@/lib/supabase/admin"` |
+
+## Autenticação no servidor
+
+Sempre usar `getUser()` (valida no servidor), nunca `getSession()` em Server Components:
+
+```typescript
+const supabase = await createClient();
+const { data: { user }, error } = await supabase.auth.getUser();
+if (!user) return redirect("/login"); // ou return apiError("Não autorizado", 401)
+```
+
+## Nunca usar o cliente admin
+
+- Em rotas públicas ou acessíveis sem auth
+- Em Client Components
+- Para leitura de dados comuns (só para criação de usuários e seeds dev)
+
+## RLS garante isolamento
+
+Toda tabela tem `user_id` com RLS `auth.uid() = user_id`. O cliente de servidor/browser usa o JWT do usuário — nunca é necessário filtrar manualmente por `user_id` nas queries (mas é boa prática fazê-lo para clareza).
+
+## Realtime
+
+A tabela `ai_analyses` tem Realtime ativo. Para escutar mudanças no cliente:
+
+```typescript
+const channel = supabase
+  .channel(`analysis:${studentId}`)
+  .on('postgres_changes', {
+    event: 'UPDATE',
+    schema: 'public',
+    table: 'ai_analyses',
+    filter: `student_id=eq.${studentId}`,
+  }, (payload) => { /* atualizar UI */ })
+  .subscribe();
+
+// cleanup
+return () => { supabase.removeChannel(channel); };
+```
+
+Prefira Realtime a `setInterval` polling para aguardar análises de IA.
+
+## Tratamento de erros
+
+```typescript
+const { data, error } = await supabase.from("students").select("*");
+if (error) throw new Error(error.message);
+// Erro PGRST116 = row not found (single())
+if (error?.code === "PGRST116") return null;
+```

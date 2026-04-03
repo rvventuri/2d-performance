@@ -73,9 +73,8 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
   const [prevStage, setPrevStage] = useState(-1);
   const consoleRef = useRef<HTMLDivElement>(null);
 
-  const startRef = useRef<number>(
-    startedAt ? new Date(startedAt).getTime() : Date.now()
-  );
+  const [startTime] = useState<number>(() => startedAt ? new Date(startedAt).getTime() : Date.now());
+  const startRef = useRef<number>(startTime);
 
   // Timer — ticks every second
   useEffect(() => {

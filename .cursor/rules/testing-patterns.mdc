@@ -1,0 +1,102 @@
+---
+description: Padrões de teste do projeto — como mockar repositórios, Supabase e estruturar os arquivos
+globs: **/*.test.ts
+alwaysApply: false
+---
+
+# Padrões de Teste (Vitest)
+
+## Localização dos arquivos
+
+Testes ficam **junto ao arquivo testado**, com sufixo `.test.ts`:
+
+```
+application/trainer/SaveMetricConfigUseCase.ts
+application/trainer/SaveMetricConfigUseCase.test.ts
+
+infrastructure/supabase/MetricConfigRepository.ts
+infrastructure/supabase/MetricConfigRepository.test.ts
+```
+
+## Testes de Use Cases (application/)
+
+Mockar repositórios como objetos simples com `vi.fn()`:
+
+```typescript
+import { describe, it, expect, vi } from "vitest";
+import { GetStudentsUseCase } from "./GetStudentsUseCase";
+
+function makeRepo(students = []) {
+  return {
+    getAll: vi.fn().mockResolvedValue(students),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  };
+}
+
+describe("GetStudentsUseCase", () => {
+  it("retorna lista de alunos", async () => {
+    const repo = makeRepo([{ id: "1", name: "João" }]);
+    const useCase = new GetStudentsUseCase(repo);
+    const result = await useCase.execute("user-1");
+    expect(result).toHaveLength(1);
+    expect(repo.getAll).toHaveBeenCalled();
+  });
+});
+```
+
+## Testes de Repositórios (infrastructure/)
+
+Mockar o cliente Supabase com cadeia de `vi.fn()`:
+
+```typescript
+const supabase = {
+  from: vi.fn().mockReturnValue({
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        order: vi.fn().mockResolvedValue({ data: [dbRow], error: null }),
+      }),
+    }),
+  }),
+};
+const repo = new SupabaseStudentRepository(supabase, userId);
+```
+
+Para `upsert` / `insert` / `update`:
+
+```typescript
+const single = vi.fn().mockResolvedValue({ data: dbRow, error: null });
+const supabase = {
+  from: vi.fn().mockReturnValue({
+    upsert: vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ single }) }),
+  }),
+};
+```
+
+## Testes de Value Objects e Serviços de Domínio (domain/)
+
+Sem mocks — são funções/classes puras:
+
+```typescript
+import { MetricWeight } from "./MetricWeight";
+
+it("rejeita peso maior que 3", () => {
+  expect(() => new MetricWeight(3.1)).toThrow();
+});
+```
+
+## Cobertura
+
+Configurada em `vitest.config.ts` para `domain/**`, `application/**`, `infrastructure/**`.
+Não reduzir os thresholds existentes.
+
+## Imports
+
+Usar alias `@/` configurado no projeto:
+
+```typescript
+import { Student } from "@/lib/types";
+import { GetStudentsUseCase } from "@/application/student/GetStudentsUseCase";
+```
