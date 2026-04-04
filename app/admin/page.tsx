@@ -75,7 +75,7 @@ function AiPerformanceCard({ stats }: { stats: AiUsageStats }) {
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center gap-2 mb-4">
-        <Brain className="w-4 h-4 text-brand-blue-light" />
+        <Brain className="w-4 h-4 text-brand-primary-bright" />
         <h2 className="font-heading text-lg font-bold text-foreground">
           IA — Performance
         </h2>
@@ -170,8 +170,8 @@ function TrainersTable({ trainers }: { trainers: AdminTrainerStat[] }) {
             >
               <td className="py-3 pr-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-brand-blue-mid/20 border border-brand-blue-light/25 flex items-center justify-center shrink-0">
-                    <span className="text-brand-blue-light text-xs font-bold">
+                  <div className="w-8 h-8 rounded-full bg-brand-primary/20 border border-brand-primary-bright/25 flex items-center justify-center shrink-0">
+                    <span className="text-brand-primary-bright text-xs font-bold">
                       {t.name[0]?.toUpperCase() ?? "?"}
                     </span>
                   </div>
@@ -256,7 +256,7 @@ export default async function AdminPage() {
         {/* AI Analyses */}
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Brain className="w-4 h-4 text-brand-blue-light" />
+            <Brain className="w-4 h-4 text-brand-primary-bright" />
             <h2 className="font-heading text-lg font-bold text-foreground">
               Análises de IA
             </h2>
@@ -299,7 +299,7 @@ export default async function AdminPage() {
         {/* Signups chart */}
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <UserPlus className="w-4 h-4 text-brand-blue-light" />
+            <UserPlus className="w-4 h-4 text-brand-primary-bright" />
             <h2 className="font-heading text-lg font-bold text-foreground">
               Novos Cadastros
             </h2>
@@ -317,7 +317,7 @@ export default async function AdminPage() {
       {/* Top trainers table */}
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="flex items-center gap-2 mb-5">
-          <Users className="w-4 h-4 text-brand-blue-light" />
+          <Users className="w-4 h-4 text-brand-primary-bright" />
           <h2 className="font-heading text-lg font-bold text-foreground">
             Top Trainers
           </h2>

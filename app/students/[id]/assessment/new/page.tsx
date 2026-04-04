@@ -17,13 +17,13 @@ const DEFAULT_METRIC_GROUPS = [
   {
     title: "Saltos Bilaterais",
     description: "Métricas de salto vertical bilateral",
-    color: "#1437C9",
+    color: "#4f46e5",
     fields: ["cmj", "sj", "abalakov"],
   },
   {
     title: "Reatividade",
     description: "Drop Jump e capacidade reativa",
-    color: "#2E5BFF",
+    color: "#6366f1",
     fields: ["rsi", "tempoContato", "alturaSaltoDJ"],
   },
   {
@@ -140,7 +140,7 @@ export default function NewAssessmentPage() {
 
   if (!student) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <Loader2 className="w-8 h-8 animate-spin text-brand-blue-light" />
+      <Loader2 className="w-8 h-8 animate-spin text-brand-primary-bright" />
     </div>
   );
 
@@ -168,7 +168,7 @@ export default function NewAssessmentPage() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="bg-secondary border-border text-foreground focus:border-brand-blue-light h-11"
+              className="bg-secondary border-border text-foreground focus:border-brand-primary-bright h-11"
             />
           </div>
         </div>
@@ -200,7 +200,7 @@ export default function NewAssessmentPage() {
                       >
                         {label}
                         {isAutoCalc && (
-                          <span className="text-brand-blue-light text-xs normal-case font-normal">(auto)</span>
+                          <span className="text-brand-primary-bright text-xs normal-case font-normal">(auto)</span>
                         )}
                       </Label>
                       <div className="relative">
@@ -212,7 +212,7 @@ export default function NewAssessmentPage() {
                           value={metrics[field as keyof Metrics]}
                           onChange={(e) => handleMetricChange(field as keyof Metrics, e.target.value)}
                           readOnly={isAutoCalc}
-                          className={`bg-secondary border-border text-foreground placeholder:text-muted-foreground/40 focus:border-brand-blue-light h-11 ${
+                          className={`bg-secondary border-border text-foreground placeholder:text-muted-foreground/40 focus:border-brand-primary-bright h-11 ${
                             unit ? "pr-12" : ""
                           } ${isAutoCalc ? "opacity-70 cursor-default" : ""}`}
                         />
@@ -259,7 +259,7 @@ export default function NewAssessmentPage() {
                       onChange={(e) =>
                         setCustomMetricValues((prev) => ({ ...prev, [m.key]: e.target.value }))
                       }
-                      className={`bg-secondary border-border text-foreground placeholder:text-muted-foreground/40 focus:border-brand-blue-light h-11 ${
+                      className={`bg-secondary border-border text-foreground placeholder:text-muted-foreground/40 focus:border-brand-primary-bright h-11 ${
                         m.unit ? "pr-12" : ""
                       }`}
                     />
@@ -276,7 +276,7 @@ export default function NewAssessmentPage() {
         )}
 
         <div className="flex items-center gap-2 p-3 bg-card border border-border/50 rounded-lg">
-          <Info className="w-4 h-4 text-brand-blue-light shrink-0" />
+          <Info className="w-4 h-4 text-brand-primary-bright shrink-0" />
           <p className="text-muted-foreground text-xs">
             Campos não preenchidos serão ignorados na análise. A assimetria é calculada automaticamente a partir do CMJ esquerdo e direito.
           </p>
@@ -286,7 +286,7 @@ export default function NewAssessmentPage() {
           <Button
             type="submit"
             disabled={isPending}
-            className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer flex-1 h-12 text-base"
+            className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold cursor-pointer flex-1 h-12 text-base"
           >
             {isPending ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <ClipboardPlus className="w-5 h-5 mr-2" />}
             {isPending ? "Salvando..." : "Salvar Avaliação"}

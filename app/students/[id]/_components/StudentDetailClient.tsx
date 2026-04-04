@@ -60,12 +60,12 @@ import { toast } from "sonner";
 import { saveGoalAction, deleteGoalAction } from "../_actions";
 
 const CHART_COLORS: Record<string, string> = {
-  cmj: "#1437C9",
-  sj: "#2E5BFF",
-  abalakov: "#F59E0B",
+  cmj: "#4f46e5",
+  sj: "#6366f1",
+  abalakov: "#818cf8",
   rsi: "#EC4899",
   tempoContato: "#8B5CF6",
-  alturaSaltoDJ: "#06B6D4",
+  alturaSaltoDJ: "#4de1c1",
   cmjEsquerdo: "#F97316",
   cmjDireito: "#84CC16",
   assimetriaPercentual: "#EF4444",
@@ -188,7 +188,7 @@ function AssessmentRow({
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => onDelete(assessment.id)}
-                  className="bg-destructive hover:bg-destructive/90 text-white cursor-pointer"
+                  className="bg-destructive hover:bg-destructive/90 text-destructive-foreground cursor-pointer"
                 >
                   Excluir
                 </AlertDialogAction>
@@ -362,7 +362,7 @@ export default function StudentDetailClient({
 
   if (pageLoading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <Loader2 className="w-8 h-8 animate-spin text-brand-blue-light" />
+      <Loader2 className="w-8 h-8 animate-spin text-brand-primary-bright" />
     </div>
   );
 
@@ -398,7 +398,7 @@ export default function StudentDetailClient({
 
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-brand-blue-dark border-2 border-border flex items-center justify-center shrink-0 relative">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-brand-depth border-2 border-border flex items-center justify-center shrink-0 relative">
               {student.photoUrl ? (
                 <Image
                   src={student.photoUrl}
@@ -408,7 +408,7 @@ export default function StudentDetailClient({
                   sizes="80px"
                 />
               ) : (
-                <span className="font-heading text-2xl font-bold text-brand-blue-light select-none">
+                <span className="font-heading text-2xl font-bold text-brand-primary-bright select-none">
                   {student.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()}
                 </span>
               )}
@@ -442,7 +442,7 @@ export default function StudentDetailClient({
 
           <div className="flex items-center gap-2 flex-wrap">
             <Link href={`/students/${id}/assessment/new`}>
-              <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer">
+              <Button className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold cursor-pointer">
                 <Plus className="w-4 h-4 mr-2" />
                 Nova Avaliação
               </Button>
@@ -451,7 +451,7 @@ export default function StudentDetailClient({
               variant="outline"
               size="sm"
               onClick={() => setShareOpen(true)}
-              className="border-border text-muted-foreground hover:text-brand-blue-light hover:bg-accent cursor-pointer gap-1.5"
+              className="border-border text-muted-foreground hover:text-brand-primary-bright hover:bg-accent cursor-pointer gap-1.5"
             >
               <Share2 className="w-4 h-4" />
               <span className="hidden sm:inline">Compartilhar</span>
@@ -485,7 +485,7 @@ export default function StudentDetailClient({
                   <AlertDialogCancel className="border-border text-muted-foreground hover:bg-accent bg-transparent cursor-pointer">
                     Cancelar
                   </AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteStudent} className="bg-destructive hover:bg-destructive/90 text-white cursor-pointer">
+                  <AlertDialogAction onClick={handleDeleteStudent} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground cursor-pointer">
                     Excluir Aluno
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -525,7 +525,7 @@ export default function StudentDetailClient({
                 Registre a primeira avaliação para começar a acompanhar a evolução.
               </p>
               <Link href={`/students/${id}/assessment/new`}>
-                <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer">
+                <Button className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold cursor-pointer">
                   <Plus className="w-4 h-4 mr-2" />
                   Registrar Avaliação
                 </Button>
@@ -750,7 +750,7 @@ export default function StudentDetailClient({
             </Button>
             <Button
               size="sm"
-              className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white cursor-pointer"
+              className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground cursor-pointer"
               onClick={handleSaveGoal}
               disabled={isSavingGoal || !goalTargetValue}
             >

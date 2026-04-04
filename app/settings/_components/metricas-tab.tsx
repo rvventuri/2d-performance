@@ -110,7 +110,7 @@ export function MetricasTab({ initialConfigs, resolvedMetrics: initialResolved }
           <Button
             onClick={() => setAddModalOpen(true)}
             size="sm"
-            className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-semibold cursor-pointer"
+            className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-semibold cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-1" />
             Nova Métrica
@@ -183,12 +183,12 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
         <button
           onClick={() => onUpdate({ isEnabled: !metric.isEnabled })}
           className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer flex-shrink-0 ${
-            metric.isEnabled ? "bg-brand-blue-mid" : "bg-secondary"
+            metric.isEnabled ? "bg-brand-primary" : "bg-secondary"
           }`}
           title={metric.isEnabled ? "Desabilitar" : "Habilitar"}
         >
           <span
-            className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+            className={`absolute top-0.5 w-4 h-4 bg-primary-foreground rounded-full shadow-sm transition-transform ${
               metric.isEnabled ? "translate-x-5" : "translate-x-0.5"
             }`}
           />
@@ -200,7 +200,7 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
             value={metric.label}
             onChange={(e) => onUpdate({ label: e.target.value })}
             onBlur={() => {}}
-            className="bg-secondary border-border text-foreground h-8 text-sm focus:border-brand-blue-light"
+            className="bg-secondary border-border text-foreground h-8 text-sm focus:border-brand-primary-bright"
           />
         </div>
 
@@ -210,7 +210,7 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
             value={metric.unit}
             onChange={(e) => onUpdate({ unit: e.target.value })}
             placeholder="un."
-            className="bg-secondary border-border text-foreground h-8 text-sm placeholder:text-muted-foreground focus:border-brand-blue-light"
+            className="bg-secondary border-border text-foreground h-8 text-sm placeholder:text-muted-foreground focus:border-brand-primary-bright"
           />
         </div>
 
@@ -227,7 +227,7 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
                   onUpdate({ [bKey]: e.target.value ? Number(e.target.value) : null })
                 }
                 placeholder={def ? String(def[bKey]) : ["Rec", "Trein", "Elite"][i]}
-                className="bg-secondary border-border text-foreground h-8 text-xs placeholder:text-muted-foreground/40 focus:border-brand-blue-light"
+                className="bg-secondary border-border text-foreground h-8 text-xs placeholder:text-muted-foreground/40 focus:border-brand-primary-bright"
                 title={["Recreativo", "Treinado", "Elite"][i]}
               />
             </div>
@@ -239,7 +239,7 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
           <select
             value={String(metric.weight)}
             onChange={(e) => onUpdate({ weight: Number(e.target.value) })}
-            className="w-full h-8 bg-secondary border border-border text-foreground rounded-md px-2 text-xs focus:outline-none focus:border-brand-blue-light cursor-pointer"
+            className="w-full h-8 bg-secondary border border-border text-foreground rounded-md px-2 text-xs focus:outline-none focus:border-brand-primary-bright cursor-pointer"
             title="Peso no score geral"
           >
             {WEIGHT_OPTIONS.map((v) => (

@@ -6,6 +6,24 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ---
 
+## [Unreleased] — 2026-04-05
+
+### Added
+- **`lib/branding.ts`**: constantes `APP_NAME` (SaltoVerse), `APP_DESCRIPTION` e `APP_TAGLINE` para metadata e UI
+- **Logo e favicon**: `public/saltoverse-mark.svg` e `app/icon.tsx` (ImageResponse)
+- **Token de marca** `--brand-accent-foreground` e `--brand-primary-hover` no design system (`@theme` + `globals.css`)
+
+### Changed
+- **Rebranding SaltoVerse** em landing, login, register, share, navbar, admin, relatório de performance e textos de exemplo (ex.: URL do app); checklist de onboarding com chave `saltoverse-onboarding-dismissed`
+- **Design system**: tokens semânticos (`brand-depth`, `brand-primary`, `brand-primary-bright`, `brand-accent`, …) substituindo `brand-blue-*` / `brand-yellow*`; metadata raiz com Open Graph e Twitter
+- **Contraste claro/escuro**: `color-scheme` em `:root` / `.dark`; paleta escura revisada (foreground, muted-foreground, borders, popover, sidebar); botões de marca com `text-primary-foreground`; CTAs em accent com `text-brand-accent-foreground`; `CardTitle` com `text-card-foreground`; toggle em configurações de métricas com `bg-primary-foreground`
+- **Cores em gráficos e demos**: alinhamento à paleta SaltoVerse (detalhe do aluno, nova avaliação, share, `MetricChart`, aba de análise IA, landing, gradientes de auth)
+
+### Fixed
+- Aba de análise IA: rótulo “Rec.” do benchmark usa cores do tema; anel do atleta com `border-background` em vez de branco fixo
+
+---
+
 ## [Unreleased] — 2026-04-04
 
 ### Added

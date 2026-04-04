@@ -3,10 +3,23 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AppShell from "@/components/app-shell";
 import { ThemeProvider } from "next-themes";
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
 
 export const metadata: Metadata = {
-  title: "2D Performance",
-  description: "Plataforma de avaliação de performance esportiva",
+  title: APP_NAME,
+  description: APP_DESCRIPTION,
+  openGraph: {
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    siteName: APP_NAME,
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

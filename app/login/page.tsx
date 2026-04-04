@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,7 +58,7 @@ function Particles() {
       {particles.map((p) => (
         <span
           key={p.id}
-          className="absolute rounded-full bg-brand-blue-light"
+          className="absolute rounded-full bg-brand-primary-bright"
           style={{
             left: p.left,
             top: p.top,
@@ -156,7 +157,7 @@ export default function LoginPage() {
         className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden"
         style={{
           background:
-            "linear-gradient(135deg, #050e2e 0%, #0b1f66 40%, #0f2a8a 70%, #071444 100%)",
+            "linear-gradient(135deg, #050814 0%, #0b1020 35%, #1e1b4b 65%, #070b14 100%)",
         }}
       >
         {/* Background grid */}
@@ -181,7 +182,7 @@ export default function LoginPage() {
             height: 280,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(255,212,0,0.08) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(77,225,193,0.1) 0%, transparent 70%)",
           }}
         />
 
@@ -189,24 +190,28 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="relative z-10">
-          <Link href="/">
+          <Link href="/" className="inline-flex items-center gap-3">
             <Image
-              src="/logosemfundo.png"
-              alt="2D Performance"
-              width={160}
-              height={64}
-              className="h-12 w-auto object-contain object-left"
+              src="/saltoverse-mark.svg"
+              alt={APP_NAME}
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain object-left shrink-0"
               priority
+              unoptimized
             />
+            <span className="font-heading text-2xl font-bold text-white tracking-tight">
+              {APP_NAME}
+            </span>
           </Link>
         </div>
 
         {/* Main content */}
         <div className="relative z-10 flex-1 flex flex-col justify-center py-12">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-brand-blue-mid/20 border border-brand-blue-light/30 rounded-full px-4 py-1.5 mb-8 w-fit">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow animate-pulse inline-block" />
-            <span className="text-brand-blue-light text-xs font-semibold uppercase tracking-widest">
+          <div className="inline-flex items-center gap-2 bg-brand-primary/20 border border-brand-primary-bright/30 rounded-full px-4 py-1.5 mb-8 w-fit">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse inline-block" />
+            <span className="text-brand-primary-bright text-xs font-semibold uppercase tracking-widest">
               Avaliação Esportiva com IA
             </span>
           </div>
@@ -224,7 +229,7 @@ export default function LoginPage() {
               É UM DADO.
             </span>
             <br />
-            <span className="text-brand-yellow" style={{ textShadow: "0 0 32px rgba(255,212,0,0.4)" }}>
+            <span className="text-brand-accent" style={{ textShadow: "0 0 32px rgba(77,225,193,0.45)" }}>
               CADA DADO
             </span>{" "}
             É UMA DECISÃO.
@@ -239,8 +244,8 @@ export default function LoginPage() {
           <div className="space-y-4">
             {features.map(({ icon: Icon, label, desc }) => (
               <div key={label} className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-brand-blue-mid/30 border border-brand-blue-light/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="w-4 h-4 text-brand-blue-light" />
+                <div className="w-9 h-9 rounded-lg bg-brand-primary/30 border border-brand-primary-bright/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-brand-primary-bright" />
                 </div>
                 <div>
                   <p className="text-white/90 text-sm font-semibold leading-tight">{label}</p>
@@ -267,22 +272,24 @@ export default function LoginPage() {
       {/* ── RIGHT PANEL (form) ──────────────────────────────────────────── */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-background relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none lg:hidden">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-brand-blue-mid/8 rounded-full blur-3xl" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-brand-primary/8 rounded-full blur-3xl" />
         </div>
 
         <div className="relative w-full max-w-sm">
           {/* Mobile logo */}
           <div className="flex flex-col items-center mb-8 lg:hidden">
             <Image
-              src="/logosemfundo.png"
-              alt="2D Performance"
-              width={180}
-              height={72}
-              className="h-10 w-auto object-contain mb-2"
+              src="/saltoverse-mark.svg"
+              alt={APP_NAME}
+              width={44}
+              height={44}
+              className="h-11 w-11 object-contain mb-2"
               priority
+              unoptimized
             />
-            <p className="text-muted-foreground text-sm">
-              Plataforma de avaliação esportiva
+            <p className="font-heading text-lg font-bold text-foreground">{APP_NAME}</p>
+            <p className="text-muted-foreground text-sm text-center max-w-xs mt-1">
+              {APP_DESCRIPTION}
             </p>
           </div>
 
@@ -342,7 +349,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-11"
+                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-11"
               />
             </div>
 
@@ -362,7 +369,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-11 pr-10"
+                  className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-11 pr-10"
                 />
                 <button
                   type="button"
@@ -381,7 +388,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-11 bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer text-base mt-2 disabled:opacity-60"
+              className="w-full h-11 bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold cursor-pointer text-base mt-2 disabled:opacity-60"
             >
               {loading ? (
                 <>
@@ -399,7 +406,7 @@ export default function LoginPage() {
               Não tem conta?{" "}
               <Link
                 href="/register"
-                className="text-brand-blue-light hover:text-brand-yellow font-semibold transition-colors"
+                className="text-brand-primary-bright hover:text-brand-accent font-semibold transition-colors"
               >
                 Criar conta grátis
               </Link>

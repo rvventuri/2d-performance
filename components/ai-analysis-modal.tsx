@@ -31,7 +31,7 @@ function MarkdownText({ text }: { text: string }) {
         // H3 — ###
         if (line.startsWith("### ")) {
           return (
-            <h3 key={i} className="font-heading text-base font-bold text-brand-blue-light mt-3 mb-1">
+            <h3 key={i} className="font-heading text-base font-bold text-brand-primary-bright mt-3 mb-1">
               {line.replace("### ", "")}
             </h3>
           );
@@ -40,7 +40,7 @@ function MarkdownText({ text }: { text: string }) {
         if (line.match(/^\*\*\d+\./)) {
           const cleaned = line.replace(/\*\*/g, "");
           return (
-            <h3 key={i} className="font-heading text-base font-bold text-brand-blue-light mt-4 mb-1">
+            <h3 key={i} className="font-heading text-base font-bold text-brand-primary-bright mt-4 mb-1">
               {cleaned}
             </h3>
           );
@@ -50,7 +50,7 @@ function MarkdownText({ text }: { text: string }) {
           const content = line.replace(/^[-•] /, "");
           return (
             <div key={i} className="flex gap-2 text-foreground/80 text-sm leading-relaxed">
-              <span className="text-brand-yellow-glow shrink-0 mt-0.5">→</span>
+              <span className="text-brand-accent-glow shrink-0 mt-0.5">→</span>
               <span dangerouslySetInnerHTML={{ __html: renderInline(content) }} />
             </div>
           );
@@ -60,7 +60,7 @@ function MarkdownText({ text }: { text: string }) {
           const [num, ...rest] = line.split(". ");
           return (
             <div key={i} className="flex gap-2 text-foreground/80 text-sm leading-relaxed">
-              <span className="text-brand-blue-light font-bold shrink-0 w-4">{num}.</span>
+              <span className="text-brand-primary-bright font-bold shrink-0 w-4">{num}.</span>
               <span dangerouslySetInnerHTML={{ __html: renderInline(rest.join(". ")) }} />
             </div>
           );
@@ -91,7 +91,7 @@ function renderInline(text: string): string {
   return text
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em class="text-muted-foreground">$1</em>')
-    .replace(/`(.+?)`/g, '<code class="bg-secondary text-brand-blue-light px-1 rounded text-xs">$1</code>');
+    .replace(/`(.+?)`/g, '<code class="bg-secondary text-brand-primary-bright px-1 rounded text-xs">$1</code>');
 }
 
 export default function AiAnalysisModal({ student, assessments }: AiAnalysisModalProps) {
@@ -188,7 +188,7 @@ export default function AiAnalysisModal({ student, assessments }: AiAnalysisModa
     <>
       <Button
         onClick={handleOpen}
-        className="bg-gradient-to-r from-brand-blue-dark to-brand-blue-light hover:from-[#081752] hover:to-[#2560E8] text-white font-bold cursor-pointer transition-all duration-200 shadow-lg shadow-[#0B1F66]/35"
+        className="bg-gradient-to-r from-brand-depth to-brand-primary-bright hover:from-[#312e81] hover:to-[#5b21b6] text-primary-foreground font-bold cursor-pointer transition-all duration-200 shadow-lg shadow-[#4f46e5]/35"
       >
         <Sparkles className="w-4 h-4 mr-2" />
         Analisar com IA
@@ -207,8 +207,8 @@ export default function AiAnalysisModal({ student, assessments }: AiAnalysisModa
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-brand-blue-dark to-brand-blue-light rounded-xl flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 bg-gradient-to-br from-brand-depth to-brand-primary-bright rounded-xl flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div>
                   <h2 className="font-heading text-lg font-bold text-foreground tracking-wide">
@@ -226,7 +226,7 @@ export default function AiAnalysisModal({ student, assessments }: AiAnalysisModa
                     className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer h-8"
                   >
                     {copied ? (
-                      <Check className="w-4 h-4 text-brand-yellow" />
+                      <Check className="w-4 h-4 text-brand-accent" />
                     ) : (
                       <Copy className="w-4 h-4" />
                     )}
@@ -268,8 +268,8 @@ export default function AiAnalysisModal({ student, assessments }: AiAnalysisModa
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 min-h-0">
               {status === "loading" && (
                 <div className="flex items-center gap-4 py-12 justify-center">
-                  <div className="w-10 h-10 bg-gradient-to-br from-brand-blue-dark to-brand-blue-light rounded-xl flex items-center justify-center animate-pulse">
-                    <Sparkles className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-brand-depth to-brand-primary-bright rounded-xl flex items-center justify-center animate-pulse">
+                    <Sparkles className="w-5 h-5 text-primary-foreground" />
                   </div>
                   <div>
                     <p className="text-foreground font-semibold">Analisando dados de performance...</p>
@@ -282,7 +282,7 @@ export default function AiAnalysisModal({ student, assessments }: AiAnalysisModa
                 <div>
                   <MarkdownText text={content} />
                   {status === "streaming" && (
-                    <span className="inline-block w-2 h-4 bg-brand-yellow animate-pulse ml-1 rounded-sm" />
+                    <span className="inline-block w-2 h-4 bg-brand-accent animate-pulse ml-1 rounded-sm" />
                   )}
                 </div>
               )}
@@ -298,7 +298,7 @@ export default function AiAnalysisModal({ student, assessments }: AiAnalysisModa
                   </div>
                   <Button
                     onClick={handleRetry}
-                    className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white cursor-pointer"
+                    className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground cursor-pointer"
                   >
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Tentar novamente

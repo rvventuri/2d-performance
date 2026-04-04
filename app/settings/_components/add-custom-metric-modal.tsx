@@ -76,7 +76,7 @@ export function AddCustomMetricModal({ open, onClose, onCreated, displayOrder }:
               placeholder="Ex: Triplo Salto"
               value={form.label}
               onChange={(e) => setForm({ ...form, label: e.target.value })}
-              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-10"
+              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-10"
               required
             />
           </div>
@@ -88,7 +88,7 @@ export function AddCustomMetricModal({ open, onClose, onCreated, displayOrder }:
                 placeholder="cm, ms, kg..."
                 value={form.unit}
                 onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-10"
+                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-10"
               />
             </div>
             <div className="space-y-2">
@@ -96,7 +96,7 @@ export function AddCustomMetricModal({ open, onClose, onCreated, displayOrder }:
               <select
                 value={form.higherIsBetter ? "higher" : "lower"}
                 onChange={(e) => setForm({ ...form, higherIsBetter: e.target.value === "higher" })}
-                className="w-full h-10 bg-secondary border border-border text-foreground rounded-md px-3 text-sm focus:outline-none focus:border-brand-blue-light"
+                className="w-full h-10 bg-secondary border border-border text-foreground rounded-md px-3 text-sm focus:outline-none focus:border-brand-primary-bright"
               >
                 <option value="higher">Maior = Melhor</option>
                 <option value="lower">Menor = Melhor</option>
@@ -116,7 +116,7 @@ export function AddCustomMetricModal({ open, onClose, onCreated, displayOrder }:
                     placeholder="—"
                     value={form[key]}
                     onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                    className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-9 text-sm"
+                    className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-9 text-sm"
                   />
                 </div>
               ))}
@@ -128,7 +128,7 @@ export function AddCustomMetricModal({ open, onClose, onCreated, displayOrder }:
             <select
               value={form.weight}
               onChange={(e) => setForm({ ...form, weight: e.target.value })}
-              className="w-full h-10 bg-secondary border border-border text-foreground rounded-md px-3 text-sm focus:outline-none focus:border-brand-blue-light"
+              className="w-full h-10 bg-secondary border border-border text-foreground rounded-md px-3 text-sm focus:outline-none focus:border-brand-primary-bright"
             >
               {["0", "0.5", "1", "1.5", "2", "2.5", "3"].map((v) => (
                 <option key={v} value={v}>
@@ -142,7 +142,7 @@ export function AddCustomMetricModal({ open, onClose, onCreated, displayOrder }:
             <Button
               type="submit"
               disabled={saving}
-              className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer flex-1 h-10"
+              className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold cursor-pointer flex-1 h-10"
             >
               {saving ? "Criando..." : "Criar Métrica"}
             </Button>

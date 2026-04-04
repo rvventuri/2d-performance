@@ -45,7 +45,7 @@ export default function GlobalError({
             Tentar novamente
           </Button>
           <Link href="/dashboard">
-            <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white cursor-pointer">
+            <Button className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground cursor-pointer">
               <Home className="w-4 h-4 mr-2" />
               Ir para o Dashboard
             </Button>

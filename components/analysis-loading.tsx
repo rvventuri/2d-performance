@@ -115,7 +115,7 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
         {/* Progress bar */}
         <div className="h-0.5 bg-secondary">
           <div
-            className="h-full bg-gradient-to-r from-brand-blue-dark via-brand-blue-mid to-brand-blue-light transition-all duration-1000 ease-linear"
+            className="h-full bg-gradient-to-r from-brand-depth via-brand-primary to-brand-primary-bright transition-all duration-1000 ease-linear"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -124,8 +124,8 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-brand-blue-dark to-brand-blue-light rounded-xl flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white animate-pulse" />
+              <div className="w-9 h-9 bg-gradient-to-br from-brand-depth to-brand-primary-bright rounded-xl flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary-foreground animate-pulse" />
               </div>
               <div>
                 <p className="text-foreground font-semibold text-sm">
@@ -159,19 +159,19 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
                       <div
                         className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 ${
                           isDone
-                            ? "bg-brand-blue-mid/15 border border-brand-blue-light/25"
+                            ? "bg-brand-primary/15 border border-brand-primary-bright/25"
                             : isActive
-                            ? "bg-brand-blue-mid/20 border border-brand-blue-light/40"
+                            ? "bg-brand-primary/20 border border-brand-primary-bright/40"
                             : "bg-secondary border border-border/40"
                         }`}
                       >
                         {isDone ? (
-                          <CheckCircle2 className="w-4 h-4 text-brand-blue-light transition-colors duration-500" />
+                          <CheckCircle2 className="w-4 h-4 text-brand-primary-bright transition-colors duration-500" />
                         ) : (
                           <StageIcon
                             className={`w-4 h-4 transition-colors duration-500 ${
                               isActive
-                                ? "text-brand-blue-light animate-pulse"
+                                ? "text-brand-primary-bright animate-pulse"
                                 : "text-muted-foreground/25"
                             }`}
                           />
@@ -182,9 +182,9 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
                         <div
                           className={`w-0.5 h-4 rounded-full mt-1 transition-all duration-700 ${
                             isDone
-                              ? "bg-brand-blue-light/40"
+                              ? "bg-brand-primary-bright/40"
                               : isActive
-                              ? "bg-brand-blue-light/20"
+                              ? "bg-brand-primary-bright/20"
                               : "bg-border/30"
                           }`}
                           aria-hidden="true"
@@ -206,9 +206,9 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
                         {s.label}
                         {isActive && (
                           <span className="inline-flex gap-0.5 ml-2 relative top-[-1px]">
-                            <span className="w-1 h-1 rounded-full bg-brand-blue-light animate-bounce [animation-delay:0ms]" />
-                            <span className="w-1 h-1 rounded-full bg-brand-blue-light animate-bounce [animation-delay:150ms]" />
-                            <span className="w-1 h-1 rounded-full bg-brand-blue-light animate-bounce [animation-delay:300ms]" />
+                            <span className="w-1 h-1 rounded-full bg-brand-primary-bright animate-bounce [animation-delay:0ms]" />
+                            <span className="w-1 h-1 rounded-full bg-brand-primary-bright animate-bounce [animation-delay:150ms]" />
+                            <span className="w-1 h-1 rounded-full bg-brand-primary-bright animate-bounce [animation-delay:300ms]" />
                           </span>
                         )}
                       </p>
@@ -237,7 +237,7 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
               claude-sonnet · output stream
             </span>
             <div className="ml-auto flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-brand-blue-light animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full bg-brand-primary-bright animate-pulse" />
               <span className="text-muted-foreground/50 text-[10px]">live</span>
             </div>
           </div>
@@ -247,7 +247,7 @@ export default function AnalysisLoading({ mode, streamText = "", startedAt }: Pr
             style={{ wordBreak: "break-all" }}
           >
             <span>{streamText}</span>
-            <span className="inline-block w-2 h-3.5 bg-brand-blue-light/80 ml-0.5 animate-pulse align-text-bottom" />
+            <span className="inline-block w-2 h-3.5 bg-brand-primary-bright/80 ml-0.5 animate-pulse align-text-bottom" />
           </div>
         </div>
       )}

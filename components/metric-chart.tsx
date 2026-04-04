@@ -57,7 +57,7 @@ export default function MetricChart({
   metricKey,
   label,
   unit,
-  color = "#2E5BFF",
+  color = "#6366f1",
   isCustom = false,
   goalValue,
   higherIsBetter = true,

@@ -6,8 +6,8 @@ import { CheckCircle2, Circle, X, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { OnboardingState } from "./DashboardClient";
 
-const STORAGE_KEY = "onboarding_dismissed";
-const DISMISS_EVENT = "2d-onboarding-dismissed";
+const STORAGE_KEY = "saltoverse-onboarding-dismissed";
+const DISMISS_EVENT = "saltoverse-onboarding-dismissed";
 
 function subscribeOnboardingDismissed(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
@@ -105,8 +105,8 @@ export default function OnboardingChecklist({ state }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-brand-blue-mid/20 border border-brand-blue-light/20 flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4 text-brand-blue-light" />
+          <div className="w-8 h-8 rounded-lg bg-brand-primary/20 border border-brand-primary-bright/20 flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4 text-brand-primary-bright" />
           </div>
           <div>
             <h2 className="font-heading text-base font-bold text-foreground leading-tight">
@@ -131,7 +131,7 @@ export default function OnboardingChecklist({ state }: Props) {
       {/* Progress bar */}
       <div className="h-1.5 w-full rounded-full bg-border overflow-hidden mb-5">
         <div
-          className="h-full rounded-full bg-brand-blue-mid transition-all duration-500"
+          className="h-full rounded-full bg-brand-primary transition-all duration-500"
           style={{ width: `${progressPct}%` }}
         />
       </div>
@@ -175,7 +175,7 @@ export default function OnboardingChecklist({ state }: Props) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 text-xs border-border text-muted-foreground hover:text-brand-blue-light hover:border-brand-blue-light/40 cursor-pointer gap-1"
+                  className="h-7 text-xs border-border text-muted-foreground hover:text-brand-primary-bright hover:border-brand-primary-bright/40 cursor-pointer gap-1"
                 >
                   {step.action}
                   <ChevronRight className="w-3 h-3" />

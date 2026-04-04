@@ -19,16 +19,16 @@ const colors = {
     title: "text-destructive",
   },
   success: {
-    bg: "bg-brand-blue-mid/15",
-    border: "border-brand-blue-light/30",
-    icon: "text-brand-yellow",
-    title: "text-brand-yellow-glow",
+    bg: "bg-brand-primary/15",
+    border: "border-brand-primary-bright/30",
+    icon: "text-brand-accent",
+    title: "text-brand-accent-glow",
   },
   info: {
-    bg: "bg-brand-blue-mid/10",
-    border: "border-brand-blue-light/25",
-    icon: "text-brand-blue-light",
-    title: "text-brand-blue-light",
+    bg: "bg-brand-primary/10",
+    border: "border-brand-primary-bright/25",
+    icon: "text-brand-primary-bright",
+    title: "text-brand-primary-bright",
   },
 };
 

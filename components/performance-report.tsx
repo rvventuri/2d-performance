@@ -3,6 +3,7 @@
 import { Assessment, Student, Metrics, METRIC_LABELS, METRIC_UNITS } from "@/lib/types";
 import { analyzeAssessment, calcEvolution } from "@/lib/analysis";
 import { formatDate } from "@/lib/utils";
+import { APP_NAME } from "@/lib/branding";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Printer } from "lucide-react";
@@ -126,7 +127,7 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
                       <Badge
                         className={`text-xs border-0 ${
                           pct > 0
-                            ? "bg-brand-blue-mid/15 text-brand-blue-light"
+                            ? "bg-brand-primary/15 text-brand-primary-bright"
                             : pct < -2
                             ? "bg-destructive/10 text-destructive"
                             : "bg-muted-foreground/10 text-muted-foreground"
@@ -146,10 +147,10 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
       {evolutions.length > 0 && (improvements.length > 0 || regressions.length > 0) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {improvements.length > 0 && (
-            <div className="bg-brand-blue-mid/10 border border-brand-blue-light/25 rounded-xl p-5">
+            <div className="bg-brand-primary/10 border border-brand-primary-bright/25 rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-4 h-4 text-brand-yellow" />
-                <h3 className="font-heading text-sm font-bold text-brand-blue-light uppercase tracking-wider">
+                <TrendingUp className="w-4 h-4 text-brand-accent" />
+                <h3 className="font-heading text-sm font-bold text-brand-primary-bright uppercase tracking-wider">
                   Pontos Positivos
                 </h3>
               </div>
@@ -157,7 +158,7 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
                 {improvements.map((ev) => (
                   <li key={ev.key} className="flex items-center justify-between text-sm">
                     <span className="text-foreground/80">{METRIC_LABELS[ev.key as keyof Metrics]}</span>
-                    <span className="text-brand-yellow-glow font-semibold">
+                    <span className="text-brand-accent-glow font-semibold">
                       +{ev.changePercent?.toFixed(1)}%
                     </span>
                   </li>
@@ -205,14 +206,14 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
                   isWarning
                     ? "bg-destructive/5 border border-destructive/20"
                     : isSuccess
-                    ? "bg-brand-blue-mid/10 border border-brand-blue-light/25"
-                    : "bg-brand-blue-mid/10 border border-brand-blue-light/25"
+                    ? "bg-brand-primary/10 border border-brand-primary-bright/25"
+                    : "bg-brand-primary/10 border border-brand-primary-bright/25"
                 }`}
               >
                 {Icon && (
                   <Icon
                     className={`w-4 h-4 shrink-0 mt-0.5 ${
-                      isWarning ? "text-destructive" : "text-brand-yellow"
+                      isWarning ? "text-destructive" : "text-brand-accent"
                     }`}
                   />
                 )}
@@ -222,8 +223,8 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
                       isWarning
                         ? "text-destructive"
                         : isSuccess
-                        ? "text-brand-yellow-glow"
-                        : "text-brand-blue-light"
+                        ? "text-brand-accent-glow"
+                        : "text-brand-primary-bright"
                     }`}
                   >
                     {insight.title}
@@ -249,25 +250,25 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
           )}
           {warnings.some((w) => w.title.includes("Assimetria")) && (
             <div className="flex gap-2 text-sm text-foreground/80">
-              <span className="text-brand-blue-light font-bold shrink-0">→</span>
+              <span className="text-brand-primary-bright font-bold shrink-0">→</span>
               Incluir exercícios unilaterais (lunges, step-up, single-leg RDL) para reduzir a assimetria. Reavalie em 3–4 semanas.
             </div>
           )}
           {insights.some((i) => i.title.includes("Ciclo Elástico Neutro") || i.title.includes("Déficit")) && (
             <div className="flex gap-2 text-sm text-foreground/80">
-              <span className="text-brand-blue-light font-bold shrink-0">→</span>
+              <span className="text-brand-primary-bright font-bold shrink-0">→</span>
               Treinos de pliometria progressiva (skipping, salto em caixas, bounding) para melhorar a utilização do ciclo SSC.
             </div>
           )}
           {insights.some((i) => i.title.includes("Baixa Reatividade")) && (
             <div className="flex gap-2 text-sm text-foreground/80">
-              <span className="text-brand-blue-light font-bold shrink-0">→</span>
+              <span className="text-brand-primary-bright font-bold shrink-0">→</span>
               Exercícios de baixo drop jump (20–30cm) com foco em minimizar tempo de contato. Progrida a altura conforme melhora do RSI.
             </div>
           )}
           {insights.some((i) => i.title.includes("Tempo de Contato Elevado")) && (
             <div className="flex gap-2 text-sm text-foreground/80">
-              <span className="text-brand-blue-light font-bold shrink-0">→</span>
+              <span className="text-brand-primary-bright font-bold shrink-0">→</span>
               Treinar resposta neural rápida com exercícios de sprint, skips e rebotes rápidos com banda de resistência.
             </div>
           )}
@@ -280,7 +281,7 @@ export default function PerformanceReport({ student, assessments }: PerformanceR
       </div>
 
       <p className="text-muted-foreground/50 text-xs text-center">
-        Relatório gerado por 2D Performance • {formatDate(new Date().toISOString())} • Total de {assessments.length} {assessments.length === 1 ? "avaliação" : "avaliações"}
+        Relatório gerado por {APP_NAME} • {formatDate(new Date().toISOString())} • Total de {assessments.length} {assessments.length === 1 ? "avaliação" : "avaliações"}
       </p>
     </div>
   );

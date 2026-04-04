@@ -46,7 +46,7 @@ export default function EvolutionCard({ evolutions }: EvolutionCardProps) {
                 <div
                   className={`flex items-center gap-1 text-sm font-semibold rounded-lg px-2 py-1 ${
                     isPositive
-                      ? "text-brand-blue-light bg-brand-blue-mid/15"
+                      ? "text-brand-primary-bright bg-brand-primary/15"
                       : isNegative
                       ? "text-destructive bg-destructive/10"
                       : "text-muted-foreground bg-muted-foreground/10"

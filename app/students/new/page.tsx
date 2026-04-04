@@ -101,7 +101,7 @@ export default function NewStudentPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-24 h-24 rounded-full overflow-hidden bg-brand-blue-dark border-2 border-border hover:border-brand-blue-light transition-colors cursor-pointer flex items-center justify-center relative"
+                className="w-24 h-24 rounded-full overflow-hidden bg-brand-depth border-2 border-border hover:border-brand-primary-bright transition-colors cursor-pointer flex items-center justify-center relative"
               >
                 {photoPreview ? (
                   <Image
@@ -112,12 +112,12 @@ export default function NewStudentPage() {
                     unoptimized
                   />
                 ) : (
-                  <span className="font-heading text-2xl font-bold text-brand-blue-light select-none">
+                  <span className="font-heading text-2xl font-bold text-brand-primary-bright select-none">
                     {initials}
                   </span>
                 )}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
-                  <Camera className="w-6 h-6 text-white" />
+                  <Camera className="w-6 h-6 text-primary-foreground" />
                 </div>
               </button>
             </div>
@@ -125,7 +125,7 @@ export default function NewStudentPage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-brand-blue-light hover:text-brand-yellow-glow text-xs font-medium cursor-pointer transition-colors"
+              className="text-brand-primary-bright hover:text-brand-accent-glow text-xs font-medium cursor-pointer transition-colors"
             >
               {photoPreview ? "Trocar foto" : "Adicionar foto (opcional)"}
             </button>
@@ -149,7 +149,7 @@ export default function NewStudentPage() {
               placeholder="Ex: João Silva"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-11"
+              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-11"
               required
             />
           </div>
@@ -167,7 +167,7 @@ export default function NewStudentPage() {
                 max={99}
                 value={form.age}
                 onChange={(e) => setForm({ ...form, age: e.target.value })}
-                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-11"
+                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-11"
               />
             </div>
             <div className="space-y-2">
@@ -181,7 +181,7 @@ export default function NewStudentPage() {
                 step="0.1"
                 value={form.weight}
                 onChange={(e) => setForm({ ...form, weight: e.target.value })}
-                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-11"
+                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-11"
               />
             </div>
             <div className="space-y-2">
@@ -195,7 +195,7 @@ export default function NewStudentPage() {
                 step="0.1"
                 value={form.height}
                 onChange={(e) => setForm({ ...form, height: e.target.value })}
-                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-11"
+                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-11"
               />
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function NewStudentPage() {
               placeholder="Ex: Melhorar performance no futebol, aumentar altura de salto..."
               value={form.objective}
               onChange={(e) => setForm({ ...form, objective: e.target.value })}
-              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light resize-none"
+              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright resize-none"
               rows={3}
             />
           </div>
@@ -218,7 +218,7 @@ export default function NewStudentPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer flex-1 h-11 text-base"
+              className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold cursor-pointer flex-1 h-11 text-base"
             >
               <UserPlus className="w-5 h-5 mr-2" />
               {loading ? "Salvando..." : "Cadastrar Aluno"}

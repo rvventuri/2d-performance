@@ -77,8 +77,8 @@ export function PerfilIaTab({ initialProfile }: Props) {
 
   return (
     <div className="space-y-6 mt-6">
-      <div className="flex items-start gap-3 bg-brand-blue-mid/10 border border-brand-blue-mid/30 rounded-xl p-4">
-        <Brain className="w-5 h-5 text-brand-blue-mid mt-0.5 flex-shrink-0" />
+      <div className="flex items-start gap-3 bg-brand-primary/10 border border-brand-primary/30 rounded-xl p-4">
+        <Brain className="w-5 h-5 text-brand-primary mt-0.5 flex-shrink-0" />
         <p className="text-sm text-muted-foreground">
           Estas informações são injetadas em todas as análises de IA. Quanto mais específico você for,
           mais alinhada ao seu método de trabalho será a análise dos seus atletas.
@@ -94,7 +94,7 @@ export function PerfilIaTab({ initialProfile }: Props) {
             placeholder={field.placeholder}
             value={form[field.key]}
             onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
-            className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light resize-none"
+            className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright resize-none"
             rows={field.rows}
           />
         </div>
@@ -104,7 +104,7 @@ export function PerfilIaTab({ initialProfile }: Props) {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer h-11 px-8"
+          className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold cursor-pointer h-11 px-8"
         >
           <Save className="w-4 h-4 mr-2" />
           {saving ? "Salvando..." : "Salvar Perfil"}

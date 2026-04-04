@@ -7,6 +7,7 @@ import MetricChart from "@/components/metric-chart";
 import { Assessment, AiAnalysisData, ShareAthleteData, METRIC_LABELS } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { use } from "react";
+import { APP_NAME } from "@/lib/branding";
 import {
   Lock,
   Loader2,
@@ -25,14 +26,14 @@ import {
 // ─── Metric colour map ────────────────────────────────────────────────────────
 
 const CHART_COLORS: Record<string, string> = {
-  cmj: "#1437C9",
-  sj: "#2E5BFF",
-  abalakov: "#3B82F6",
+  cmj: "#4f46e5",
+  sj: "#6366f1",
+  abalakov: "#818cf8",
   rsi: "#8B5CF6",
   tempoContato: "#EC4899",
   alturaSaltoDJ: "#F59E0B",
   cmjEsquerdo: "#10B981",
-  cmjDireito: "#06B6D4",
+  cmjDireito: "#4de1c1",
   assimetriaPercentual: "#EF4444",
   saltoHorizontal: "#F97316",
 };
@@ -87,7 +88,7 @@ function AssessmentCard({ assessment, index, total }: { assessment: Assessment; 
         className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-accent/50 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-brand-blue-mid shrink-0" />
+          <div className="w-2 h-2 rounded-full bg-brand-primary shrink-0" />
           <span className="font-heading font-bold text-foreground">
             Avaliação {index + 1}
           </span>
@@ -126,8 +127,8 @@ function PasswordGate({ onSubmit, error }: { onSubmit: (pw: string) => void; err
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-yellow/10 border border-brand-yellow/20 mb-2">
-            <Lock className="w-6 h-6 text-brand-yellow" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-accent/10 border border-brand-accent/20 mb-2">
+            <Lock className="w-6 h-6 text-brand-accent" />
           </div>
           <h1 className="font-heading text-2xl font-bold text-foreground">Link protegido</h1>
           <p className="text-muted-foreground text-sm">Seu treinador definiu uma senha para este link.</p>
@@ -139,7 +140,7 @@ function PasswordGate({ onSubmit, error }: { onSubmit: (pw: string) => void; err
             value={pw}
             onChange={(e) => setPw(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && pw.trim() && onSubmit(pw.trim())}
-            className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand-yellow/50 text-sm"
+            className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand-accent/50 text-sm"
           />
           {error && (
             <p className="text-destructive text-xs flex items-center gap-1.5">
@@ -150,7 +151,7 @@ function PasswordGate({ onSubmit, error }: { onSubmit: (pw: string) => void; err
             type="button"
             disabled={!pw.trim()}
             onClick={() => onSubmit(pw.trim())}
-            className="w-full bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
+            className="w-full bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold py-3 rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
           >
             Acessar
           </button>
@@ -217,7 +218,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
   if (phase === "loading") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-brand-blue-light" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-primary-bright" />
       </div>
     );
   }
@@ -278,14 +279,15 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
             <Image
-              src="/logosemfundo.png"
-              alt="2D Performance"
+              src="/saltoverse-mark.svg"
+              alt={APP_NAME}
               width={28}
               height={28}
               className="rounded-md"
+              unoptimized
             />
-            <span className="font-heading font-bold text-sm text-foreground group-hover:text-brand-blue-light transition-colors">
-              2D Performance
+            <span className="font-heading font-bold text-sm text-foreground group-hover:text-brand-primary-bright transition-colors">
+              {APP_NAME}
             </span>
           </Link>
           <span className="text-muted-foreground text-xs hidden sm:block">Relatório do Atleta</span>
@@ -298,12 +300,12 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
           {/* Avatar */}
           <div className="shrink-0">
             {student.photoUrl ? (
-              <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-brand-blue-mid ring-4 ring-brand-blue-mid/10">
+              <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-brand-primary ring-4 ring-brand-primary/10">
                 <Image src={student.photoUrl} alt={student.name} fill className="object-cover" />
               </div>
             ) : (
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-brand-blue-mid to-brand-blue-light flex items-center justify-center border-2 border-brand-blue-mid ring-4 ring-brand-blue-mid/10">
-                <span className="text-3xl font-bold text-white font-heading">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-brand-primary to-brand-primary-bright flex items-center justify-center border-2 border-brand-primary ring-4 ring-brand-primary/10">
+                <span className="text-3xl font-bold text-primary-foreground font-heading">
                   {student.name.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -314,7 +316,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
           <div className="text-center sm:text-left space-y-3 flex-1">
             <div>
               <h1 className="font-heading text-3xl font-bold text-foreground">{student.name}</h1>
-              <p className="text-brand-blue-light text-sm mt-1">{student.objective}</p>
+              <p className="text-brand-primary-bright text-sm mt-1">{student.objective}</p>
             </div>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2 text-xs">
               {student.age > 0 && (
@@ -348,7 +350,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
         {aiAnalysis && (
           <section className="bg-card border border-border rounded-2xl p-6 space-y-6">
             <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
-              <Activity className="w-5 h-5 text-brand-blue-light" />
+              <Activity className="w-5 h-5 text-brand-primary-bright" />
               Score de Performance
             </h2>
             <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -356,8 +358,8 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
               <div className="flex-1 space-y-3 text-center sm:text-left">
                 <p className="text-muted-foreground text-sm leading-relaxed">{aiAnalysis.profileDescription}</p>
                 {aiAnalysis.objectiveAlignment && (
-                  <div className="inline-flex items-center gap-2 bg-brand-blue-mid/10 border border-brand-blue-mid/20 rounded-lg px-3 py-2">
-                    <Target className="w-3.5 h-3.5 text-brand-blue-light shrink-0" />
+                  <div className="inline-flex items-center gap-2 bg-brand-primary/10 border border-brand-primary/20 rounded-lg px-3 py-2">
+                    <Target className="w-3.5 h-3.5 text-brand-primary-bright shrink-0" />
                     <span className="text-xs text-muted-foreground">
                       Alinhamento ao objetivo:{" "}
                       <span className="text-foreground font-medium">{aiAnalysis.objectiveAlignment.score}/100</span>
@@ -408,7 +410,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
         {assessments.length >= 2 && (activeMetrics.length > 0 || customMetricKeys.length > 0) && (
           <section className="space-y-4">
             <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
-              <Zap className="w-5 h-5 text-brand-yellow" />
+              <Zap className="w-5 h-5 text-brand-accent" />
               Evolução das métricas
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -416,14 +418,14 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
                 <div
                   key={key}
                   className="bg-card border border-border rounded-xl p-5"
-                  style={{ borderTopWidth: "2px", borderTopColor: CHART_COLORS[key] ?? "#1437C9" }}
+                  style={{ borderTopWidth: "2px", borderTopColor: CHART_COLORS[key] ?? "#4f46e5" }}
                 >
                   <MetricChart
                     assessments={assessments}
                     metricKey={key}
                     label={METRIC_LABELS[key].replace(/ \(.*\)$/, "")}
                     unit={METRIC_LABELS[key].match(/\((.*?)\)/)?.[1] ?? ""}
-                    color={CHART_COLORS[key] ?? "#1437C9"}
+                    color={CHART_COLORS[key] ?? "#4f46e5"}
                   />
                 </div>
               ))}
@@ -472,7 +474,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
         {aiAnalysis?.strengths && aiAnalysis.strengths.length > 0 && (
           <section className="space-y-4">
             <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
-              <Star className="w-5 h-5 text-brand-yellow" />
+              <Star className="w-5 h-5 text-brand-accent" />
               Seus pontos fortes
             </h2>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -494,7 +496,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
         {aiAnalysis?.prescriptions && aiAnalysis.prescriptions.length > 0 && (
           <section className="space-y-4">
             <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
-              <Target className="w-5 h-5 text-brand-blue-light" />
+              <Target className="w-5 h-5 text-brand-primary-bright" />
               Recomendações para você
             </h2>
             <div className="space-y-4">
@@ -506,7 +508,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-brand-blue-light bg-brand-blue-mid/10 border border-brand-blue-mid/20 rounded px-2 py-0.5">
+                        <span className="text-xs font-bold text-brand-primary-bright bg-brand-primary/10 border border-brand-primary/20 rounded px-2 py-0.5">
                           {p.quality}
                         </span>
                         {p.priority === 1 && (
@@ -525,7 +527,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
                       <ul className="space-y-1">
                         {p.examples.map((ex, j) => (
                           <li key={j} className="text-muted-foreground text-sm flex items-start gap-2">
-                            <span className="text-brand-blue-light shrink-0 mt-0.5">•</span>
+                            <span className="text-brand-primary-bright shrink-0 mt-0.5">•</span>
                             {ex}
                           </li>
                         ))}
@@ -573,8 +575,15 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
         {/* ─── Footer ──────────────────────────────────────────────────────── */}
         <footer className="border-t border-border pt-6 pb-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Image src="/logosemfundo.png" alt="2D Performance" width={20} height={20} className="rounded" />
-            <span className="text-muted-foreground text-xs font-medium">2D Performance</span>
+            <Image
+              src="/saltoverse-mark.svg"
+              alt={APP_NAME}
+              width={20}
+              height={20}
+              className="rounded"
+              unoptimized
+            />
+            <span className="text-muted-foreground text-xs font-medium">{APP_NAME}</span>
           </div>
           <span className="text-muted-foreground/50 text-xs">
             Gerado em {new Date().toLocaleDateString("pt-BR")}

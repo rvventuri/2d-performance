@@ -89,11 +89,11 @@ export default function DashboardClient({ students, totalAssessments, onboarding
             placeholder="Buscar aluno..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-card border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light transition-colors"
+            className="pl-9 bg-card border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright transition-colors"
           />
         </div>
         <Link href="/students/new">
-          <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-semibold cursor-pointer shrink-0">
+          <Button className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-semibold cursor-pointer shrink-0">
             <Plus className="w-4 h-4 mr-2" />
             Novo Aluno
           </Button>
@@ -113,7 +113,7 @@ export default function DashboardClient({ students, totalAssessments, onboarding
                 Comece cadastrando seu primeiro aluno para iniciar as avaliações.
               </p>
               <Link href="/students/new">
-                <Button className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-semibold cursor-pointer">
+                <Button className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-semibold cursor-pointer">
                   <Plus className="w-4 h-4 mr-2" />
                   Cadastrar Primeiro Aluno
                 </Button>
@@ -127,8 +127,8 @@ export default function DashboardClient({ students, totalAssessments, onboarding
         <div className="grid gap-3">
           {filtered.map((student) => (
             <Link key={student.id} href={`/students/${student.id}`}>
-              <div className="bg-card border border-border hover:border-brand-blue-light/35 rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 group">
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-blue-dark border border-border group-hover:border-brand-blue-light/40 flex items-center justify-center shrink-0 transition-colors relative">
+              <div className="bg-card border border-border hover:border-brand-primary-bright/35 rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 group">
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-depth border border-border group-hover:border-brand-primary-bright/40 flex items-center justify-center shrink-0 transition-colors relative">
                   {student.photoUrl ? (
                     <Image
                       src={student.photoUrl}
@@ -138,7 +138,7 @@ export default function DashboardClient({ students, totalAssessments, onboarding
                       sizes="48px"
                     />
                   ) : (
-                    <User className="w-5 h-5 text-muted-foreground group-hover:text-brand-blue-light transition-colors" />
+                    <User className="w-5 h-5 text-muted-foreground group-hover:text-brand-primary-bright transition-colors" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -166,12 +166,12 @@ export default function DashboardClient({ students, totalAssessments, onboarding
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {student.assessmentCount >= 2 && (
-                    <Badge className="bg-brand-blue-mid/15 text-brand-yellow-glow border-brand-blue-light/25 text-xs hidden sm:flex">
+                    <Badge className="bg-brand-primary/15 text-brand-accent-glow border-brand-primary-bright/25 text-xs hidden sm:flex">
                       <TrendingUp className="w-3 h-3 mr-1" />
                       Histórico
                     </Badge>
                   )}
-                  <ChevronRight className="w-5 h-5 text-border group-hover:text-brand-blue-light transition-colors" />
+                  <ChevronRight className="w-5 h-5 text-border group-hover:text-brand-primary-bright transition-colors" />
                 </div>
               </div>
             </Link>

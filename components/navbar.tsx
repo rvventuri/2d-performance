@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import type { User } from "@supabase/supabase-js";
+import { APP_NAME } from "@/lib/branding";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -48,13 +49,17 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <Image
-              src="/logosemfundo.png"
-              alt="2D Performance"
-              width={120}
-              height={40}
-              className="h-9 w-auto object-contain object-left"
+              src="/saltoverse-mark.svg"
+              alt={APP_NAME}
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain object-left shrink-0"
               priority
+              unoptimized
             />
+            <span className="font-heading text-lg font-bold tracking-tight text-foreground hidden sm:inline">
+              {APP_NAME}
+            </span>
           </Link>
 
           {/* Right side */}
@@ -122,7 +127,7 @@ export default function Navbar() {
             <Link href="/students/new">
               <Button
                 size="sm"
-                className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-semibold cursor-pointer transition-colors duration-150"
+                className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-semibold cursor-pointer transition-colors duration-150"
               >
                 <Plus className="w-4 h-4 sm:mr-1" />
                 <span className="hidden sm:inline">Novo Aluno</span>
@@ -136,8 +141,8 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-lg hover:bg-accent cursor-pointer transition-colors"
                 >
-                  <div className="w-7 h-7 bg-brand-blue-mid/20 border border-brand-blue-light/35 rounded-full flex items-center justify-center">
-                    <span className="text-brand-blue-light text-xs font-bold">{emailInitial}</span>
+                  <div className="w-7 h-7 bg-brand-primary/20 border border-brand-primary-bright/35 rounded-full flex items-center justify-center">
+                    <span className="text-brand-primary-bright text-xs font-bold">{emailInitial}</span>
                   </div>
                   <span className="text-muted-foreground text-xs hidden md:block max-w-[120px] truncate">
                     {emailShort}

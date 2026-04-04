@@ -107,7 +107,7 @@ export default function EditStudentPage() {
 
   if (!student) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <Loader2 className="w-8 h-8 animate-spin text-brand-blue-light" />
+      <Loader2 className="w-8 h-8 animate-spin text-brand-primary-bright" />
     </div>
   );
 
@@ -133,7 +133,7 @@ export default function EditStudentPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-24 h-24 rounded-full overflow-hidden bg-brand-blue-dark border-2 border-border hover:border-brand-blue-light transition-colors cursor-pointer flex items-center justify-center relative"
+                className="w-24 h-24 rounded-full overflow-hidden bg-brand-depth border-2 border-border hover:border-brand-primary-bright transition-colors cursor-pointer flex items-center justify-center relative"
               >
                 {currentPhoto ? (
                   <Image
@@ -144,12 +144,12 @@ export default function EditStudentPage() {
                     unoptimized
                   />
                 ) : (
-                  <span className="font-heading text-2xl font-bold text-brand-blue-light select-none">
+                  <span className="font-heading text-2xl font-bold text-brand-primary-bright select-none">
                     {initials}
                   </span>
                 )}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
-                  <Camera className="w-6 h-6 text-white" />
+                  <Camera className="w-6 h-6 text-primary-foreground" />
                 </div>
               </button>
 
@@ -160,7 +160,7 @@ export default function EditStudentPage() {
                   className="absolute -top-1 -right-1 w-6 h-6 bg-[#EF4444] rounded-full flex items-center justify-center hover:bg-[#DC2626] transition-colors cursor-pointer"
                   title="Remover foto"
                 >
-                  <Trash2 className="w-3 h-3 text-white" />
+                  <Trash2 className="w-3 h-3 text-primary-foreground" />
                 </button>
               )}
             </div>
@@ -168,7 +168,7 @@ export default function EditStudentPage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-brand-blue-light hover:text-brand-yellow-glow text-xs font-medium cursor-pointer transition-colors"
+              className="text-brand-primary-bright hover:text-brand-accent-glow text-xs font-medium cursor-pointer transition-colors"
             >
               {currentPhoto ? "Trocar foto" : "Adicionar foto"}
             </button>
@@ -191,7 +191,7 @@ export default function EditStudentPage() {
               id="name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-blue-light h-11"
+              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground focus:border-brand-primary-bright h-11"
               required
             />
           </div>
@@ -206,7 +206,7 @@ export default function EditStudentPage() {
                 max={99}
                 value={form.age}
                 onChange={(e) => setForm({ ...form, age: e.target.value })}
-                className="bg-secondary border-border text-foreground focus:border-brand-blue-light h-11"
+                className="bg-secondary border-border text-foreground focus:border-brand-primary-bright h-11"
               />
             </div>
             <div className="space-y-2">
@@ -217,7 +217,7 @@ export default function EditStudentPage() {
                 step="0.1"
                 value={form.weight}
                 onChange={(e) => setForm({ ...form, weight: e.target.value })}
-                className="bg-secondary border-border text-foreground focus:border-brand-blue-light h-11"
+                className="bg-secondary border-border text-foreground focus:border-brand-primary-bright h-11"
               />
             </div>
             <div className="space-y-2">
@@ -228,7 +228,7 @@ export default function EditStudentPage() {
                 step="0.1"
                 value={form.height}
                 onChange={(e) => setForm({ ...form, height: e.target.value })}
-                className="bg-secondary border-border text-foreground focus:border-brand-blue-light h-11"
+                className="bg-secondary border-border text-foreground focus:border-brand-primary-bright h-11"
               />
             </div>
           </div>
@@ -239,7 +239,7 @@ export default function EditStudentPage() {
               id="objective"
               value={form.objective}
               onChange={(e) => setForm({ ...form, objective: e.target.value })}
-              className="bg-secondary border-border text-foreground focus:border-brand-blue-light resize-none"
+              className="bg-secondary border-border text-foreground focus:border-brand-primary-bright resize-none"
               rows={3}
             />
           </div>
@@ -248,7 +248,7 @@ export default function EditStudentPage() {
             <Button
               type="submit"
               disabled={saving}
-              className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer flex-1 h-11"
+              className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold cursor-pointer flex-1 h-11"
             >
               {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
               {saving ? "Salvando..." : "Salvar Alterações"}

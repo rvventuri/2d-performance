@@ -85,8 +85,8 @@ export default function SeedClient() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-brand-blue-mid/10 border border-brand-blue-light/25 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Database className="w-8 h-8 text-brand-blue-light" />
+          <div className="w-16 h-16 bg-brand-primary/10 border border-brand-primary-bright/25 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Database className="w-8 h-8 text-brand-primary-bright" />
           </div>
           <h1 className="font-heading text-3xl font-bold text-foreground tracking-wide mb-2">
             SEED DE DADOS
@@ -127,7 +127,7 @@ export default function SeedClient() {
         {/* Loading / Progress */}
         {(status === "seeding" || status === "clearing") && (
           <div className="bg-card border border-border rounded-xl p-8 mb-6 text-center">
-            <Loader2 className="w-10 h-10 text-brand-blue-light animate-spin mx-auto mb-4" />
+            <Loader2 className="w-10 h-10 text-brand-primary-bright animate-spin mx-auto mb-4" />
             <p className="text-foreground font-semibold">
               {status === "seeding" ? "Inserindo atletas e gerando análises de IA..." : "Removendo todos os dados..."}
             </p>
@@ -141,9 +141,9 @@ export default function SeedClient() {
 
         {/* Success */}
         {status === "done" && (
-          <div className="bg-card border border-brand-blue-light/25 rounded-xl p-6 mb-6">
+          <div className="bg-card border border-brand-primary-bright/25 rounded-xl p-6 mb-6">
             <div className="flex items-center gap-3 mb-1">
-              <CheckCircle2 className="w-6 h-6 text-brand-yellow shrink-0" />
+              <CheckCircle2 className="w-6 h-6 text-brand-accent shrink-0" />
               <p className="text-foreground font-semibold">Dados inseridos com sucesso!</p>
             </div>
             {aiSummary && (
@@ -155,7 +155,7 @@ export default function SeedClient() {
                   <span className="text-muted-foreground truncate">{r.student}</span>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-muted-foreground text-xs">{r.assessments} aval.</span>
-                    <span className={`text-xs font-medium ${r.aiStatus.startsWith("✓") ? "text-brand-yellow-glow" : "text-destructive"}`}>
+                    <span className={`text-xs font-medium ${r.aiStatus.startsWith("✓") ? "text-brand-accent-glow" : "text-destructive"}`}>
                       {r.aiStatus}
                     </span>
                   </div>
@@ -194,7 +194,7 @@ export default function SeedClient() {
           <div className="flex gap-3">
             <Button
               onClick={handleSeed}
-              className="flex-1 bg-brand-blue-mid hover:bg-brand-blue-dark text-white font-bold cursor-pointer h-11"
+              className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-bold cursor-pointer h-11"
             >
               <Database className="w-4 h-4 mr-2" />
               Popular banco de dados

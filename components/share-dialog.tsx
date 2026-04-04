@@ -100,7 +100,7 @@ export default function ShareDialog({ open, onClose, studentId, studentName }: S
           {/* Header */}
           <DialogHeader className="mb-4">
             <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
-              <Share2 className="w-4 h-4 text-brand-blue-light shrink-0" />
+              <Share2 className="w-4 h-4 text-brand-primary-bright shrink-0" />
               Compartilhar com atleta
             </DialogTitle>
             <p className="text-muted-foreground text-sm mt-1">
@@ -112,7 +112,7 @@ export default function ShareDialog({ open, onClose, studentId, studentName }: S
           {/* Loading */}
           {loading && (
             <div className="flex justify-center py-6">
-              <Loader2 className="w-5 h-5 animate-spin text-brand-blue-light" />
+              <Loader2 className="w-5 h-5 animate-spin text-brand-primary-bright" />
             </div>
           )}
 
@@ -122,7 +122,7 @@ export default function ShareDialog({ open, onClose, studentId, studentName }: S
               {/* Badge */}
               <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md ${
                 existing.hasPassword
-                  ? "bg-brand-yellow/10 text-brand-yellow"
+                  ? "bg-brand-accent/10 text-brand-accent"
                   : "bg-[#22C55E]/10 text-[#22C55E]"
               }`}>
                 {existing.hasPassword
@@ -184,7 +184,7 @@ export default function ShareDialog({ open, onClose, studentId, studentName }: S
               <div className="flex gap-2">
                 {[
                   { value: false, icon: Globe, label: "Público",   active: "bg-[#22C55E]/10 border-[#22C55E]/40 text-[#22C55E]" },
-                  { value: true,  icon: Lock,  label: "Com senha", active: "bg-brand-yellow/10 border-brand-yellow/40 text-brand-yellow" },
+                  { value: true,  icon: Lock,  label: "Com senha", active: "bg-brand-accent/10 border-brand-accent/40 text-brand-accent" },
                 ].map(({ value, icon: Icon, label, active }) => (
                   <button
                     key={label}
@@ -215,7 +215,7 @@ export default function ShareDialog({ open, onClose, studentId, studentName }: S
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-                    className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand-yellow"
+                    className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand-accent"
                   />
                 </div>
               ) : (
@@ -230,7 +230,7 @@ export default function ShareDialog({ open, onClose, studentId, studentName }: S
                 type="button"
                 onClick={handleGenerate}
                 disabled={generating}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-brand-blue-mid hover:bg-brand-blue-dark text-white text-sm font-bold transition-colors cursor-pointer disabled:opacity-60"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground text-sm font-bold transition-colors cursor-pointer disabled:opacity-60"
               >
                 {generating
                   ? <><Loader2 className="w-4 h-4 animate-spin" />Gerando...</>

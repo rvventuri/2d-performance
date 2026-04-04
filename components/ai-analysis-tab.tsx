@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,9 +29,9 @@ type Status =
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<MetricStatus, { label: string; color: string; bg: string; border: string }> = {
-  elite:      { label: "Elite",          color: "#93C5FD", bg: "#2E5BFF/10", border: "#2E5BFF/30" },
-  advanced:   { label: "Avançado",       color: "#1437C9", bg: "#1437C9/10", border: "#1437C9/30" },
-  good:       { label: "Bom",            color: "#2E5BFF", bg: "#2E5BFF/10", border: "#2E5BFF/30" },
+  elite:      { label: "Elite",          color: "#a5b4fc", bg: "#818cf8/10", border: "#818cf8/30" },
+  advanced:   { label: "Avançado",       color: "#4f46e5", bg: "#4f46e5/10", border: "#4f46e5/30" },
+  good:       { label: "Bom",            color: "#6366f1", bg: "#6366f1/10", border: "#6366f1/30" },
   developing: { label: "Em Construção",  color: "#F59E0B", bg: "#F59E0B/10", border: "#F59E0B/30" },
   critical:   { label: "Crítico",        color: "#EF4444", bg: "#EF4444/10", border: "#EF4444/30" },
 };
@@ -39,7 +39,7 @@ const STATUS_CONFIG: Record<MetricStatus, { label: string; color: string; bg: st
 const PRIORITY_CONFIG = {
   high:   { label: "Alta",   color: "#EF4444", icon: "🔴" },
   medium: { label: "Média",  color: "#F59E0B", icon: "🟡" },
-  low:    { label: "Baixa",  color: "#2E5BFF", icon: "🟢" },
+  low:    { label: "Baixa",  color: "#4de1c1", icon: "🟢" },
 };
 
 // ─── Small components ─────────────────────────────────────────────────────────
@@ -48,7 +48,7 @@ function ScoreRing({ score, size = 120 }: { score: number; size?: number }) {
   const r = (size - 16) / 2;
   const circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
-  const color = score >= 75 ? "#2E5BFF" : score >= 60 ? "#1437C9" : score >= 40 ? "#3B82F6" : score >= 20 ? "#F59E0B" : "#EF4444";
+  const color = score >= 75 ? "#818cf8" : score >= 60 ? "#6366f1" : score >= 40 ? "#4f46e5" : score >= 20 ? "#f59e0b" : "#ef4444";
 
   return (
     <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
@@ -93,7 +93,7 @@ function BenchmarkBar({ metric }: { metric: AiMetricScore }) {
         <div
           className="absolute h-full rounded-full"
           style={{
-            background: "linear-gradient(to right, #0B1F66 0%, #1437C9 40%, #2E5BFF 72%, #FFD400 100%)",
+            background: "linear-gradient(to right, #0b1020 0%, #4f46e5 40%, #818cf8 72%, #4de1c1 100%)",
             left: `${recPos}%`,
             right: `${100 - elPos}%`,
             opacity: 0.4,
@@ -101,18 +101,26 @@ function BenchmarkBar({ metric }: { metric: AiMetricScore }) {
         />
         {/* Benchmark ticks */}
         {[
-          { pos: recPos, label: "Rec.", color: "#475569" },
-          { pos: trPos,  label: "Trein.", color: "#1437C9" },
-          { pos: elPos,  label: "Elite", color: "#FFD400" },
-        ].map(({ pos, label, color }) => (
+          { pos: recPos, label: "Rec.", color: undefined as string | undefined, muted: true },
+          { pos: trPos,  label: "Trein.", color: "#6366f1", muted: false },
+          { pos: elPos,  label: "Elite", color: "#4de1c1", muted: false },
+        ].map(({ pos, label, color, muted }) => (
           <div key={label} className="absolute flex flex-col items-center" style={{ left: `${pos}%`, transform: "translateX(-50%)" }}>
-            <div className="w-px h-3 mt-[-2px]" style={{ backgroundColor: color }} />
-            <span className="text-[9px] mt-1 whitespace-nowrap" style={{ color }}>{label}</span>
+            <div
+              className={cn("w-px h-3 mt-[-2px]", muted && "bg-muted-foreground")}
+              style={!muted && color ? { backgroundColor: color } : undefined}
+            />
+            <span
+              className={cn("text-[9px] mt-1 whitespace-nowrap", muted && "text-muted-foreground")}
+              style={!muted && color ? { color } : undefined}
+            >
+              {label}
+            </span>
           </div>
         ))}
         {/* Athlete marker */}
         <div
-          className="absolute w-3.5 h-3.5 rounded-full border-2 border-white shadow-lg z-10"
+          className="absolute w-3.5 h-3.5 rounded-full border-2 border-background shadow-lg z-10"
           style={{
             left: `${valPos}%`,
             top: "50%",
@@ -153,8 +161,8 @@ function MetricCard({ metric }: { metric: AiMetricScore }) {
 
       <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1">
         <span>{metric.benchmarks.recreational}{metric.unit} rec.</span>
-        <span className="text-brand-blue-light">{metric.benchmarks.trained}{metric.unit} trein.</span>
-        <span className="text-brand-yellow">{metric.benchmarks.elite}{metric.unit} elite</span>
+        <span className="text-brand-primary-bright">{metric.benchmarks.trained}{metric.unit} trein.</span>
+        <span className="text-brand-accent">{metric.benchmarks.elite}{metric.unit} elite</span>
       </div>
 
       <p className="text-muted-foreground text-xs mt-2 leading-relaxed">{metric.interpretation}</p>
@@ -389,8 +397,8 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
   if (status === "loading-saved") {
     return (
       <div className="flex items-center gap-3 py-10 justify-center">
-        <div className="w-8 h-8 bg-gradient-to-br from-brand-blue-dark to-brand-blue-light rounded-xl flex items-center justify-center animate-pulse">
-          <Sparkles className="w-4 h-4 text-white" />
+        <div className="w-8 h-8 bg-gradient-to-br from-brand-depth to-brand-primary-bright rounded-xl flex items-center justify-center animate-pulse">
+          <Sparkles className="w-4 h-4 text-primary-foreground" />
         </div>
         <p className="text-muted-foreground text-sm">Carregando análise...</p>
       </div>
@@ -419,7 +427,7 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
           <p className="text-foreground font-semibold mb-1">Erro na análise</p>
           <p className="text-muted-foreground text-sm max-w-md">{error}</p>
         </div>
-        <Button onClick={handleRegenerate} className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white cursor-pointer">
+        <Button onClick={handleRegenerate} className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground cursor-pointer">
           <RefreshCw className="w-4 h-4 mr-2" />Tentar novamente
         </Button>
       </div>
@@ -429,10 +437,10 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
   if (!data) return null;
 
   const scoreColor =
-    data.performanceScore >= 75 ? "#2E5BFF" :
-    data.performanceScore >= 60 ? "#1437C9" :
-    data.performanceScore >= 40 ? "#3B82F6" :
-    data.performanceScore >= 20 ? "#F59E0B" : "#EF4444";
+    data.performanceScore >= 75 ? "#818cf8" :
+    data.performanceScore >= 60 ? "#6366f1" :
+    data.performanceScore >= 40 ? "#4f46e5" :
+    data.performanceScore >= 20 ? "#f59e0b" : "#ef4444";
 
   return (
     <div className="space-y-5">
@@ -440,8 +448,8 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
       {/* ── Top bar ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-gradient-to-br from-brand-blue-dark to-brand-blue-light rounded-lg flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div className="w-7 h-7 bg-gradient-to-br from-brand-depth to-brand-primary-bright rounded-lg flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-primary-foreground" />
           </div>
           <span className="text-muted-foreground text-xs">
             {generatedAt ? `Gerada em ${formatDate(generatedAt.split("T")[0])}` : "Análise IA"}
@@ -450,7 +458,7 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
         </div>
         <div className="flex gap-1.5">
           <Button onClick={handleCopy} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer h-7 w-7 p-0">
-            {copied ? <Check className="w-3.5 h-3.5 text-brand-yellow" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-brand-accent" /> : <Copy className="w-3.5 h-3.5" />}
           </Button>
           <Button onClick={handleRegenerate} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer h-7 w-7 p-0">
             <RefreshCw className="w-3.5 h-3.5" />
@@ -491,8 +499,8 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
               <div className="bg-secondary border border-border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-1.5">
-                    <Target className="w-3.5 h-3.5 text-brand-blue-light" />
-                    <span className="text-brand-blue-light text-xs font-semibold">Alinhamento ao Objetivo</span>
+                    <Target className="w-3.5 h-3.5 text-brand-primary-bright" />
+                    <span className="text-brand-primary-bright text-xs font-semibold">Alinhamento ao Objetivo</span>
                   </div>
                   <span className="font-heading font-bold text-sm" style={{ color: scoreColor }}>
                     {data.objectiveAlignment.score}%
@@ -541,8 +549,8 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
               <Radar
                 name="Elite"
                 dataKey="elite"
-                stroke="#2E5BFF"
-                fill="#2E5BFF"
+                stroke="#818cf8"
+                fill="#818cf8"
                 fillOpacity={0.08}
                 strokeWidth={1}
                 strokeDasharray="4 2"
@@ -550,8 +558,8 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
               <Radar
                 name="Treinado"
                 dataKey="trained"
-                stroke="#3B82F6"
-                fill="#3B82F6"
+                stroke="#6366f1"
+                fill="#6366f1"
                 fillOpacity={0.08}
                 strokeWidth={1}
                 strokeDasharray="2 2"
@@ -568,11 +576,11 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
           </ResponsiveContainer>
           <div className="flex items-center gap-4 justify-center text-xs text-muted-foreground mt-1">
             <span className="flex items-center gap-1.5">
-              <span className="w-5 h-px bg-brand-blue-light inline-block" style={{ borderTop: "1px dashed #2E5BFF" }} />
+              <span className="w-5 h-px bg-brand-primary-bright inline-block" style={{ borderTop: "1px dashed #818cf8" }} />
               Elite
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-5 h-px bg-brand-blue-light inline-block" />
+              <span className="w-5 h-px bg-brand-primary-bright inline-block" />
               Treinado
             </span>
             <span className="flex items-center gap-1.5">
@@ -590,7 +598,7 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
                 Evolução
               </h3>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                data.evolution.trend === "improving" ? "bg-brand-blue-mid/15 text-brand-yellow-glow" :
+                data.evolution.trend === "improving" ? "bg-brand-primary/15 text-brand-accent-glow" :
                 data.evolution.trend === "declining" ? "bg-destructive/10 text-destructive" :
                 "bg-[#F59E0B]/10 text-[#F59E0B]"
               }`}>
@@ -608,16 +616,16 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
               {data.evolution.keyMetrics.map((m) => (
                 <div key={m.label} className="flex items-center gap-3">
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                    m.direction === "up" ? "bg-brand-blue-mid/15" :
+                    m.direction === "up" ? "bg-brand-primary/15" :
                     m.direction === "down" ? "bg-destructive/10" : "bg-[#F59E0B]/10"
                   }`}>
-                    {m.direction === "up" ? <TrendingUp className="w-4 h-4 text-brand-blue-light" /> :
+                    {m.direction === "up" ? <TrendingUp className="w-4 h-4 text-brand-primary-bright" /> :
                      m.direction === "down" ? <TrendingDown className="w-4 h-4 text-destructive" /> :
                      <Minus className="w-4 h-4 text-[#F59E0B]" />}
                   </div>
                   <span className="text-muted-foreground text-sm flex-1">{m.label}</span>
                   <span className={`font-heading font-bold text-sm ${
-                    m.direction === "up" ? "text-brand-blue-light" :
+                    m.direction === "up" ? "text-brand-primary-bright" :
                     m.direction === "down" ? "text-destructive" : "text-[#F59E0B]"
                   }`}>
                     {m.change > 0 ? "+" : ""}{m.change.toFixed(1)}%
@@ -655,14 +663,14 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
         {/* Strengths */}
         <div>
           <h3 className="font-heading text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-brand-yellow" />Pontos Fortes
+            <Shield className="w-4 h-4 text-brand-accent" />Pontos Fortes
           </h3>
           <div className="space-y-2.5">
             {data.strengths.map((s, i) => (
-              <div key={i} className="bg-card border border-brand-blue-light/25 rounded-xl p-4">
+              <div key={i} className="bg-card border border-brand-primary-bright/25 rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-brand-blue-mid/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check className="w-3.5 h-3.5 text-brand-yellow-glow" />
+                  <div className="w-6 h-6 rounded-lg bg-brand-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3.5 h-3.5 text-brand-accent-glow" />
                   </div>
                   <div>
                     <p className="text-foreground font-semibold text-sm">{s.title}</p>
@@ -711,7 +719,7 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
       {/* ── Prescriptions ── */}
       <div>
         <h3 className="font-heading text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-brand-yellow" />Prescrição de Treino
+          <Zap className="w-4 h-4 text-brand-accent" />Prescrição de Treino
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {data.prescriptions.map((p, i) => (
@@ -719,8 +727,8 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-heading font-bold text-sm"
                   style={{
-                    backgroundColor: p.priority === 1 ? "#2E5BFF20" : p.priority === 2 ? "#1437C920" : "#FFD40020",
-                    color: p.priority === 1 ? "#93C5FD" : p.priority === 2 ? "#60A5FA" : "#FFD400",
+                    backgroundColor: p.priority === 1 ? "#818cf820" : p.priority === 2 ? "#6366f120" : "#4de1c120",
+                    color: p.priority === 1 ? "#c7d2fe" : p.priority === 2 ? "#a5b4fc" : "#7ef3dc",
                   }}>
                   {p.priority}
                 </div>
@@ -740,7 +748,7 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
               <div className="space-y-1.5">
                 {p.examples.map((ex, j) => (
                   <div key={j} className="flex items-start gap-2 text-xs text-muted-foreground">
-                    <ChevronRight className="w-3 h-3 text-brand-blue-light shrink-0 mt-0.5" />
+                    <ChevronRight className="w-3 h-3 text-brand-primary-bright shrink-0 mt-0.5" />
                     <span>{ex}</span>
                   </div>
                 ))}

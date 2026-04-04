@@ -15,6 +15,7 @@ import {
   Target,
   Layers,
 } from "lucide-react";
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
@@ -70,7 +71,7 @@ function Particles() {
       {particles.map((p) => (
         <span
           key={p.id}
-          className="absolute rounded-full bg-brand-blue-light"
+          className="absolute rounded-full bg-brand-primary-bright"
           style={{
             left: p.left,
             top: p.top,
@@ -101,7 +102,7 @@ function StatCounter({
     <div className="text-center">
       <p className="font-heading text-5xl sm:text-6xl font-black text-foreground">
         {count}
-        <span className="text-brand-yellow">{suffix}</span>
+        <span className="text-brand-accent">{suffix}</span>
       </p>
       <p className="text-muted-foreground text-sm mt-1 uppercase tracking-widest font-medium">{label}</p>
     </div>
@@ -126,15 +127,19 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border backdrop-blur-md bg-background/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/">
+            <Link href="/" className="flex items-center gap-2">
               <Image
-                src="/logosemfundo.png"
-                alt="2D Performance"
-                width={120}
-                height={40}
-                className="h-9 w-auto object-contain object-left"
+                src="/saltoverse-mark.svg"
+                alt={APP_NAME}
+                width={36}
+                height={36}
+                className="h-9 w-9 object-contain object-left shrink-0"
                 priority
+                unoptimized
               />
+              <span className="font-heading text-lg font-bold text-foreground hidden sm:inline">
+                {APP_NAME}
+              </span>
             </Link>
             <div className="flex items-center gap-3">
               <Link
@@ -145,7 +150,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/login"
-                className="bg-brand-yellow text-brand-shadow text-sm font-bold px-4 py-2 rounded-lg hover:bg-brand-yellow-glow transition-colors"
+                className="bg-brand-accent text-brand-accent-foreground text-sm font-bold px-4 py-2 rounded-lg hover:bg-brand-accent-glow transition-colors"
               >
                 Começar Grátis
               </Link>
@@ -164,11 +169,11 @@ export default function LandingPage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(20,55,201,0.18) 0%, rgba(46,91,255,0.08) 45%, transparent 75%)",
+              "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(79,70,229,0.2) 0%, rgba(129,140,248,0.1) 45%, transparent 75%)",
             animation: "radial-pulse 8s ease-in-out infinite",
           }}
         />
-        {/* Second glow — yellow accent */}
+        {/* Second glow — accent ciano */}
         <div
           className="absolute pointer-events-none"
           style={{
@@ -177,7 +182,7 @@ export default function LandingPage() {
             width: 300,
             height: 300,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(255,212,0,0.07) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(77,225,193,0.1) 0%, transparent 70%)",
           }}
         />
 
@@ -185,9 +190,9 @@ export default function LandingPage() {
 
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-brand-blue-mid/15 border border-brand-blue-light/25 rounded-full px-4 py-1.5 mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow animate-pulse inline-block" />
-            <span className="text-brand-blue-light text-xs font-semibold uppercase tracking-widest">
+          <div className="inline-flex items-center gap-2 bg-brand-primary/15 border border-brand-primary-bright/25 rounded-full px-4 py-1.5 mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse inline-block" />
+            <span className="text-brand-primary-bright text-xs font-semibold uppercase tracking-widest">
               Avaliação de Performance Esportiva com IA
             </span>
           </div>
@@ -206,12 +211,12 @@ export default function LandingPage() {
             </span>
             <br />
             CADA DADO{" "}
-            <span className="text-brand-yellow text-glow">É UMA DECISÃO.</span>
+            <span className="text-brand-accent text-glow">É UMA DECISÃO.</span>
           </h1>
 
           <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
             Transforme avaliações biomecânicas em inteligência. O{" "}
-            <span className="text-foreground font-semibold">2D Performance</span> usa IA para decifrar
+            <span className="text-foreground font-semibold">{APP_NAME}</span> usa IA para decifrar
             a performance do seu atleta — salto por salto, avaliação por avaliação — e entregar
             os insights que mudam o planejamento.
           </p>
@@ -220,7 +225,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/login"
-              className="group relative bg-brand-yellow text-brand-shadow font-black text-base px-8 py-4 rounded-xl hover:bg-brand-yellow-glow transition-all duration-200 animate-pulse-glow flex items-center gap-2"
+              className="group relative bg-brand-accent text-brand-accent-foreground font-black text-base px-8 py-4 rounded-xl hover:bg-brand-accent-glow transition-all duration-200 animate-pulse-glow flex items-center gap-2"
             >
               Começar Agora — É Grátis
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -240,19 +245,19 @@ export default function LandingPage() {
             style={{ animationDelay: "0.5s" }}
           >
             <div
-              className="rounded-2xl overflow-hidden border border-brand-blue-light/20"
+              className="rounded-2xl overflow-hidden border border-brand-primary-bright/20"
               style={{
                 boxShadow:
-                  "0 0 0 1px rgba(46,91,255,0.15), 0 32px 80px rgba(11,31,102,0.6), 0 0 120px rgba(20,55,201,0.12)",
+                  "0 0 0 1px rgba(129,140,248,0.15), 0 32px 80px rgba(11,16,32,0.6), 0 0 120px rgba(79,70,229,0.12)",
               }}
             >
               {/* Mock toolbar */}
               <div className="bg-card px-4 py-3 flex items-center gap-2 border-b border-border">
                 <span className="w-3 h-3 rounded-full bg-destructive/70" />
-                <span className="w-3 h-3 rounded-full bg-brand-yellow/70" />
+                <span className="w-3 h-3 rounded-full bg-brand-accent/70" />
                 <span className="w-3 h-3 rounded-full bg-[#22C55E]/70" />
                 <div className="flex-1 mx-4 bg-secondary rounded-md h-6 flex items-center px-3">
-                  <span className="text-muted-foreground text-xs">2d.performance/dashboard</span>
+                  <span className="text-muted-foreground text-xs">app.saltoverse.com/dashboard</span>
                 </div>
               </div>
 
@@ -261,9 +266,9 @@ export default function LandingPage() {
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   {[
-                    { label: "Atletas", value: "12", color: "#1437C9" },
-                    { label: "Avaliações", value: "47", color: "#2E5BFF" },
-                    { label: "Com histórico", value: "9", color: "#FFD400" },
+                    { label: "Atletas", value: "12", color: "#4f46e5" },
+                    { label: "Avaliações", value: "47", color: "#818cf8" },
+                    { label: "Com histórico", value: "9", color: "#4de1c1" },
                   ].map((s) => (
                     <div key={s.label} className="bg-card border border-border rounded-xl p-3">
                       <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{s.label}</p>
@@ -280,7 +285,7 @@ export default function LandingPage() {
                 {/* Mock athlete list */}
                 <div className="space-y-2">
                   {[
-                    { name: "Mateus Assis", sport: "Futebol · Atacante", status: "IA Analisada", statusColor: "#FFD400" },
+                    { name: "Mateus Assis", sport: "Futebol · Atacante", status: "IA Analisada", statusColor: "#4de1c1" },
                     { name: "Thiago Duarte", sport: "Futvolei · Profissional", status: "Em evolução", statusColor: "#22C55E" },
                     { name: "Gabriel Monteiro", sport: "Futebol · Meia", status: "Alerta ativo", statusColor: "#EF4444" },
                   ].map((a) => (
@@ -290,7 +295,7 @@ export default function LandingPage() {
                     >
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                        style={{ backgroundColor: "#1437C91a", color: "#2E5BFF" }}
+                        style={{ backgroundColor: "#4f46e51a", color: "#818cf8" }}
                       >
                         {a.name[0]}
                       </div>
@@ -314,7 +319,7 @@ export default function LandingPage() {
             <div
               className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-12 pointer-events-none"
               style={{
-                background: "radial-gradient(ellipse, rgba(20,55,201,0.35) 0%, transparent 70%)",
+                background: "radial-gradient(ellipse, rgba(79,70,229,0.35) 0%, transparent 70%)",
                 filter: "blur(12px)",
               }}
             />
@@ -328,7 +333,7 @@ export default function LandingPage() {
         className="relative py-20 border-y border-white/5"
         style={{
           background:
-            "linear-gradient(90deg, rgba(11,31,102,0.25), rgba(20,55,201,0.15), rgba(11,31,102,0.25))",
+            "linear-gradient(90deg, rgba(11,16,32,0.25), rgba(79,70,229,0.15), rgba(11,16,32,0.25))",
         }}
       >
         <div className="max-w-4xl mx-auto px-4 grid grid-cols-2 sm:grid-cols-4 gap-10">
@@ -360,7 +365,7 @@ export default function LandingPage() {
                 background: "radial-gradient(circle, rgba(239,68,68,0.06) 0%, transparent 70%)",
               }}
             />
-            <p className="text-destructive text-xs font-bold uppercase tracking-widest mb-4">Antes do 2D</p>
+            <p className="text-destructive text-xs font-bold uppercase tracking-widest mb-4">Sem o {APP_NAME}</p>
             <h2 className="font-heading text-3xl font-bold text-foreground mb-6 leading-tight">
               Seu atleta está evoluindo.
               <br />
@@ -385,18 +390,18 @@ export default function LandingPage() {
           </div>
 
           {/* Solução */}
-          <div className="bg-card border border-brand-blue-light/20 rounded-2xl p-8 relative overflow-hidden">
+          <div className="bg-card border border-brand-primary-bright/20 rounded-2xl p-8 relative overflow-hidden">
             <div
               className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
               style={{
-                background: "radial-gradient(circle, rgba(46,91,255,0.08) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(129,140,248,0.1) 0%, transparent 70%)",
               }}
             />
-            <p className="text-brand-yellow text-xs font-bold uppercase tracking-widest mb-4">Com o 2D Performance</p>
+            <p className="text-brand-accent text-xs font-bold uppercase tracking-widest mb-4">Com o {APP_NAME}</p>
             <h2 className="font-heading text-3xl font-bold text-foreground mb-6 leading-tight">
               Dados organizados.
               <br />
-              <span className="text-brand-blue-light">Decisões certeiras.</span>
+              <span className="text-brand-primary-bright">Decisões certeiras.</span>
             </h2>
             <ul className="space-y-4">
               {[
@@ -407,8 +412,8 @@ export default function LandingPage() {
                 "Assimetrias e padrões detectados automaticamente a cada avaliação",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-muted-foreground text-sm">
-                  <span className="w-5 h-5 rounded-full bg-brand-blue-mid/15 border border-brand-blue-light/30 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow" />
+                  <span className="w-5 h-5 rounded-full bg-brand-primary/15 border border-brand-primary-bright/30 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-accent" />
                   </span>
                   {item}
                 </li>
@@ -425,11 +430,11 @@ export default function LandingPage() {
         className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
         <div className="text-center mb-16">
-          <p className="text-brand-blue-light text-xs font-bold uppercase tracking-widest mb-3">Funcionalidades</p>
+          <p className="text-brand-primary-bright text-xs font-bold uppercase tracking-widest mb-3">Funcionalidades</p>
           <h2 className="font-heading text-5xl sm:text-6xl font-black text-foreground mb-4">
             TUDO QUE UM TREINADOR
             <br />
-            <span className="text-brand-yellow">DE ELITE PRECISA</span>
+            <span className="text-brand-accent">DE ELITE PRECISA</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
             Do cadastro do atleta à análise de IA — uma plataforma que faz o trabalho pesado enquanto você foca no que importa.
@@ -443,7 +448,7 @@ export default function LandingPage() {
               title: "Avaliações Estruturadas",
               description:
                 "CMJ, SJ, Abalakov, RSI, assimetria e muito mais. Dados organizados, histórico sempre acessível.",
-              color: "#2E5BFF",
+              color: "#818cf8",
               delay: 0,
             },
             {
@@ -451,7 +456,7 @@ export default function LandingPage() {
               title: "Análise por IA",
               description:
                 "Claude analisa todo o histórico do atleta e entrega um relatório em linguagem humana: pontos fortes, alertas e próximos passos.",
-              color: "#FFD400",
+              color: "#4de1c1",
               delay: 100,
             },
             {
@@ -459,7 +464,7 @@ export default function LandingPage() {
               title: "Evolução Visual",
               description:
                 "Gráficos de linha que mostram exatamente quanto o atleta cresceu entre cada avaliação ao longo do tempo.",
-              color: "#2E5BFF",
+              color: "#818cf8",
               delay: 200,
             },
             {
@@ -467,13 +472,13 @@ export default function LandingPage() {
               title: "Relatório de Performance",
               description:
                 "Insights automáticos, benchmarks por nível e recomendações personalizadas baseadas no objetivo do atleta.",
-              color: "#FFD400",
+              color: "#4de1c1",
               delay: 300,
             },
           ].map(({ icon: Icon, title, description, color, delay }) => (
             <div
               key={title}
-              className="group bg-card border border-border hover:border-brand-blue-light/30 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
+              className="group bg-card border border-border hover:border-brand-primary-bright/30 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
               style={{
                 opacity: featuresInView ? 1 : 0,
                 transform: featuresInView ? "none" : "translateY(28px)",
@@ -506,14 +511,14 @@ export default function LandingPage() {
         className="py-24 relative overflow-hidden"
         style={{
           background:
-            "linear-gradient(135deg, rgba(11,31,102,0.5) 0%, rgba(20,55,201,0.2) 50%, rgba(11,31,102,0.5) 100%)",
+            "linear-gradient(135deg, rgba(11,16,32,0.5) 0%, rgba(79,70,229,0.2) 50%, rgba(11,16,32,0.5) 100%)",
         }}
       >
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 70% 80% at 50% 50%, rgba(46,91,255,0.08) 0%, transparent 70%)",
+              "radial-gradient(ellipse 70% 80% at 50% 50%, rgba(129,140,248,0.08) 0%, transparent 70%)",
           }}
         />
         <div className="hero-grid absolute inset-0 opacity-30" />
@@ -527,22 +532,22 @@ export default function LandingPage() {
               transition: "opacity 0.7s ease, transform 0.7s ease",
             }}
           >
-            <div className="inline-flex items-center gap-2 bg-brand-yellow/10 border border-brand-yellow/25 rounded-full px-3 py-1 mb-6">
-              <Brain className="w-3.5 h-3.5 text-brand-yellow" />
-              <span className="text-brand-yellow text-xs font-bold uppercase tracking-widest">Inteligência Artificial</span>
+            <div className="inline-flex items-center gap-2 bg-brand-accent/10 border border-brand-accent/25 rounded-full px-3 py-1 mb-6">
+              <Brain className="w-3.5 h-3.5 text-brand-accent" />
+              <span className="text-brand-accent text-xs font-bold uppercase tracking-widest">Inteligência Artificial</span>
             </div>
 
             <h2 className="font-heading text-5xl sm:text-6xl font-black text-white mb-6 leading-none">
               O TREINADOR DEFINE
               <br />O OLHO CLÍNICO.
               <br />
-              <span className="text-brand-yellow">A IA FAZ O</span>
+              <span className="text-brand-accent">A IA FAZ O</span>
               <br />
-              <span className="text-brand-yellow">TRABALHO PESADO.</span>
+              <span className="text-brand-accent">TRABALHO PESADO.</span>
             </h2>
 
             <p className="text-white/70 text-lg leading-relaxed mb-8">
-              Você avalia. O 2D lê todo o histórico do atleta, identifica padrões que o olho humano perde e entrega um laudo completo — em linguagem humana, sem você precisar escrever uma linha.
+              Você avalia. O {APP_NAME} lê todo o histórico do atleta, identifica padrões que o olho humano perde e entrega um laudo completo — em linguagem humana, sem você precisar escrever uma linha.
             </p>
 
             <ul className="space-y-3 mb-10">
@@ -553,8 +558,8 @@ export default function LandingPage() {
                 "Comparação com benchmarks recreacional, treinado e elite",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-3 text-sm text-white/70">
-                  <span className="w-5 h-5 rounded-full bg-brand-yellow/15 border border-brand-yellow/30 flex items-center justify-center shrink-0">
-                    <Zap className="w-2.5 h-2.5 text-brand-yellow" />
+                  <span className="w-5 h-5 rounded-full bg-brand-accent/15 border border-brand-accent/30 flex items-center justify-center shrink-0">
+                    <Zap className="w-2.5 h-2.5 text-brand-accent" />
                   </span>
                   {item}
                 </li>
@@ -563,7 +568,7 @@ export default function LandingPage() {
 
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 bg-brand-yellow text-brand-shadow font-black px-6 py-3 rounded-xl hover:bg-brand-yellow-glow transition-colors"
+              className="inline-flex items-center gap-2 bg-brand-accent text-brand-accent-foreground font-black px-6 py-3 rounded-xl hover:bg-brand-accent-glow transition-colors"
             >
               Experimentar agora
               <ArrowRight className="w-4 h-4" />
@@ -580,23 +585,23 @@ export default function LandingPage() {
             }}
           >
             <div
-              className="bg-card border border-brand-blue-light/20 rounded-2xl overflow-hidden"
+              className="bg-card border border-brand-primary-bright/20 rounded-2xl overflow-hidden"
               style={{
-                boxShadow: "0 0 0 1px rgba(46,91,255,0.12), 0 24px 60px rgba(11,31,102,0.5)",
+                boxShadow: "0 0 0 1px rgba(129,140,248,0.12), 0 24px 60px rgba(11,16,32,0.5)",
               }}
             >
               {/* Card header */}
-              <div className="bg-brand-blue-dark/40 border-b border-brand-blue-light/15 px-5 py-4 flex items-center gap-3">
-                <div className="w-8 h-8 bg-brand-yellow/15 rounded-lg flex items-center justify-center">
-                  <Brain className="w-4 h-4 text-brand-yellow" />
+              <div className="bg-brand-depth/40 border-b border-brand-primary-bright/15 px-5 py-4 flex items-center gap-3">
+                <div className="w-8 h-8 bg-brand-accent/15 rounded-lg flex items-center justify-center">
+                  <Brain className="w-4 h-4 text-brand-accent" />
                 </div>
                 <div>
                   <p className="text-foreground text-sm font-semibold">Análise IA · Mateus Assis</p>
                   <p className="text-muted-foreground text-xs">Gerado agora · Futebol · Atacante</p>
                 </div>
                 <div className="ml-auto flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-brand-yellow animate-pulse" />
-                  <span className="text-brand-yellow text-xs font-bold">IA</span>
+                  <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse" />
+                  <span className="text-brand-accent text-xs font-bold">IA</span>
                 </div>
               </div>
 
@@ -605,14 +610,14 @@ export default function LandingPage() {
                 <div>
                   <div className="flex justify-between text-xs mb-2">
                     <span className="text-muted-foreground">Score geral de performance</span>
-                    <span className="text-brand-yellow font-bold">78 / 100</span>
+                    <span className="text-brand-accent font-bold">78 / 100</span>
                   </div>
                   <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full"
                       style={{
                         width: "78%",
-                        background: "linear-gradient(90deg, #0b1f66, #1437c9, #2e5bff)",
+                        background: "linear-gradient(90deg, #0b1020, #4f46e5, #818cf8)",
                       }}
                     />
                   </div>
@@ -621,10 +626,10 @@ export default function LandingPage() {
                 {/* Metrics summary */}
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: "CMJ", value: "47 cm", status: "elite", color: "#FFD400" },
-                    { label: "RSI", value: "1.82", status: "treinado", color: "#2E5BFF" },
+                    { label: "CMJ", value: "47 cm", status: "elite", color: "#4de1c1" },
+                    { label: "RSI", value: "1.82", status: "treinado", color: "#818cf8" },
                     { label: "Assimetria", value: "8%", status: "alerta", color: "#EF4444" },
-                    { label: "Abalakov", value: "52 cm", status: "elite", color: "#FFD400" },
+                    { label: "Abalakov", value: "52 cm", status: "elite", color: "#4de1c1" },
                   ].map((m) => (
                     <div key={m.label} className="bg-secondary/50 rounded-lg px-3 py-2">
                       <p className="text-muted-foreground text-xs">{m.label}</p>
@@ -637,8 +642,8 @@ export default function LandingPage() {
                 </div>
 
                 {/* Insight text */}
-                <div className="bg-brand-blue-mid/10 border border-brand-blue-light/20 rounded-xl p-4">
-                  <p className="text-brand-yellow text-xs font-bold mb-2 uppercase tracking-wider">Insight Principal</p>
+                <div className="bg-brand-primary/10 border border-brand-primary-bright/20 rounded-xl p-4">
+                  <p className="text-brand-accent text-xs font-bold mb-2 uppercase tracking-wider">Insight Principal</p>
                   <p className="text-muted-foreground text-xs leading-relaxed">
                     Mateus apresentou evolução consistente no CMJ nas últimas 3 avaliações (+7cm). A assimetria de tornozelo (8%) está acima do limite seguro — recomenda-se trabalho de fortalecimento unilateral antes da próxima periodização.
                   </p>
@@ -662,7 +667,7 @@ export default function LandingPage() {
             transition: "opacity 0.6s ease, transform 0.6s ease",
           }}
         >
-          <p className="text-brand-blue-light text-xs font-bold uppercase tracking-widest mb-3">Métricas</p>
+          <p className="text-brand-primary-bright text-xs font-bold uppercase tracking-widest mb-3">Métricas</p>
           <h2 className="font-heading text-5xl font-black text-foreground mb-4">
             O QUE VOCÊ AVALIA
           </h2>
@@ -698,17 +703,17 @@ export default function LandingPage() {
                 className={`
                   relative px-5 py-3 rounded-xl border transition-all duration-200
                   ${hot
-                    ? "bg-brand-yellow/8 border-brand-yellow/30 hover:border-brand-yellow/60 hover:bg-brand-yellow/12"
-                    : "bg-card border-border hover:border-brand-blue-light/35 hover:bg-brand-blue-mid/10"
+                    ? "bg-brand-accent/8 border-brand-accent/30 hover:border-brand-accent/60 hover:bg-brand-accent/12"
+                    : "bg-card border-border hover:border-brand-primary-bright/35 hover:bg-brand-primary/10"
                   }
                 `}
               >
-                <p className={`font-heading text-lg font-bold ${hot ? "text-brand-yellow" : "text-foreground"}`}>
+                <p className={`font-heading text-lg font-bold ${hot ? "text-brand-accent" : "text-foreground"}`}>
                   {label}
                 </p>
                 <p className="text-muted-foreground text-xs mt-0.5">{desc}</p>
                 {hot && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-brand-yellow text-brand-shadow text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                  <span className="absolute -top-1.5 -right-1.5 bg-brand-accent text-brand-accent-foreground text-[9px] font-black px-1.5 py-0.5 rounded-full">
                     ★
                   </span>
                 )}
@@ -723,7 +728,7 @@ export default function LandingPage() {
         ref={sportsSectionRef}
         className="py-20 border-y border-white/5"
         style={{
-          background: "linear-gradient(180deg, rgba(11,31,102,0.15) 0%, transparent 100%)",
+          background: "linear-gradient(180deg, rgba(11,16,32,0.15) 0%, transparent 100%)",
         }}
       >
         <div className="max-w-5xl mx-auto px-4 text-center">
@@ -751,7 +756,7 @@ export default function LandingPage() {
                   className={`
                     w-16 h-16 rounded-2xl flex items-center justify-center text-2xl border
                     ${ready
-                      ? "bg-brand-blue-mid/15 border-brand-blue-light/30"
+                      ? "bg-brand-primary/15 border-brand-primary-bright/30"
                       : "bg-card border-border"
                     }
                   `}
@@ -773,7 +778,7 @@ export default function LandingPage() {
       {/* ── COMO FUNCIONA ───────────────────────────────────────────────── */}
       <section className="py-24 max-w-5xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
-          <p className="text-brand-blue-light text-xs font-bold uppercase tracking-widest mb-3">Processo</p>
+          <p className="text-brand-primary-bright text-xs font-bold uppercase tracking-widest mb-3">Processo</p>
           <h2 className="font-heading text-5xl font-black text-foreground">
             SIMPLES ASSIM
           </h2>
@@ -786,21 +791,21 @@ export default function LandingPage() {
               icon: Layers,
               title: "Cadastre o Atleta",
               description: "Nome, esporte, objetivo e foto. Em menos de 1 minuto seu atleta já está na plataforma.",
-              color: "#2E5BFF",
+              color: "#818cf8",
             },
             {
               step: "02",
               icon: BarChart3,
               title: "Registre a Avaliação",
               description: "Insira os dados biomecânicos coletados. A plataforma organiza, calcula e salva tudo automaticamente.",
-              color: "#FFD400",
+              color: "#4de1c1",
             },
             {
               step: "03",
               icon: Shield,
               title: "Receba a Análise",
               description: "Com um clique, a IA analisa o histórico completo e entrega um laudo detalhado e acionável.",
-              color: "#2E5BFF",
+              color: "#818cf8",
             },
           ].map(({ step, icon: Icon, title, description, color }) => (
             <div key={step} className="relative">
@@ -839,7 +844,7 @@ export default function LandingPage() {
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(135deg, #0b1f66 0%, #1437c9 50%, #0b1f66 100%)",
+            background: "linear-gradient(135deg, #0b1020 0%, #4f46e5 50%, #0b1020 100%)",
           }}
         />
         <div className="hero-grid absolute inset-0 opacity-20" />
@@ -847,7 +852,7 @@ export default function LandingPage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 60% 80% at 50% 50%, rgba(46,91,255,0.15) 0%, transparent 70%)",
+              "radial-gradient(ellipse 60% 80% at 50% 50%, rgba(129,140,248,0.15) 0%, transparent 70%)",
           }}
         />
         <Particles />
@@ -861,7 +866,7 @@ export default function LandingPage() {
           }}
         >
           <div className="inline-flex items-center gap-2 bg-white/8 border border-white/15 rounded-full px-4 py-1.5 mb-8">
-            <Zap className="w-3.5 h-3.5 text-brand-yellow" />
+            <Zap className="w-3.5 h-3.5 text-brand-accent" />
             <span className="text-white/70 text-xs font-semibold uppercase tracking-widest">
               Setup em menos de 5 minutos
             </span>
@@ -871,7 +876,7 @@ export default function LandingPage() {
             SEU PRÓXIMO ATLETA
             <br />DE ALTO RENDIMENTO
             <br />
-            <span className="text-brand-yellow">COMEÇA COM UM DADO.</span>
+            <span className="text-brand-accent">COMEÇA COM UM DADO.</span>
           </h2>
 
           <p className="text-white/60 text-lg mb-10">
@@ -880,7 +885,7 @@ export default function LandingPage() {
 
           <Link
             href="/login"
-            className="inline-flex items-center gap-3 bg-brand-yellow text-brand-shadow font-black text-lg px-10 py-5 rounded-2xl hover:bg-brand-yellow-glow transition-all duration-200 animate-pulse-glow"
+            className="inline-flex items-center gap-3 bg-brand-accent text-brand-accent-foreground font-black text-lg px-10 py-5 rounded-2xl hover:bg-brand-accent-glow transition-all duration-200 animate-pulse-glow"
           >
             CRIAR CONTA GRÁTIS
             <ArrowRight className="w-5 h-5" />
@@ -896,14 +901,15 @@ export default function LandingPage() {
       <footer className="border-t border-border py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <Image
-            src="/logosemfundo.png"
-            alt="2D Performance"
-            width={100}
-            height={34}
-            className="h-8 w-auto object-contain opacity-70"
+            src="/saltoverse-mark.svg"
+            alt={APP_NAME}
+            width={32}
+            height={32}
+            className="h-8 w-8 object-contain opacity-80"
+            unoptimized
           />
-          <p className="text-muted-foreground text-xs">
-            © {new Date().getFullYear()} 2D Performance · Avaliação de performance esportiva com IA
+          <p className="text-muted-foreground text-xs text-center sm:text-left">
+            © {new Date().getFullYear()} {APP_NAME} · {APP_DESCRIPTION}
           </p>
           <div className="flex items-center gap-5">
             <Link href="/login" className="text-muted-foreground hover:text-foreground text-xs transition-colors">
