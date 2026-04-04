@@ -316,7 +316,7 @@ export default function LoginPage() {
           <Button
             type="button"
             onClick={handleGoogleLogin}
-            disabled={embedded || googleLoading || loading}
+            disabled={googleLoading || loading}
             className="w-full h-11 bg-secondary hover:bg-secondary/80 text-foreground border border-border font-semibold cursor-pointer text-sm mb-5 flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {googleLoading ? (
@@ -339,10 +339,6 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <fieldset
-              disabled={embedded}
-              className="space-y-4 border-0 p-0 m-0 min-w-0 disabled:opacity-60"
-            >
             <div className="space-y-2">
               <Label
                 htmlFor="email"
@@ -408,7 +404,6 @@ export default function LoginPage() {
                 "Entrar"
               )}
             </Button>
-            </fieldset>
           </form>
 
           <div className="mt-6 pt-6 border-t border-border text-center">

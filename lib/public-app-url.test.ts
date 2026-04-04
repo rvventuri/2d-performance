@@ -1,5 +1,28 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getPublicAppBaseUrl, getPublicAuthPageUrl } from "./public-app-url";
+import {
+  getMarketingCtaHref,
+  getPublicAppBaseUrl,
+  getPublicAuthPageUrl,
+} from "./public-app-url";
+
+describe("getMarketingCtaHref", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("returns absolute URL when NEXT_PUBLIC_APP_URL is set", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://2d-performance.vercel.app");
+    expect(getMarketingCtaHref("/login")).toBe("https://2d-performance.vercel.app/login");
+    expect(getMarketingCtaHref("/register")).toBe(
+      "https://2d-performance.vercel.app/register"
+    );
+  });
+
+  it("returns relative path when env is missing", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
+    expect(getMarketingCtaHref("/login")).toBe("/login");
+  });
+});
 
 describe("getPublicAppBaseUrl", () => {
   afterEach(() => {

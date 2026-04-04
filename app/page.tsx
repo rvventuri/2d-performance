@@ -16,6 +16,29 @@ import {
   Layers,
 } from "lucide-react";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
+import { getMarketingCtaHref, type AuthPagePath } from "@/lib/public-app-url";
+
+/** Abre em nova aba com URL canônica (NEXT_PUBLIC_APP_URL) para maximizar chance de sair do WebView de apps sociais. */
+function MarketingAuthLink({
+  path,
+  className,
+  children,
+}: {
+  path: AuthPagePath;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={getMarketingCtaHref(path)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+    >
+      {children}
+    </a>
+  );
+}
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
@@ -142,18 +165,18 @@ export default function LandingPage() {
               </span>
             </Link>
             <div className="flex items-center gap-3">
-              <Link
-                href="/login"
+              <MarketingAuthLink
+                path="/login"
                 className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors hidden sm:block"
               >
                 Entrar
-              </Link>
-              <Link
-                href="/login"
+              </MarketingAuthLink>
+              <MarketingAuthLink
+                path="/register"
                 className="bg-brand-accent text-brand-accent-foreground text-sm font-bold px-4 py-2 rounded-lg hover:bg-brand-accent-glow transition-colors"
               >
                 Começar Grátis
-              </Link>
+              </MarketingAuthLink>
             </div>
           </div>
         </div>
@@ -223,13 +246,13 @@ export default function LandingPage() {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/login"
+            <MarketingAuthLink
+              path="/register"
               className="group relative bg-brand-accent text-brand-accent-foreground font-black text-base px-8 py-4 rounded-xl hover:bg-brand-accent-glow transition-all duration-200 animate-pulse-glow flex items-center gap-2"
             >
               Começar Agora — É Grátis
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </MarketingAuthLink>
             <a
               href="#features"
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
@@ -566,13 +589,13 @@ export default function LandingPage() {
               ))}
             </ul>
 
-            <Link
-              href="/login"
+            <MarketingAuthLink
+              path="/register"
               className="inline-flex items-center gap-2 bg-brand-accent text-brand-accent-foreground font-black px-6 py-3 rounded-xl hover:bg-brand-accent-glow transition-colors"
             >
               Experimentar agora
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </MarketingAuthLink>
           </div>
 
           {/* Mock AI analysis card */}
@@ -883,13 +906,13 @@ export default function LandingPage() {
             Plataforma completa. Sem planilhas, sem papel, sem achismo.
           </p>
 
-          <Link
-            href="/login"
+          <MarketingAuthLink
+            path="/register"
             className="inline-flex items-center gap-3 bg-brand-accent text-brand-accent-foreground font-black text-lg px-10 py-5 rounded-2xl hover:bg-brand-accent-glow transition-all duration-200 animate-pulse-glow"
           >
             CRIAR CONTA GRÁTIS
             <ArrowRight className="w-5 h-5" />
-          </Link>
+          </MarketingAuthLink>
 
           <p className="text-white/30 text-xs mt-6">
             Sem cartão de crédito · Sem limite de atletas no teste
@@ -912,12 +935,18 @@ export default function LandingPage() {
             © {new Date().getFullYear()} {APP_NAME} · {APP_DESCRIPTION}
           </p>
           <div className="flex items-center gap-5">
-            <Link href="/login" className="text-muted-foreground hover:text-foreground text-xs transition-colors">
+            <MarketingAuthLink
+              path="/login"
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+            >
               Entrar
-            </Link>
-            <Link href="/login" className="text-muted-foreground hover:text-foreground text-xs transition-colors">
+            </MarketingAuthLink>
+            <MarketingAuthLink
+              path="/register"
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+            >
               Criar conta
-            </Link>
+            </MarketingAuthLink>
           </div>
         </div>
       </footer>

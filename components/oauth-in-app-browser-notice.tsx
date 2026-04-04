@@ -1,31 +1,44 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { buildChromeHttpsIntentUrl } from "@/lib/android-chrome-intent";
 import { isAndroidUserAgent, isIOSUserAgent } from "@/lib/device-platform";
+import { buildIOSChromeHttpsUrl } from "@/lib/ios-chrome-url";
 import type { AuthPagePath } from "@/lib/public-app-url";
 import { getPublicAuthPageUrl } from "@/lib/public-app-url";
 import { buildSafariHttpsOpenUrl } from "@/lib/safari-external-url";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const noticeStorageKey = (path: AuthPagePath) => `saltoverse-embedded-oauth-notice${path}`;
+
 type Props = {
-  /** Quando true, o usuário está provavelmente em WebView (LinkedIn, etc.) */
+  /** Quando true, o usuário está provavelmente em WebView (LinkedIn, Instagram, etc.) */
   active: boolean;
   authPath: AuthPagePath;
 };
 
 /**
- * Bloqueio UX: login com Google não funciona em WebView. Oferece abrir no Chrome/Safari
- * na URL canônica (`NEXT_PUBLIC_APP_URL` + /login ou /register).
+ * Aviso opcional (fechável): login com Google costuma falhar em WebView.
+ * Não bloqueia o formulário — só orienta abrir no navegador do sistema.
  */
 export function OAuthInAppBrowserNotice({ active, authPath }: Props) {
   const [targetUrl, setTargetUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (!active) return;
     const path = authPath;
+    const key = noticeStorageKey(path);
+    try {
+      if (sessionStorage.getItem(key) === "1") {
+        queueMicrotask(() => setDismissed(true));
+      }
+    } catch {
+      // modo privado / storage indisponível
+    }
     queueMicrotask(() => {
       setTargetUrl(getPublicAuthPageUrl(path));
     });
@@ -37,7 +50,16 @@ export function OAuthInAppBrowserNotice({ active, authPath }: Props) {
     return () => clearTimeout(t);
   }, [copied]);
 
-  if (!active) return null;
+  const handleDismiss = () => {
+    try {
+      sessionStorage.setItem(noticeStorageKey(authPath), "1");
+    } catch {
+      /* ignore */
+    }
+    queueMicrotask(() => setDismissed(true));
+  };
+
+  if (!active || dismissed) return null;
 
   const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
   const android = isAndroidUserAgent(ua);
@@ -45,6 +67,7 @@ export function OAuthInAppBrowserNotice({ active, authPath }: Props) {
 
   const chromeIntent = targetUrl ? buildChromeHttpsIntentUrl(targetUrl) : "";
   const safariOpen = targetUrl ? buildSafariHttpsOpenUrl(targetUrl) : "";
+  const iosChrome = targetUrl ? buildIOSChromeHttpsUrl(targetUrl) : "";
 
   const copyLink = async () => {
     if (!targetUrl) return;
@@ -56,17 +79,38 @@ export function OAuthInAppBrowserNotice({ active, authPath }: Props) {
     }
   };
 
+  const linkButtonClass = cn(
+    buttonVariants({ variant: "default" }),
+    "w-full h-10 font-semibold bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground no-underline text-center"
+  );
+
+  const secondaryLinkClass = cn(
+    buttonVariants({ variant: "secondary" }),
+    "w-full h-10 font-semibold no-underline text-center"
+  );
+
   return (
     <div
-      className="mb-4 p-3 rounded-lg border border-amber-500/35 bg-amber-500/10 space-y-3"
-      role="alert"
+      className="relative mb-4 p-3 pt-9 rounded-lg border border-amber-500/35 bg-amber-500/10 space-y-3"
+      role="status"
     >
-      <p className="text-foreground text-sm font-semibold">
-        Abra no Safari ou no Chrome para entrar
+      <button
+        type="button"
+        onClick={handleDismiss}
+        className="absolute top-2 right-2 rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-background/60 transition-colors cursor-pointer"
+        aria-label="Fechar aviso"
+      >
+        <X className="h-4 w-4" aria-hidden />
+      </button>
+
+      <p className="text-foreground text-sm font-semibold pr-8">
+        Dica: login com Google pode falhar neste navegador
       </p>
       <p className="text-muted-foreground text-sm leading-relaxed">
-        Este navegador (app LinkedIn, Instagram, etc.) não permite login com Google de forma
-        segura. Use um dos botões abaixo ou copie o link e abra no navegador do celular.
+        Apps como Instagram ou LinkedIn abrem páginas por dentro do app. Se o Google bloquear, use
+        uma das opções abaixo ou copie o link e abra no{" "}
+        <span className="text-foreground font-medium">Safari</span> ou{" "}
+        <span className="text-foreground font-medium">Chrome</span>.
       </p>
 
       {targetUrl ? (
@@ -76,49 +120,38 @@ export function OAuthInAppBrowserNotice({ active, authPath }: Props) {
       ) : null}
 
       <div className="flex flex-col gap-2">
-        {android && chromeIntent ? (
-          <a
-            href={chromeIntent}
-            className={cn(
-              buttonVariants({ variant: "default" }),
-              "w-full h-10 font-semibold bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground no-underline"
-            )}
-          >
-            Abrir no Chrome
-          </a>
+        {ios && targetUrl ? (
+          <>
+            <a
+              href={targetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkButtonClass}
+            >
+              Abrir em nova janela (recomendado)
+            </a>
+            <a href={safariOpen} className={secondaryLinkClass}>
+              Tentar abrir no Safari
+            </a>
+            <a href={iosChrome} className={secondaryLinkClass}>
+              Abrir no Chrome
+            </a>
+          </>
         ) : null}
 
-        {ios && safariOpen ? (
-          <a
-            href={safariOpen}
-            className={cn(
-              buttonVariants({ variant: "default" }),
-              "w-full h-10 font-semibold bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground no-underline"
-            )}
-          >
-            Abrir no Safari
+        {android && chromeIntent ? (
+          <a href={chromeIntent} className={linkButtonClass}>
+            Abrir no Chrome
           </a>
         ) : null}
 
         {!android && !ios && targetUrl ? (
           <>
-            <a
-              href={chromeIntent}
-              className={cn(
-                buttonVariants({ variant: "default" }),
-                "w-full h-10 font-semibold bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground no-underline"
-              )}
-            >
+            <a href={chromeIntent} className={linkButtonClass}>
               Abrir no Chrome (Android)
             </a>
-            <a
-              href={safariOpen}
-              className={cn(
-                buttonVariants({ variant: "secondary" }),
-                "w-full h-10 font-semibold no-underline"
-              )}
-            >
-              Abrir no Safari (iOS)
+            <a href={safariOpen} className={secondaryLinkClass}>
+              Tentar abrir no Safari (iOS)
             </a>
           </>
         ) : null}

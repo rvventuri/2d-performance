@@ -54,7 +54,9 @@ lib/              → utilitários compartilhados, clientes Supabase, tipos
 
 ### Login com Google (OAuth) e links em redes sociais
 
-No **celular**, apps como LinkedIn abrem links em **WebView**; o Google costuma **bloquear** OAuth nesse contexto. As telas de login e cadastro **bloqueiam** login (Google e e-mail) nesse contexto e mostram botões para abrir no Chrome (Android) ou Safari (iOS) na URL canônica. Defina **`NEXT_PUBLIC_APP_URL=https://2d-performance.vercel.app`** (sem barra final) na Vercel para que esses links não dependam do host do WebView.
+No **celular**, apps como LinkedIn ou Instagram abrem links em **WebView**; o Google costuma **bloquear** OAuth nesse contexto. As telas de login e cadastro mostram um **aviso fechável** (persistido na sessão com `sessionStorage`) com links para abrir a URL canônica no navegador (HTTPS em nova janela, Safari, Chrome iOS ou intent Android). O login **não** é bloqueado pelo aviso. Defina **`NEXT_PUBLIC_APP_URL=https://2d-performance.vercel.app`** (sem barra final) na Vercel para que esses links não dependam do host do WebView.
+
+Na **landing** (`app/page.tsx`), CTAs de entrar/cadastrar usam `getMarketingCtaHref` + `target="_blank"` para tentar abrir fora do WebView de apps sociais. **Não é garantido** (quem decide é o app anfitrião); sem API web para “forçar navegador padrão”.
 
 **Diagnóstico rápido:** no mesmo telefone, abrir o mesmo URL no **Safari** ou **Chrome** (fora do app) e tentar de novo. Se funcionar, era WebView — não é bug de redirect no Next.js.
 

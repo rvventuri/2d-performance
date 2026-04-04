@@ -17,7 +17,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - **Token de marca** `--brand-accent-foreground` e `--brand-primary-hover` no design system (`@theme` + `globals.css`)
 
 ### Changed
-- **OAuth em WebView (LinkedIn, etc.)**: login com Google e formulário e-mail desativados no navegador embutido; aviso com **Abrir no Chrome** (intent Android), **Abrir no Safari** (iOS), **Copiar link** usando URL canônica (`NEXT_PUBLIC_APP_URL` + `/login` ou `/register`); `lib/public-app-url.ts`, `lib/android-chrome-intent.ts`, `lib/safari-external-url.ts`, `lib/device-platform.ts`, `lib/use-likely-embedded-browser.ts` e testes associados; `AGENTS.md` recomenda definir `NEXT_PUBLIC_APP_URL` na Vercel
+- **Landing**: `MarketingAuthLink` em `app/page.tsx` com `getMarketingCtaHref`, `target="_blank"` e URL absoluta (`NEXT_PUBLIC_APP_URL`) para tentar abrir fora do WebView de apps sociais; CTAs de cadastro em `/register`, entrar em `/login`
+- **OAuth em WebView (login/cadastro)**: aviso fechável (`sessionStorage`), **sem** bloquear Google ou e-mail; iOS com HTTPS em nova janela, Safari (`x-safari-https`) e Chrome (`googlechromes://`, `lib/ios-chrome-url.ts`); Android com intent para Chrome; testes para `getMarketingCtaHref`; notas em `AGENTS.md`
 - **Cadastro de alunos**: `is_demo: false` explícito em `SupabaseStudentRepository` e `createStudent` em `lib/storage.ts`
 - **Rebranding SaltoVerse** em landing, login, register, share, navbar, admin, relatório de performance e textos de exemplo (ex.: URL do app); checklist de onboarding com chave `saltoverse-onboarding-dismissed`
 - **Design system**: tokens semânticos (`brand-depth`, `brand-primary`, `brand-primary-bright`, `brand-accent`, …) substituindo `brand-blue-*` / `brand-yellow*`; metadata raiz com Open Graph e Twitter
