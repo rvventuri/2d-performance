@@ -52,6 +52,17 @@ lib/              → utilitários compartilhados, clientes Supabase, tipos
 | `lib/supabase/client.ts` → `createClient()` | Client Components (browser) |
 | `lib/supabase/admin.ts` → `createAdminClient()` | Operações privilegiadas (service role) — nunca em rotas públicas |
 
+### Login com Google (OAuth) e links em redes sociais
+
+No **celular**, apps como LinkedIn abrem links em **WebView**; o Google costuma **bloquear** OAuth nesse contexto. As telas de login e cadastro exibem um aviso quando o `User-Agent` sugere navegador embutido (`lib/in-app-browser.ts`).
+
+**Diagnóstico rápido:** no mesmo telefone, abrir o mesmo URL no **Safari** ou **Chrome** (fora do app) e tentar de novo. Se funcionar, era WebView — não é bug de redirect no Next.js.
+
+**Se o erro mencionar redirect / URI e ocorrer em qualquer dispositivo:**
+
+1. **Supabase** → Authentication → URL configuration: **Site URL** = URL canônica de produção; **Redirect URLs** deve incluir `https://<seu-dominio>/auth/callback` (e variante `www` se existir).
+2. **Google Cloud Console** → Credenciais → OAuth 2.0 Client ID usado pelo Supabase: **URIs de redirecionamento autorizados** deve incluir `https://<project-ref>.supabase.co/auth/v1/callback` (redirect do Google vai primeiro para o domínio do Supabase, não para `/auth/callback` do app).
+
 ## Banco de Dados (tabelas principais)
 
 | Tabela | Propósito |

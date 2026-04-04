@@ -9,6 +9,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 ## [Unreleased] — 2026-04-05
 
 ### Added
+- **OAuth / WebView (LinkedIn e apps sociais)**: detecção heurística em `lib/in-app-browser.ts`, componente `OAuthInAppBrowserNotice` nas telas de login e cadastro orientando abrir no Safari ou Chrome quando o Google bloqueia login dentro do navegador do app; testes em `lib/in-app-browser.test.ts`
+- **AGENTS.md**: seção sobre login Google em WebView e checklist de Redirect URLs (Supabase + callback `...supabase.co/auth/v1/callback` no Google Cloud)
 - **Dados de demonstração (onboarding)**: coluna `students.is_demo`, tabela `user_demo_state` no `SCHEMA.sql`; clone na primeira visita ao `/dashboard` a partir do usuário template (`DEMO_TEMPLATE_USER_ID`) com service role (`getAdminClientOrNull`, `SupabaseDemoTemplateRepository`); use cases `EnsureDemoDataUseCase` e `ClearDemoDataUseCase`; server action `clearDemoDataAction`; banner “Modo demonstração”, confirmação em modal e badge “Demo” na lista de alunos; testes unitários dos use cases; instruções em `AGENTS.md`
 - **`lib/branding.ts`**: constantes `APP_NAME` (SaltoVerse), `APP_DESCRIPTION` e `APP_TAGLINE` para metadata e UI
 - **Logo e favicon**: `public/saltoverse-mark.svg` e `app/icon.tsx` (ImageResponse)

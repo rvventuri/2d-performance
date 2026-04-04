@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
+import { OAuthInAppBrowserNotice } from "@/components/oauth-in-app-browser-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -301,6 +302,8 @@ export default function LoginPage() {
               Acesse sua conta para continuar
             </p>
           </div>
+
+          <OAuthInAppBrowserNotice />
 
           {error && (
             <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
