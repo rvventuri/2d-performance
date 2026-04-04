@@ -7,6 +7,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
 import { OAuthInAppBrowserNotice } from "@/components/oauth-in-app-browser-notice";
+import { useLikelyEmbeddedBrowser } from "@/lib/use-likely-embedded-browser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -99,6 +100,7 @@ const features = [
 
 export default function RegisterPage() {
   const router = useRouter();
+  const embedded = useLikelyEmbeddedBrowser();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [form, setForm] = useState({
     full_name: "",
@@ -342,7 +344,7 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          <OAuthInAppBrowserNotice />
+          <OAuthInAppBrowserNotice active={embedded} authPath="/register" />
 
           {error && (
             <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
@@ -353,7 +355,7 @@ export default function RegisterPage() {
           <Button
             type="button"
             onClick={handleGoogleLogin}
-            disabled={googleLoading || loading}
+            disabled={embedded || googleLoading || loading}
             className="w-full h-11 bg-secondary hover:bg-secondary/80 text-foreground border border-border font-semibold cursor-pointer text-sm mb-5 flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {googleLoading ? (
@@ -376,6 +378,10 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <fieldset
+              disabled={embedded}
+              className="space-y-4 border-0 p-0 m-0 min-w-0 disabled:opacity-60"
+            >
             <div className="space-y-2">
               <Label
                 htmlFor="full_name"
@@ -535,6 +541,7 @@ export default function RegisterPage() {
                 "Criar Conta Grátis"
               )}
             </Button>
+            </fieldset>
           </form>
 
           <div className="mt-6 pt-6 border-t border-border text-center">

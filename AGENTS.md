@@ -54,7 +54,7 @@ lib/              → utilitários compartilhados, clientes Supabase, tipos
 
 ### Login com Google (OAuth) e links em redes sociais
 
-No **celular**, apps como LinkedIn abrem links em **WebView**; o Google costuma **bloquear** OAuth nesse contexto. As telas de login e cadastro exibem um aviso quando o `User-Agent` sugere navegador embutido (`lib/in-app-browser.ts`).
+No **celular**, apps como LinkedIn abrem links em **WebView**; o Google costuma **bloquear** OAuth nesse contexto. As telas de login e cadastro **bloqueiam** login (Google e e-mail) nesse contexto e mostram botões para abrir no Chrome (Android) ou Safari (iOS) na URL canônica. Defina **`NEXT_PUBLIC_APP_URL=https://2d-performance.vercel.app`** (sem barra final) na Vercel para que esses links não dependam do host do WebView.
 
 **Diagnóstico rápido:** no mesmo telefone, abrir o mesmo URL no **Safari** ou **Chrome** (fora do app) e tentar de novo. Se funcionar, era WebView — não é bug de redirect no Next.js.
 
@@ -114,7 +114,7 @@ NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 ANTHROPIC_API_KEY
-NEXT_PUBLIC_APP_URL   (opcional, fallback: request origin)
+NEXT_PUBLIC_APP_URL   (recomendado em produção: URL canônica, ex. https://2d-performance.vercel.app — usada nos links “Abrir no Chrome/Safari” no login; fallback: origin atual)
 DEMO_TEMPLATE_USER_ID (opcional) — UUID do usuário Supabase que guarda a base de demonstração clonada para novas contas na primeira visita ao dashboard. Requer `SUPABASE_SERVICE_ROLE_KEY` no servidor.
 ```
 

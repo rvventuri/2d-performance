@@ -17,6 +17,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - **Token de marca** `--brand-accent-foreground` e `--brand-primary-hover` no design system (`@theme` + `globals.css`)
 
 ### Changed
+- **OAuth em WebView (LinkedIn, etc.)**: login com Google e formulário e-mail desativados no navegador embutido; aviso com **Abrir no Chrome** (intent Android), **Abrir no Safari** (iOS), **Copiar link** usando URL canônica (`NEXT_PUBLIC_APP_URL` + `/login` ou `/register`); `lib/public-app-url.ts`, `lib/android-chrome-intent.ts`, `lib/safari-external-url.ts`, `lib/device-platform.ts`, `lib/use-likely-embedded-browser.ts` e testes associados; `AGENTS.md` recomenda definir `NEXT_PUBLIC_APP_URL` na Vercel
 - **Cadastro de alunos**: `is_demo: false` explícito em `SupabaseStudentRepository` e `createStudent` em `lib/storage.ts`
 - **Rebranding SaltoVerse** em landing, login, register, share, navbar, admin, relatório de performance e textos de exemplo (ex.: URL do app); checklist de onboarding com chave `saltoverse-onboarding-dismissed`
 - **Design system**: tokens semânticos (`brand-depth`, `brand-primary`, `brand-primary-bright`, `brand-accent`, …) substituindo `brand-blue-*` / `brand-yellow*`; metadata raiz com Open Graph e Twitter
