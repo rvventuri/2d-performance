@@ -79,14 +79,16 @@ export function OAuthInAppBrowserNotice({ active, authPath }: Props) {
     }
   };
 
-  const linkButtonClass = cn(
+  /** Chrome — botão principal (destaque). */
+  const chromePrimaryClass = cn(
     buttonVariants({ variant: "default" }),
-    "w-full h-10 font-semibold bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground no-underline text-center"
+    "w-full h-11 font-bold text-base bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground no-underline text-center",
+    "shadow-md shadow-brand-primary/25 ring-2 ring-brand-primary-bright/50 ring-offset-2 ring-offset-amber-500/10"
   );
 
-  const secondaryLinkClass = cn(
+  const safariSecondaryClass = cn(
     buttonVariants({ variant: "secondary" }),
-    "w-full h-10 font-semibold no-underline text-center"
+    "w-full h-10 font-medium no-underline text-center border border-border"
   );
 
   return (
@@ -122,36 +124,28 @@ export function OAuthInAppBrowserNotice({ active, authPath }: Props) {
       <div className="flex flex-col gap-2">
         {ios && targetUrl ? (
           <>
-            <a
-              href={targetUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={linkButtonClass}
-            >
-              Abrir em nova janela (recomendado)
-            </a>
-            <a href={safariOpen} className={secondaryLinkClass}>
-              Tentar abrir no Safari
-            </a>
-            <a href={iosChrome} className={secondaryLinkClass}>
+            <a href={iosChrome} className={chromePrimaryClass}>
               Abrir no Chrome
+            </a>
+            <a href={safariOpen} className={safariSecondaryClass}>
+              Abrir no Safari
             </a>
           </>
         ) : null}
 
         {android && chromeIntent ? (
-          <a href={chromeIntent} className={linkButtonClass}>
+          <a href={chromeIntent} className={chromePrimaryClass}>
             Abrir no Chrome
           </a>
         ) : null}
 
         {!android && !ios && targetUrl ? (
           <>
-            <a href={chromeIntent} className={linkButtonClass}>
+            <a href={chromeIntent} className={chromePrimaryClass}>
               Abrir no Chrome (Android)
             </a>
-            <a href={safariOpen} className={secondaryLinkClass}>
-              Tentar abrir no Safari (iOS)
+            <a href={safariOpen} className={safariSecondaryClass}>
+              Abrir no Safari (iOS)
             </a>
           </>
         ) : null}

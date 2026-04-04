@@ -9,6 +9,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 ## [Unreleased] — 2026-04-05
 
 ### Added
+- **Google Analytics 4 (opcional)**: `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `components/google-analytics.tsx` e `lib/gtag.ts` (`gaPageview`, `sendGtagEvent`); page views em navegações do App Router; eventos `login` (e-mail e Google — este último após OAuth com query `auth_provider=google` removida em seguida pela URL), `sign_up`, `student_created`, `ai_analysis_requested` (modal e aba de IA), `share_link_enabled`; testes em `lib/gtag.test.ts`
 - **OAuth / WebView (LinkedIn e apps sociais)**: detecção heurística em `lib/in-app-browser.ts`, componente `OAuthInAppBrowserNotice` nas telas de login e cadastro orientando abrir no Safari ou Chrome quando o Google bloqueia login dentro do navegador do app; testes em `lib/in-app-browser.test.ts`
 - **AGENTS.md**: seção sobre login Google em WebView e checklist de Redirect URLs (Supabase + callback `...supabase.co/auth/v1/callback` no Google Cloud)
 - **Dados de demonstração (onboarding)**: coluna `students.is_demo`, tabela `user_demo_state` no `SCHEMA.sql`; clone na primeira visita ao `/dashboard` a partir do usuário template (`DEMO_TEMPLATE_USER_ID`) com service role (`getAdminClientOrNull`, `SupabaseDemoTemplateRepository`); use cases `EnsureDemoDataUseCase` e `ClearDemoDataUseCase`; server action `clearDemoDataAction`; banner “Modo demonstração”, confirmação em modal e badge “Demo” na lista de alunos; testes unitários dos use cases; instruções em `AGENTS.md`
@@ -18,7 +19,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ### Changed
 - **Landing**: `MarketingAuthLink` em `app/page.tsx` com `getMarketingCtaHref`, `target="_blank"` e URL absoluta (`NEXT_PUBLIC_APP_URL`) para tentar abrir fora do WebView de apps sociais; CTAs de cadastro em `/register`, entrar em `/login`
-- **OAuth em WebView (login/cadastro)**: aviso fechável (`sessionStorage`), **sem** bloquear Google ou e-mail; iOS com HTTPS em nova janela, Safari (`x-safari-https`) e Chrome (`googlechromes://`, `lib/ios-chrome-url.ts`); Android com intent para Chrome; testes para `getMarketingCtaHref`; notas em `AGENTS.md`
+- **OAuth em WebView (login/cadastro)**: aviso fechável (`sessionStorage`), **sem** bloquear Google ou e-mail; iOS só Chrome (`googlechromes://`, botão em destaque) e Safari (`x-safari-https`); Android com intent para Chrome; testes para `getMarketingCtaHref`; notas em `AGENTS.md`
 - **Cadastro de alunos**: `is_demo: false` explícito em `SupabaseStudentRepository` e `createStudent` em `lib/storage.ts`
 - **Rebranding SaltoVerse** em landing, login, register, share, navbar, admin, relatório de performance e textos de exemplo (ex.: URL do app); checklist de onboarding com chave `saltoverse-onboarding-dismissed`
 - **Design system**: tokens semânticos (`brand-depth`, `brand-primary`, `brand-primary-bright`, `brand-accent`, …) substituindo `brand-blue-*` / `brand-yellow*`; metadata raiz com Open Graph e Twitter

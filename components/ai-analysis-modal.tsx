@@ -5,6 +5,7 @@ import { Student, Assessment } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Sparkles, X, Copy, Check, AlertTriangle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { sendGtagEvent } from "@/lib/gtag";
 
 interface AiAnalysisModalProps {
   student: Student;
@@ -134,6 +135,8 @@ export default function AiAnalysisModal({ student, assessments }: AiAnalysisModa
         setStatus("error");
         return;
       }
+
+      sendGtagEvent("ai_analysis_requested", { source: "modal" });
 
       setStatus("streaming");
       const reader = res.body?.getReader();

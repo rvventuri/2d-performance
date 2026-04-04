@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { sendGtagEvent } from "@/lib/gtag";
 import { createStudent, uploadAthletePhoto, updateStudent } from "@/lib/storage";
 import { validateAthletePhoto } from "@/lib/photoValidation";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,8 @@ export default function NewStudentPage() {
         objective: form.objective.trim(),
         photoUrl: null,
       });
+
+      sendGtagEvent("student_created");
 
       // 2. Se selecionou foto, faz upload e salva a URL
       if (photoFile) {

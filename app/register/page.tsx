@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
+import { sendGtagEvent } from "@/lib/gtag";
 import { OAuthInAppBrowserNotice } from "@/components/oauth-in-app-browser-notice";
 import { useLikelyEmbeddedBrowser } from "@/lib/use-likely-embedded-browser";
 import { Button } from "@/components/ui/button";
@@ -184,6 +185,7 @@ export default function RegisterPage() {
         return;
       }
 
+      sendGtagEvent("sign_up", { method: "email" });
       router.push("/dashboard");
       router.refresh();
     } catch {

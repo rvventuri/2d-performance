@@ -117,6 +117,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 ANTHROPIC_API_KEY
 NEXT_PUBLIC_APP_URL   (recomendado em produção: URL canônica, ex. https://2d-performance.vercel.app — usada nos links “Abrir no Chrome/Safari” no login; fallback: origin atual)
+NEXT_PUBLIC_GA_MEASUREMENT_ID (opcional) — ID GA4 (ex. G-XXXXXXXXXX); sem valor, o script e eventos `gtag` não carregam
 DEMO_TEMPLATE_USER_ID (opcional) — UUID do usuário Supabase que guarda a base de demonstração clonada para novas contas na primeira visita ao dashboard. Requer `SUPABASE_SERVICE_ROLE_KEY` no servidor.
 ```
 

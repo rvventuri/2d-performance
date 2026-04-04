@@ -12,6 +12,7 @@ import {
   Loader2, Share2, RefreshCw, Link2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { sendGtagEvent } from "@/lib/gtag";
 
 interface ShareLinkMeta {
   token: string;
@@ -67,6 +68,7 @@ export default function ShareDialog({ open, onClose, studentId, studentName }: S
       setExisting(res2.data ?? null);
       setCreatingNew(false);
       setPassword("");
+      sendGtagEvent("share_link_enabled");
       toast.success("Link gerado!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao gerar link");

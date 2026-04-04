@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { formatDate, cn } from "@/lib/utils";
+import { sendGtagEvent } from "@/lib/gtag";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -223,6 +224,8 @@ export default function AiAnalysisTab({ student, assessments }: Props) {
         setStatus("error");
         return;
       }
+
+      sendGtagEvent("ai_analysis_requested", { source: "tab" });
 
       const reader = res.body?.getReader();
       if (!reader) {

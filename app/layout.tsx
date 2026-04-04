@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AppShell from "@/components/app-shell";
+import GoogleAnalytics from "@/components/google-analytics";
 import { ThemeProvider } from "next-themes";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
 
@@ -33,6 +34,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <AppShell>{children}</AppShell>
           <Toaster position="top-right" />
+          <GoogleAnalytics />
         </ThemeProvider>
       </body>
     </html>
