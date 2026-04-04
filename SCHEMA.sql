@@ -288,6 +288,35 @@ CREATE INDEX IF NOT EXISTS idx_share_links_student_id
   ON public.share_links(student_id);
 
 -- ============================================================
+-- MIGRAÇÃO: Metas por Atleta
+-- Execute no SQL Editor do Supabase caso o schema já exista.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.student_goals (
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id   UUID        NOT NULL REFERENCES public.students(id) ON DELETE CASCADE,
+  user_id      UUID        NOT NULL REFERENCES auth.users(id)      ON DELETE CASCADE,
+  metric_key   TEXT        NOT NULL,
+  target_value NUMERIC(10,4) NOT NULL,
+  target_date  DATE,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (student_id, metric_key)
+);
+
+ALTER TABLE public.student_goals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "student_goals_owner" ON public.student_goals
+  FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_student_goals_student_id
+  ON public.student_goals(student_id);
+
+CREATE INDEX IF NOT EXISTS idx_student_goals_user_id
+  ON public.student_goals(user_id);
+
+-- ============================================================
 -- MIGRAÇÃO: Background AI Analysis — status e Realtime
 -- Execute no SQL Editor do Supabase caso o schema já exista.
 -- ============================================================

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getStudent, getStudentAssessments, deleteStudent, deleteAssessment, getMetricConfigs } from "@/lib/storage";
-import { Student, Assessment, Metrics } from "@/lib/types";
+import { Student, Assessment, Metrics, StudentGoal } from "@/lib/types";
 import { resolveMetricConfigs, getEnabledMetrics } from "@/domain/trainer/services/MetricConfigResolver";
 import { analyzeAssessment, calcEvolution } from "@/lib/analysis";
 import AiAnalysisTab from "@/components/ai-analysis-tab";
@@ -12,6 +12,15 @@ import ShareDialog from "@/components/share-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,9 +52,12 @@ import {
   Loader2,
   Sparkles,
   Share2,
+  Target,
+  X,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
+import { saveGoalAction, deleteGoalAction } from "../_actions";
 
 const CHART_COLORS: Record<string, string> = {
   cmj: "#1437C9",
@@ -64,6 +76,52 @@ const CUSTOM_METRIC_COLORS = [
   "#A855F7", "#F97316", "#22D3EE", "#84CC16", "#F43F5E",
   "#FBBF24", "#34D399", "#60A5FA", "#C084FC", "#FB7185",
 ];
+
+function GoalProgress({
+  currentValue,
+  goal,
+  unit,
+  higherIsBetter,
+}: {
+  currentValue: number;
+  goal: StudentGoal;
+  unit: string;
+  higherIsBetter: boolean;
+}) {
+  const pct = higherIsBetter
+    ? Math.min(100, Math.round((currentValue / goal.targetValue) * 100))
+    : Math.min(100, Math.round((goal.targetValue / currentValue) * 100));
+
+  const reached = higherIsBetter
+    ? currentValue >= goal.targetValue
+    : currentValue <= goal.targetValue;
+
+  const barColor = reached ? "bg-green-500" : "bg-amber-500";
+
+  const deadlineStr = goal.targetDate
+    ? new Date(goal.targetDate).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })
+    : null;
+
+  return (
+    <div className="mt-3 space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">
+          Meta: <span className="text-foreground font-semibold">{goal.targetValue}{unit && ` ${unit}`}</span>
+          {deadlineStr && <span className="text-muted-foreground ml-1">· {deadlineStr}</span>}
+        </span>
+        <span className={reached ? "text-green-500 font-bold" : "text-amber-500 font-bold"}>
+          {pct}%
+        </span>
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-border overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${barColor}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
 function AssessmentRow({
   assessment,
@@ -160,11 +218,20 @@ function AssessmentRow({
   );
 }
 
+interface GoalDialogState {
+  metricKey: string;
+  label: string;
+  unit: string;
+  higherIsBetter: boolean;
+  existing: StudentGoal | null;
+}
+
 interface Props {
   id: string;
   initialStudent: Student;
   initialAssessments: Assessment[];
   initialResolvedMetrics: ReturnType<typeof resolveMetricConfigs>;
+  initialGoals: StudentGoal[];
 }
 
 export default function StudentDetailClient({
@@ -172,14 +239,20 @@ export default function StudentDetailClient({
   initialStudent,
   initialAssessments,
   initialResolvedMetrics,
+  initialGoals,
 }: Props) {
   const router = useRouter();
 
   const [student, setStudent] = useState<Student>(initialStudent);
   const [assessments, setAssessments] = useState<Assessment[]>(initialAssessments);
   const [resolvedMetrics, setResolvedMetrics] = useState(initialResolvedMetrics);
+  const [goals, setGoals] = useState<StudentGoal[]>(initialGoals);
   const [pageLoading, setPageLoading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [goalDialog, setGoalDialog] = useState<GoalDialogState | null>(null);
+  const [goalTargetValue, setGoalTargetValue] = useState("");
+  const [goalTargetDate, setGoalTargetDate] = useState("");
+  const [isSavingGoal, startSavingGoal] = useTransition();
 
   const refresh = useCallback(async () => {
     setPageLoading(true);
@@ -202,6 +275,70 @@ export default function StudentDetailClient({
       setPageLoading(false);
     }
   }, [id, router]);
+
+  const openGoalDialog = (
+    metricKey: string,
+    label: string,
+    unit: string,
+    higherIsBetter: boolean,
+  ) => {
+    const existing = goals.find((g) => g.metricKey === metricKey) ?? null;
+    setGoalTargetValue(existing ? String(existing.targetValue) : "");
+    setGoalTargetDate(existing?.targetDate ?? "");
+    setGoalDialog({ metricKey, label, unit, higherIsBetter, existing });
+  };
+
+  const handleSaveGoal = () => {
+    if (!goalDialog) return;
+    const parsed = parseFloat(goalTargetValue);
+    if (isNaN(parsed) || parsed <= 0) {
+      toast.error("Informe um valor alvo válido.");
+      return;
+    }
+    startSavingGoal(async () => {
+      try {
+        await saveGoalAction(
+          id,
+          goalDialog.metricKey,
+          parsed,
+          goalTargetDate || null,
+        );
+        setGoals((prev) => {
+          const without = prev.filter((g) => g.metricKey !== goalDialog.metricKey);
+          return [
+            ...without,
+            {
+              id: "",
+              studentId: id,
+              userId: "",
+              metricKey: goalDialog.metricKey,
+              targetValue: parsed,
+              targetDate: goalTargetDate || null,
+              createdAt: new Date().toISOString(),
+            },
+          ];
+        });
+        toast.success("Meta salva!");
+        setGoalDialog(null);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Erro ao salvar meta");
+      }
+    });
+  };
+
+  const handleDeleteGoal = () => {
+    if (!goalDialog) return;
+    startSavingGoal(async () => {
+      try {
+        await deleteGoalAction(id, goalDialog.metricKey);
+        setGoals((prev) => prev.filter((g) => g.metricKey !== goalDialog.metricKey));
+        toast.success("Meta removida.");
+        setGoalDialog(null);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Erro ao remover meta");
+      }
+    });
+  };
 
   const handleDeleteStudent = async () => {
     try {
@@ -427,22 +564,82 @@ export default function StudentDetailClient({
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {defaultMetricsWithData.map((key) => {
                 const m = resolvedMetrics.find((r) => r.key === key);
+                const goal = goals.find((g) => g.metricKey === key);
+                const latestAssessment = assessments[assessments.length - 1];
+                const latestValue = latestAssessment?.metrics[key as keyof Metrics] ?? null;
+                const higherIsBetter = m?.higherIsBetter ?? true;
+                const unit = m?.unit ?? "";
                 return (
                   <div key={key} className="bg-card border border-border rounded-xl p-5" style={{ borderTopWidth: "2px", borderTopColor: CHART_COLORS[key] }}>
+                    <div className="flex items-baseline justify-between mb-3 gap-2">
+                      <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">{m?.label ?? key}</span>
+                      <div className="flex items-baseline gap-2">
+                        {latestValue !== null && (
+                          <span className="font-heading text-2xl font-bold text-foreground">
+                            {latestValue.toFixed(1)}
+                            {unit && <span className="text-muted-foreground text-sm ml-1">{unit}</span>}
+                          </span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-6 w-6 p-0 shrink-0 cursor-pointer ${goal ? "text-amber-500 hover:text-amber-400" : "text-muted-foreground hover:text-foreground"}`}
+                          onClick={() => openGoalDialog(key, m?.label ?? key, unit, higherIsBetter)}
+                          title={goal ? "Editar meta" : "Definir meta"}
+                        >
+                          <Target className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
                     <MetricChart
                       assessments={assessments}
                       metricKey={key}
                       label={m?.label ?? key}
-                      unit={m?.unit ?? ""}
+                      unit={unit}
                       color={CHART_COLORS[key]}
+                      goalValue={goal?.targetValue}
+                      higherIsBetter={higherIsBetter}
+                      showHeader={false}
                     />
+                    {goal && latestValue !== null && (
+                      <GoalProgress
+                        currentValue={latestValue}
+                        goal={goal}
+                        unit={unit}
+                        higherIsBetter={higherIsBetter}
+                      />
+                    )}
                   </div>
                 );
               })}
               {customMetricsWithData.map((m, idx) => {
                 const color = CUSTOM_METRIC_COLORS[idx % CUSTOM_METRIC_COLORS.length];
+                const goal = goals.find((g) => g.metricKey === m.key);
+                const latestAssessment = assessments[assessments.length - 1];
+                const latestValue = (latestAssessment?.customMetrics ?? {})[m.key] ?? null;
+                const higherIsBetter = m.higherIsBetter ?? true;
                 return (
                   <div key={m.key} className="bg-card border border-border rounded-xl p-5" style={{ borderTopWidth: "2px", borderTopColor: color }}>
+                    <div className="flex items-baseline justify-between mb-3 gap-2">
+                      <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">{m.label}</span>
+                      <div className="flex items-baseline gap-2">
+                        {latestValue !== null && (
+                          <span className="font-heading text-2xl font-bold text-foreground">
+                            {latestValue.toFixed(1)}
+                            {m.unit && <span className="text-muted-foreground text-sm ml-1">{m.unit}</span>}
+                          </span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-6 w-6 p-0 shrink-0 cursor-pointer ${goal ? "text-amber-500 hover:text-amber-400" : "text-muted-foreground hover:text-foreground"}`}
+                          onClick={() => openGoalDialog(m.key, m.label, m.unit, higherIsBetter)}
+                          title={goal ? "Editar meta" : "Definir meta"}
+                        >
+                          <Target className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
                     <MetricChart
                       assessments={assessments}
                       metricKey={m.key}
@@ -450,7 +647,18 @@ export default function StudentDetailClient({
                       unit={m.unit}
                       color={color}
                       isCustom
+                      goalValue={goal?.targetValue}
+                      higherIsBetter={higherIsBetter}
+                      showHeader={false}
                     />
+                    {goal && latestValue !== null && (
+                      <GoalProgress
+                        currentValue={latestValue}
+                        goal={goal}
+                        unit={m.unit}
+                        higherIsBetter={higherIsBetter}
+                      />
+                    )}
                   </div>
                 );
               })}
@@ -477,6 +685,80 @@ export default function StudentDetailClient({
         studentId={student.id}
         studentName={student.name}
       />
+
+      {/* Goal Editor Dialog */}
+      <Dialog open={goalDialog !== null} onOpenChange={(open) => { if (!open) setGoalDialog(null); }}>
+        <DialogContent className="bg-card border-border sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">
+              {goalDialog?.existing ? "Editar meta" : "Definir meta"}
+              {goalDialog && <span className="font-normal text-muted-foreground ml-1">· {goalDialog.label}</span>}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="goal-value" className="text-sm text-foreground">
+                Valor alvo{goalDialog?.unit ? ` (${goalDialog.unit})` : ""}
+              </Label>
+              <Input
+                id="goal-value"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="ex: 45"
+                value={goalTargetValue}
+                onChange={(e) => setGoalTargetValue(e.target.value)}
+                className="bg-secondary border-border text-foreground"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="goal-date" className="text-sm text-foreground">
+                Prazo <span className="text-muted-foreground font-normal">(opcional)</span>
+              </Label>
+              <Input
+                id="goal-date"
+                type="date"
+                value={goalTargetDate}
+                onChange={(e) => setGoalTargetDate(e.target.value)}
+                className="bg-secondary border-border text-foreground"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            {goalDialog?.existing && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 mr-auto cursor-pointer"
+                onClick={handleDeleteGoal}
+                disabled={isSavingGoal}
+              >
+                <X className="w-3.5 h-3.5 mr-1" />
+                Remover
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border text-muted-foreground hover:bg-accent cursor-pointer"
+              onClick={() => setGoalDialog(null)}
+              disabled={isSavingGoal}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              className="bg-brand-blue-mid hover:bg-brand-blue-dark text-white cursor-pointer"
+              onClick={handleSaveGoal}
+              disabled={isSavingGoal || !goalTargetValue}
+            >
+              {isSavingGoal ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

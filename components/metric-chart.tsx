@@ -21,6 +21,10 @@ interface MetricChartProps {
   color?: string;
   /** If true, reads from assessment.customMetrics; otherwise from assessment.metrics */
   isCustom?: boolean;
+  goalValue?: number;
+  higherIsBetter?: boolean;
+  /** If false, the label/value header is hidden (parent handles it) */
+  showHeader?: boolean;
 }
 
 const CustomTooltip = ({
@@ -55,6 +59,9 @@ export default function MetricChart({
   unit,
   color = "#2E5BFF",
   isCustom = false,
+  goalValue,
+  higherIsBetter = true,
+  showHeader = true,
 }: MetricChartProps) {
   const getValue = (a: Assessment): number | null => {
     if (isCustom) {
@@ -83,17 +90,32 @@ export default function MetricChart({
   const max = Math.max(...values);
   const avg = values.reduce((a, b) => a + b, 0) / values.length;
 
+  const latestValue = values[values.length - 1];
+  const goalReached =
+    goalValue !== undefined &&
+    (higherIsBetter ? latestValue >= goalValue : latestValue <= goalValue);
+  const goalColor = goalReached ? "#22c55e" : "#f59e0b";
+
+  const domainMin = goalValue !== undefined
+    ? Math.min(min, goalValue) * 0.93
+    : min * 0.95;
+  const domainMax = goalValue !== undefined
+    ? Math.max(max, goalValue) * 1.07
+    : max * 1.05;
+
   return (
     <div>
-      <div className="flex items-baseline justify-between mb-3">
-        <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">{label}</span>
-        <span className="font-heading text-2xl font-bold text-foreground">
-          {values[values.length - 1].toFixed(1)}
-          {unit && <span className="text-muted-foreground text-sm ml-1">{unit}</span>}
-        </span>
-      </div>
+      {showHeader && (
+        <div className="flex items-baseline justify-between mb-3">
+          <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">{label}</span>
+          <span className="font-heading text-2xl font-bold text-foreground">
+            {values[values.length - 1].toFixed(1)}
+            {unit && <span className="text-muted-foreground text-sm ml-1">{unit}</span>}
+          </span>
+        </div>
+      )}
       <ResponsiveContainer width="100%" height={120}>
-        <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 5, right: goalValue !== undefined ? 45 : 5, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
           <XAxis
             dataKey="date"
@@ -102,7 +124,7 @@ export default function MetricChart({
             tickLine={false}
           />
           <YAxis
-            domain={[min * 0.95, max * 1.05]}
+            domain={[domainMin, domainMax]}
             tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
@@ -115,6 +137,21 @@ export default function MetricChart({
               stroke="var(--border)"
               strokeDasharray="4 4"
               label={{ value: "avg", position: "right", fill: "var(--muted-foreground)", fontSize: 10 }}
+            />
+          )}
+          {goalValue !== undefined && (
+            <ReferenceLine
+              y={goalValue}
+              stroke={goalColor}
+              strokeDasharray="6 3"
+              strokeWidth={1.5}
+              label={{
+                value: `meta: ${goalValue}`,
+                position: "right",
+                fill: goalColor,
+                fontSize: 10,
+                fontWeight: 600,
+              }}
             />
           )}
           <Line

@@ -11,6 +11,7 @@ import {
   Activity, Calendar, TrendingUp, Users,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import OnboardingChecklist from "./OnboardingChecklist";
 
 export interface StudentWithStats {
   id: string;
@@ -22,12 +23,20 @@ export interface StudentWithStats {
   lastAssessmentDate: string | null;
 }
 
+export interface OnboardingState {
+  isProfileConfigured: boolean;
+  hasStudents: boolean;
+  hasAssessments: boolean;
+  firstStudentId: string | null;
+}
+
 interface Props {
   students: StudentWithStats[];
   totalAssessments: number;
+  onboardingState: OnboardingState;
 }
 
-export default function DashboardClient({ students, totalAssessments }: Props) {
+export default function DashboardClient({ students, totalAssessments, onboardingState }: Props) {
   const [search, setSearch] = useState("");
 
   const filtered = students.filter((s) =>
@@ -42,6 +51,8 @@ export default function DashboardClient({ students, totalAssessments }: Props) {
         <h1 className="font-heading text-4xl font-bold text-foreground tracking-wide mb-1">DASHBOARD</h1>
         <p className="text-muted-foreground text-sm">Gerencie seus alunos e acompanhe a evolução de performance</p>
       </div>
+
+      <OnboardingChecklist state={onboardingState} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">

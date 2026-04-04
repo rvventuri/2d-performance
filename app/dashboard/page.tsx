@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DashboardClient from "./_components/DashboardClient";
-import type { StudentWithStats } from "./_components/DashboardClient";
+import type { StudentWithStats, OnboardingState } from "./_components/DashboardClient";
 import type { StudentRow } from "@/lib/supabase/database.types";
 
 export default async function DashboardPage() {
@@ -9,18 +9,18 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // 1. Fetch all students for this trainer
-  const { data: studentsData, error: studentsError } = await supabase
-    .from("students")
-    .select("*")
-    .order("created_at", { ascending: false });
+  // 1. Fetch students, assessments and trainer profile in parallel
+  const [{ data: studentsData, error: studentsError }, { data: profileData }] =
+    await Promise.all([
+      supabase.from("students").select("*").order("created_at", { ascending: false }),
+      supabase.from("trainer_profiles").select("coaching_philosophy,sport_context").eq("user_id", user.id).single(),
+    ]);
 
   if (studentsError) throw studentsError;
 
   const students = (studentsData ?? []) as StudentRow[];
 
   // 2. Fetch assessment stats in ONE batch query instead of N individual queries.
-  //    This reduces N+1 to exactly 2 database round-trips.
   let assessmentRows: Array<{ student_id: string; date: string }> = [];
   if (students.length > 0) {
     const { data: statsData } = await supabase
@@ -54,5 +54,20 @@ export default async function DashboardPage() {
     lastAssessmentDate: lastDateByStudent[s.id] ?? null,
   }));
 
-  return <DashboardClient students={studentsWithStats} totalAssessments={totalAssessments} />;
+  const onboardingState: OnboardingState = {
+    isProfileConfigured: !!(
+      profileData?.coaching_philosophy || profileData?.sport_context
+    ),
+    hasStudents: students.length > 0,
+    hasAssessments: totalAssessments > 0,
+    firstStudentId: students[0]?.id ?? null,
+  };
+
+  return (
+    <DashboardClient
+      students={studentsWithStats}
+      totalAssessments={totalAssessments}
+      onboardingState={onboardingState}
+    />
+  );
 }

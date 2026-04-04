@@ -132,7 +132,7 @@ async function runBackgroundAnalysis(
       customMetrics: cvByAssessment[a.id] ?? {},
     }));
 
-    // Load trainer config
+    // Load trainer config and goals in parallel
     let resolvedMetrics: ReturnType<typeof resolveMetricConfigs>;
     let trainerContext: string;
 
@@ -149,12 +149,29 @@ async function runBackgroundAnalysis(
       trainerContext = "";
     }
 
+    const { data: goalRows } = await userClient
+      .from("student_goals")
+      .select("*")
+      .eq("student_id", studentId)
+      .eq("user_id", userId);
+
+    const goals = (goalRows ?? []).map((r: Record<string, unknown>) => ({
+      id: r.id as string,
+      studentId: r.student_id as string,
+      userId: r.user_id as string,
+      metricKey: r.metric_key as string,
+      targetValue: Number(r.target_value),
+      targetDate: (r.target_date as string | null) ?? null,
+      createdAt: r.created_at as string,
+    }));
+
     // Run analysis
     const { data: analysisData, durationMs, inputTokens, outputTokens } = await runAnalysis(
       student,
       assessmentsWithCustom,
       resolvedMetrics,
-      trainerContext
+      trainerContext,
+      goals,
     );
 
     const latestAssessment = assessmentsWithCustom[assessmentsWithCustom.length - 1];

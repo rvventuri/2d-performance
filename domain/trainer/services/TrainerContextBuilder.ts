@@ -1,4 +1,4 @@
-import { TrainerProfile, ResolvedMetricConfig } from "@/lib/types";
+import { TrainerProfile, ResolvedMetricConfig, StudentGoal } from "@/lib/types";
 
 export function buildTrainerContext(profile: TrainerProfile | null): string {
   if (!profile) return "";
@@ -38,6 +38,48 @@ export function buildBenchmarkSection(
       );
     })
     .join("\n");
+}
+
+/**
+ * Builds a section describing the athlete's goals so the AI can tailor
+ * prescriptions and objectiveAlignment scores to real targets.
+ */
+export function buildGoalsSection(
+  goals: StudentGoal[],
+  latestMetricValues: Record<string, number | null>,
+  metrics: ResolvedMetricConfig[],
+): string {
+  if (goals.length === 0) return "";
+
+  const metricsMap: Record<string, ResolvedMetricConfig> = {};
+  for (const m of metrics) metricsMap[m.key] = m;
+
+  const lines = goals
+    .map((g) => {
+      const m = metricsMap[g.metricKey];
+      const label = m?.label ?? g.metricKey;
+      const unit = m?.unit ? ` ${m.unit}` : "";
+      const currentRaw = latestMetricValues[g.metricKey];
+      const current = currentRaw !== null && currentRaw !== undefined ? currentRaw : null;
+
+      let progressNote = "";
+      if (current !== null) {
+        const higherIsBetter = m?.higherIsBetter ?? true;
+        const pct = higherIsBetter
+          ? Math.round((current / g.targetValue) * 100)
+          : Math.round((g.targetValue / current) * 100);
+        progressNote = ` — atual: ${current}${unit} (${Math.min(pct, 100)}% da meta)`;
+      }
+
+      const deadline = g.targetDate
+        ? ` | prazo: ${new Date(g.targetDate).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}`
+        : "";
+
+      return `  - ${label}: atingir ${g.targetValue}${unit}${deadline}${progressNote}`;
+    })
+    .join("\n");
+
+  return `METAS DEFINIDAS PELO PREPARADOR PARA ESTE ATLETA:\n${lines}\n\nAo calcular objectiveAlignment.score e redigir as prescrições, leve em conta o progresso atual rumo a essas metas.`;
 }
 
 export function buildWeightNote(metrics: ResolvedMetricConfig[]): string {

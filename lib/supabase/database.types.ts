@@ -93,3 +93,13 @@ export interface ShareLinkRow {
   password_hash: string | null;
   created_at: string;
 }
+
+export interface StudentGoalRow {
+  id: string;
+  student_id: string;
+  user_id: string;
+  metric_key: string;
+  target_value: number;
+  target_date: string | null;
+  created_at: string;
+}

@@ -7,10 +7,11 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
-import { Student, Assessment, ResolvedMetricConfig, AiAnalysisData } from "@/lib/types";
+import { Student, Assessment, ResolvedMetricConfig, AiAnalysisData, StudentGoal } from "@/lib/types";
 import {
   buildBenchmarkSection,
   buildWeightNote,
+  buildGoalsSection,
 } from "@/domain/trainer/services/TrainerContextBuilder";
 
 // Module-level client — instantiated lazily when first called so tests that
@@ -31,7 +32,8 @@ export function buildAnalysisPrompt(
   student: Student,
   assessments: Assessment[],
   metrics: ResolvedMetricConfig[],
-  trainerContext: string
+  trainerContext: string,
+  goals: StudentGoal[] = [],
 ): string {
   const latest = assessments[assessments.length - 1];
   const previous = assessments.length > 1 ? assessments[assessments.length - 2] : null;
@@ -120,6 +122,13 @@ export function buildAnalysisPrompt(
   const benchmarkSection = buildBenchmarkSection(metrics);
   const weightNote = buildWeightNote(metrics);
 
+  const latestMetricValues: Record<string, number | null> = {
+    ...(latest.metrics as unknown as Record<string, number | null>),
+    ...(latest.customMetrics ?? {}),
+  };
+  const goalsSection = buildGoalsSection(goals, latestMetricValues, metrics);
+  const goalsContext = goalsSection ? `\n${goalsSection}` : "";
+
   return `Você é um preparador físico de alto rendimento especializado em avaliação neuromuscular e biomecânica do salto.
 ${trainerSection}
 
@@ -148,7 +157,7 @@ Nome: ${student.name}
 Idade: ${student.age > 0 ? student.age + " anos" : "Não informada"}
 Peso: ${student.weight > 0 ? student.weight + " kg" : "Não informado"}
 Altura: ${student.height > 0 ? student.height + " cm" : "Não informada"}
-Objetivo: ${student.objective || "Não informado"}
+Objetivo: ${student.objective || "Não informado"}${goalsContext}
 Total de avaliações: ${assessments.length}
 
 AVALIAÇÃO MAIS RECENTE (${latest.date}):
@@ -239,10 +248,11 @@ export async function runAnalysis(
   student: Student,
   assessments: Assessment[],
   metrics: ResolvedMetricConfig[],
-  trainerContext: string
+  trainerContext: string,
+  goals: StudentGoal[] = [],
 ): Promise<AnalysisResult> {
   const anthropic = getClient();
-  const prompt = buildAnalysisPrompt(student, assessments, metrics, trainerContext);
+  const prompt = buildAnalysisPrompt(student, assessments, metrics, trainerContext, goals);
 
   const startTime = Date.now();
   const message = await anthropic.messages.create({
@@ -275,10 +285,11 @@ export async function* streamAnalysis(
   student: Student,
   assessments: Assessment[],
   metrics: ResolvedMetricConfig[],
-  trainerContext: string
+  trainerContext: string,
+  goals: StudentGoal[] = [],
 ): AsyncGenerator<string, AnalysisResult, unknown> {
   const anthropic = getClient();
-  const prompt = buildAnalysisPrompt(student, assessments, metrics, trainerContext);
+  const prompt = buildAnalysisPrompt(student, assessments, metrics, trainerContext, goals);
 
   let accumulated = "";
 

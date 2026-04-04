@@ -113,6 +113,18 @@ export interface AiAnalysisData {
   prescriptions: AiPrescription[];
 }
 
+// ─── Student Goals ────────────────────────────────────────────────────────────
+
+export interface StudentGoal {
+  id: string;
+  studentId: string;
+  userId: string;
+  metricKey: string;
+  targetValue: number;
+  targetDate: string | null;
+  createdAt: string;
+}
+
 // ─── Share Links ─────────────────────────────────────────────────────────────
 
 export interface ShareLink {

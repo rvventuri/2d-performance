@@ -6,6 +6,19 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ---
 
+## [Unreleased] — 2026-04-04
+
+### Added
+- **Metas por atleta**: tabela `student_goals` no `SCHEMA.sql` (RLS, upsert por `student_id` + `metric_key`); repositório, use cases e server actions em `app/students/[id]/_actions.ts`; na aba Gráficos do atleta, ícone de meta abre dialog para valor alvo e prazo opcional, linha de referência no `MetricChart` e barra de progresso
+- **Metas no prompt da IA**: `buildGoalsSection` em `TrainerContextBuilder` e carregamento de metas em `POST /api/analyze-athlete`, análise em background e `runAnalysis` / `streamAnalysis`
+- **Onboarding guiado**: card "Primeiros passos" no dashboard com checklist (perfil IA, primeiro atleta, primeira avaliação), progresso derivado do banco e dismiss persistido em `localStorage` via `useSyncExternalStore`
+
+### Fixed
+- `lib/services/ai-analysis.service.ts`: `goalsContext` calculado após `buildGoalsSection` para evitar referência antes da inicialização em runtime
+- `OnboardingChecklist`: substituição de `useEffect` + `setState` por `useSyncExternalStore` (compatível com regra `react-hooks/set-state-in-effect`)
+
+---
+
 ## [Unreleased] — 2026-04-03 (2)
 
 ### Added

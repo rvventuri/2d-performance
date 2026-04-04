@@ -1,8 +1,8 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Student, Assessment, Metrics, MetricConfig } from "@/lib/types";
+import { Student, Assessment, Metrics, MetricConfig, StudentGoal } from "@/lib/types";
 import { resolveMetricConfigs } from "@/domain/trainer/services/MetricConfigResolver";
-import type { StudentRow, AssessmentRow, CustomMetricValueRow, MetricConfigRow } from "@/lib/supabase/database.types";
+import type { StudentRow, AssessmentRow, CustomMetricValueRow, MetricConfigRow, StudentGoalRow } from "@/lib/supabase/database.types";
 import StudentDetailClient from "./_components/StudentDetailClient";
 
 function rowToStudent(row: StudentRow): Student {
@@ -45,11 +45,12 @@ export default async function StudentDetailPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Fetch all data in parallel — 3 queries instead of N+1
-  const [studentResult, assessmentsResult, metricConfigsResult] = await Promise.all([
+  // Fetch all data in parallel
+  const [studentResult, assessmentsResult, metricConfigsResult, goalsResult] = await Promise.all([
     supabase.from("students").select("*").eq("id", id).eq("user_id", user.id).single(),
     supabase.from("assessments").select("*").eq("student_id", id).order("date", { ascending: true }),
     supabase.from("metric_configs").select("*").eq("user_id", user.id).order("display_order", { ascending: true }),
+    supabase.from("student_goals").select("*").eq("student_id", id).eq("user_id", user.id),
   ]);
 
   if (studentResult.error || !studentResult.data) {
@@ -99,12 +100,26 @@ export default async function StudentDetailPage({
 
   const initialResolvedMetrics = resolveMetricConfigs(metricConfigs);
 
+  const initialGoals: StudentGoal[] = (goalsResult.data ?? []).map((r) => {
+    const row = r as StudentGoalRow;
+    return {
+      id: row.id,
+      studentId: row.student_id,
+      userId: row.user_id,
+      metricKey: row.metric_key,
+      targetValue: Number(row.target_value),
+      targetDate: row.target_date ?? null,
+      createdAt: row.created_at,
+    };
+  });
+
   return (
     <StudentDetailClient
       id={id}
       initialStudent={student}
       initialAssessments={assessments}
       initialResolvedMetrics={initialResolvedMetrics}
+      initialGoals={initialGoals}
     />
   );
 }

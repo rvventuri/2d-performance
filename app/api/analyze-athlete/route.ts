@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Load trainer config (fail-safe: falls back to defaults if anything throws)
+  // Load trainer config and goals in parallel (fail-safe: falls back to defaults)
   let resolvedMetrics: ResolvedMetricConfig[];
   let trainerContext: string;
 
@@ -158,6 +158,22 @@ export async function POST(req: NextRequest) {
     resolvedMetrics = resolveMetricConfigs([]);
     trainerContext = "";
   }
+
+  const { data: goalRows } = await supabase
+    .from("student_goals")
+    .select("*")
+    .eq("student_id", studentId)
+    .eq("user_id", user.id);
+
+  const goals = (goalRows ?? []).map((r: Record<string, unknown>) => ({
+    id: r.id as string,
+    studentId: r.student_id as string,
+    userId: r.user_id as string,
+    metricKey: r.metric_key as string,
+    targetValue: Number(r.target_value),
+    targetDate: (r.target_date as string | null) ?? null,
+    createdAt: r.created_at as string,
+  }));
 
   // ── Streaming path (browser manual generate) ──────────────────────────────
 
@@ -180,7 +196,8 @@ export async function POST(req: NextRequest) {
             student,
             assessments,
             resolvedMetrics,
-            trainerContext
+            trainerContext,
+            goals,
           );
 
           // Iterate chunks from the generator
@@ -245,7 +262,7 @@ export async function POST(req: NextRequest) {
   // ── Non-streaming path (background server calls) ───────────────────────────
 
   try {
-    const { data, durationMs, inputTokens, outputTokens } = await runAnalysis(student, assessments, resolvedMetrics, trainerContext);
+    const { data, durationMs, inputTokens, outputTokens } = await runAnalysis(student, assessments, resolvedMetrics, trainerContext, goals);
 
     // Persist result with status 'done'
     const latestAssessment = assessments[assessments.length - 1];
