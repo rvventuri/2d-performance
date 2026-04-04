@@ -13,6 +13,7 @@ CREATE TABLE public.students (
   weight          NUMERIC(5,1),
   height          NUMERIC(5,1),
   objective       TEXT,
+  is_demo         BOOLEAN     NOT NULL DEFAULT FALSE,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -118,6 +119,7 @@ CREATE INDEX idx_ai_analyses_student_id
 --   └── weight      NUMERIC
 --   └── height      NUMERIC
 --   └── objective   TEXT
+--   └── is_demo     BOOLEAN (dados de demonstração clonados do template)
 --   └── created_at  TIMESTAMPTZ
 --
 -- assessments
@@ -400,3 +402,20 @@ BEGIN
       USING (bucket_id = 'athlete-photos');
   END IF;
 END $$;
+
+-- ============================================================
+-- MIGRAÇÃO: Dados de demonstração (clone a partir de usuário template)
+-- ============================================================
+
+ALTER TABLE public.students
+  ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS public.user_demo_state (
+  user_id           UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  template_version  INTEGER     NOT NULL DEFAULT 1,
+  applied_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  cleared_at        TIMESTAMPTZ
+);
+
+ALTER TABLE public.user_demo_state ENABLE ROW LEVEL SECURITY;
+-- Sem políticas: acesso apenas via service_role (bypass RLS) no servidor.

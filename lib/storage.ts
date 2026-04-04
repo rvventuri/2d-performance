@@ -137,6 +137,7 @@ export async function createStudent(
       height: data.height || null,
       objective: data.objective || null,
       photo_url: data.photoUrl ?? null,
+      is_demo: false,
     })
     .select()
     .single();

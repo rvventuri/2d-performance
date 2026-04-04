@@ -1,17 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Search, Plus, User, ChevronRight,
   Activity, Calendar, TrendingUp, Users,
+  Sparkles, Trash2,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 import OnboardingChecklist from "./OnboardingChecklist";
+import { clearDemoDataAction } from "../_actions";
 
 export interface StudentWithStats {
   id: string;
@@ -19,6 +33,7 @@ export interface StudentWithStats {
   age: number;
   objective: string;
   photoUrl: string | null;
+  isDemo: boolean;
   assessmentCount: number;
   lastAssessmentDate: string | null;
 }
@@ -34,10 +49,19 @@ interface Props {
   students: StudentWithStats[];
   totalAssessments: number;
   onboardingState: OnboardingState;
+  hasDemoData: boolean;
 }
 
-export default function DashboardClient({ students, totalAssessments, onboardingState }: Props) {
+export default function DashboardClient({
+  students,
+  totalAssessments,
+  onboardingState,
+  hasDemoData,
+}: Props) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [isClearing, startClearTransition] = useTransition();
 
   const filtered = students.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase())
@@ -45,12 +69,81 @@ export default function DashboardClient({ students, totalAssessments, onboarding
 
   const withHistory = students.filter((s) => s.assessmentCount >= 2).length;
 
+  function handleConfirmClearDemo() {
+    startClearTransition(async () => {
+      const result = await clearDemoDataAction();
+      setClearDialogOpen(false);
+      if (result.ok) {
+        router.refresh();
+        toast.success(
+          result.deletedStudents > 0
+            ? "Dados de demonstração removidos. Você pode cadastrar seus alunos reais."
+            : "Nenhum dado de demonstração para remover."
+        );
+      } else {
+        toast.error(result.error);
+      }
+    });
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h1 className="font-heading text-4xl font-bold text-foreground tracking-wide mb-1">DASHBOARD</h1>
         <p className="text-muted-foreground text-sm">Gerencie seus alunos e acompanhe a evolução de performance</p>
       </div>
+
+      {hasDemoData && (
+        <div className="mb-6 rounded-xl border border-brand-primary-bright/35 bg-brand-primary/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex gap-3 min-w-0">
+            <div className="shrink-0 w-9 h-9 rounded-lg bg-brand-primary/20 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-brand-accent-glow" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="font-heading text-sm font-semibold text-foreground">Modo demonstração</p>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
+                Estes alunos e análises são fictícios para você explorar o produto. Limpe quando quiser
+                começar com seus dados reais.
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => setClearDialogOpen(true)}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Limpar demonstração
+          </Button>
+        </div>
+      )}
+
+      <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limpar dados de demonstração?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Todos os alunos marcados como demonstração serão removidos, junto com avaliações e análises de IA
+              associadas. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isClearing}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isClearing}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmClearDemo();
+              }}
+            >
+              {isClearing ? "Removendo…" : "Limpar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <OnboardingChecklist state={onboardingState} />
 
@@ -147,6 +240,14 @@ export default function DashboardClient({ students, totalAssessments, onboarding
                     <Badge variant="secondary" className="bg-secondary text-muted-foreground text-xs border-0 shrink-0">
                       {student.age} anos
                     </Badge>
+                    {student.isDemo && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] uppercase tracking-wider border-brand-primary-bright/40 text-brand-accent-glow shrink-0"
+                      >
+                        Demo
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">

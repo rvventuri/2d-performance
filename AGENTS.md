@@ -104,7 +104,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 ANTHROPIC_API_KEY
 NEXT_PUBLIC_APP_URL   (opcional, fallback: request origin)
+DEMO_TEMPLATE_USER_ID (opcional) — UUID do usuário Supabase que guarda a base de demonstração clonada para novas contas na primeira visita ao dashboard. Requer `SUPABASE_SERVICE_ROLE_KEY` no servidor.
 ```
+
+### Dados de demonstração (onboarding)
+
+1. Crie um usuário interno no Supabase Auth (ex.: `demo-template@seu-dominio.internal`).
+2. Faça login como esse usuário e rode o seed de desenvolvimento (`POST /api/seed` com `NODE_ENV=development`) ou insira manualmente alunos, avaliações e análises de IA até o template estar completo.
+3. Copie o UUID do usuário para `DEMO_TEMPLATE_USER_ID` no ambiente (Vercel / `.env.local`).
+4. Execute no SQL Editor os trechos novos de `SCHEMA.sql` (`students.is_demo`, tabela `user_demo_state`).
+
+Sem essas variáveis, novos trainers simplesmente não recebem clone automático (o app ignora em silêncio).
 
 ## Arquivos Importantes
 

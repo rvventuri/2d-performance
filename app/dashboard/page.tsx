@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminClientOrNull } from "@/lib/supabase/admin";
+import { EnsureDemoDataUseCase } from "@/application/demo/EnsureDemoDataUseCase";
+import { SupabaseDemoTemplateRepository } from "@/infrastructure/supabase/DemoTemplateRepository";
 import DashboardClient from "./_components/DashboardClient";
 import type { StudentWithStats, OnboardingState } from "./_components/DashboardClient";
 import type { StudentRow } from "@/lib/supabase/database.types";
@@ -8,6 +11,18 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const admin = getAdminClientOrNull();
+  const demoRepo = admin ? new SupabaseDemoTemplateRepository(admin) : null;
+  const ensureDemo = new EnsureDemoDataUseCase(
+    demoRepo,
+    process.env.DEMO_TEMPLATE_USER_ID
+  );
+  try {
+    await ensureDemo.execute(user.id);
+  } catch (e) {
+    console.error("[demo] Falha ao garantir dados de demonstração:", e);
+  }
 
   // 1. Fetch students, assessments and trainer profile in parallel
   const [{ data: studentsData, error: studentsError }, { data: profileData }] =
@@ -44,12 +59,15 @@ export default async function DashboardPage() {
 
   const totalAssessments = assessmentRows.length;
 
+  const hasDemoData = students.some((s) => s.is_demo === true);
+
   const studentsWithStats: StudentWithStats[] = students.map((s) => ({
     id: s.id,
     name: s.name,
     age: s.age ?? 0,
     objective: s.objective ?? "",
     photoUrl: s.photo_url ?? null,
+    isDemo: s.is_demo === true,
     assessmentCount: countByStudent[s.id] ?? 0,
     lastAssessmentDate: lastDateByStudent[s.id] ?? null,
   }));
@@ -68,6 +86,7 @@ export default async function DashboardPage() {
       students={studentsWithStats}
       totalAssessments={totalAssessments}
       onboardingState={onboardingState}
+      hasDemoData={hasDemoData}
     />
   );
 }

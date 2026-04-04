@@ -17,3 +17,16 @@ export function createAdminClient() {
     },
   });
 }
+
+/** Cliente admin ou null se a service role não estiver configurada (ex.: dev local). */
+export function getAdminClientOrNull() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return null;
+  return createClient(url, serviceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}

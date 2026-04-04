@@ -56,6 +56,7 @@ export class SupabaseStudentRepository implements IStudentRepository {
         height: input.height || null,
         objective: input.objective || null,
         photo_url: input.photoUrl ?? null,
+        is_demo: false,
       })
       .select()
       .single();

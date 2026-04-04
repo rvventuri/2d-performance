@@ -15,7 +15,16 @@ export interface StudentRow {
   height: number | null;
   objective: string | null;
   photo_url: string | null;
+  /** Presente após migração de dados de demonstração; ausente em projetos legados até rodar SCHEMA.sql. */
+  is_demo?: boolean;
   created_at: string;
+}
+
+export interface UserDemoStateRow {
+  user_id: string;
+  template_version: number;
+  applied_at: string;
+  cleared_at: string | null;
 }
 
 export interface AssessmentRow {

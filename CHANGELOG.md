@@ -9,11 +9,13 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 ## [Unreleased] — 2026-04-05
 
 ### Added
+- **Dados de demonstração (onboarding)**: coluna `students.is_demo`, tabela `user_demo_state` no `SCHEMA.sql`; clone na primeira visita ao `/dashboard` a partir do usuário template (`DEMO_TEMPLATE_USER_ID`) com service role (`getAdminClientOrNull`, `SupabaseDemoTemplateRepository`); use cases `EnsureDemoDataUseCase` e `ClearDemoDataUseCase`; server action `clearDemoDataAction`; banner “Modo demonstração”, confirmação em modal e badge “Demo” na lista de alunos; testes unitários dos use cases; instruções em `AGENTS.md`
 - **`lib/branding.ts`**: constantes `APP_NAME` (SaltoVerse), `APP_DESCRIPTION` e `APP_TAGLINE` para metadata e UI
 - **Logo e favicon**: `public/saltoverse-mark.svg` e `app/icon.tsx` (ImageResponse)
 - **Token de marca** `--brand-accent-foreground` e `--brand-primary-hover` no design system (`@theme` + `globals.css`)
 
 ### Changed
+- **Cadastro de alunos**: `is_demo: false` explícito em `SupabaseStudentRepository` e `createStudent` em `lib/storage.ts`
 - **Rebranding SaltoVerse** em landing, login, register, share, navbar, admin, relatório de performance e textos de exemplo (ex.: URL do app); checklist de onboarding com chave `saltoverse-onboarding-dismissed`
 - **Design system**: tokens semânticos (`brand-depth`, `brand-primary`, `brand-primary-bright`, `brand-accent`, …) substituindo `brand-blue-*` / `brand-yellow*`; metadata raiz com Open Graph e Twitter
 - **Contraste claro/escuro**: `color-scheme` em `:root` / `.dark`; paleta escura revisada (foreground, muted-foreground, borders, popover, sidebar); botões de marca com `text-primary-foreground`; CTAs em accent com `text-brand-accent-foreground`; `CardTitle` com `text-card-foreground`; toggle em configurações de métricas com `bg-primary-foreground`
