@@ -1,11 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Shield } from "lucide-react";
 import { APP_NAME } from "@/lib/branding";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: `Admin — ${APP_NAME}`,
+  robots: { index: false, follow: false },
 };
 
 export default async function AdminLayout({

@@ -121,6 +121,17 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID (opcional) — ID GA4 (ex. G-XXXXXXXXXX); sem valo
 DEMO_TEMPLATE_USER_ID (opcional) — UUID do usuário Supabase que guarda a base de demonstração clonada para novas contas na primeira visita ao dashboard. Requer `SUPABASE_SERVICE_ROLE_KEY` no servidor.
 ```
 
+## SEO (produção)
+
+- **Search Console**:
+  - Adicionar a propriedade do domínio/URL de produção (ex.: `https://2d-performance.vercel.app` ou domínio próprio).
+  - Verificar propriedade (DNS para domínio ou meta tag/HTML para URL-prefix).
+  - Enviar sitemap: `https://<seu-dominio>/sitemap.xml` (o app gera via `app/sitemap.ts`).
+  - Checar: Cobertura/Indexação, Sitemaps, Experiência → Core Web Vitals.
+  - Após mudanças de metadata/robots, usar “Inspecionar URL” → “Solicitar indexação” na home.
+
+**Observação:** páginas autenticadas e `/share/*` ficam com `noindex`/`nofollow` (layouts) e/ou `disallow` em `robots.txt`.
+
 ### Dados de demonstração (onboarding)
 
 1. Crie um usuário interno no Supabase Auth (ex.: `demo-template@seu-dominio.internal`).

@@ -19,7 +19,10 @@ export default async function DashboardPage() {
     process.env.DEMO_TEMPLATE_USER_ID
   );
   try {
-    await ensureDemo.execute(user.id);
+    const result = await ensureDemo.execute(user.id);
+    if (process.env.NODE_ENV !== "production" && result.skippedReason) {
+      console.info("[demo] Clone pulado:", result.skippedReason);
+    }
   } catch (e) {
     console.error("[demo] Falha ao garantir dados de demonstração:", e);
   }

@@ -8,6 +8,11 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ## [Unreleased] — 2026-04-05
 
+## [Unreleased] — 2026-04-06
+
+### Fixed
+- **Dados de demonstração**: clonagem agora é idempotente e segura contra requisições concorrentes ao abrir o `/dashboard`, evitando erro `duplicate key` em `user_demo_state` e rollback incorreto.
+
 ### Added
 - **Google Analytics 4 (opcional)**: `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `components/google-analytics.tsx` e `lib/gtag.ts` (`gaPageview`, `sendGtagEvent`); page views em navegações do App Router; eventos `login` (e-mail e Google — este último após OAuth com query `auth_provider=google` removida em seguida pela URL), `sign_up`, `student_created`, `ai_analysis_requested` (modal e aba de IA), `share_link_enabled`; testes em `lib/gtag.test.ts`
 - **OAuth / WebView (LinkedIn e apps sociais)**: detecção heurística em `lib/in-app-browser.ts`, componente `OAuthInAppBrowserNotice` nas telas de login e cadastro orientando abrir no Safari ou Chrome quando o Google bloqueia login dentro do navegador do app; testes em `lib/in-app-browser.test.ts`

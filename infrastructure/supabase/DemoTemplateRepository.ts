@@ -27,8 +27,23 @@ export class SupabaseDemoTemplateRepository implements IDemoTemplateRepository {
       throw new Error("Usuário alvo não pode ser o mesmo que o template.");
     }
 
+    // Use `user_demo_state` como lock idempotente para evitar corridas (duas abas/requests).
+    // Se já existir, consideramos demo aplicado e saímos sem erro.
+    const { data: lockRow, error: lockErr } = await this.admin
+      .from("user_demo_state")
+      .upsert(
+        { user_id: targetUserId, template_version: DEMO_TEMPLATE_VERSION },
+        { onConflict: "user_id", ignoreDuplicates: true }
+      )
+      .select("user_id")
+      .maybeSingle();
+
+    if (lockErr) throw new Error(lockErr.message);
+    if (!lockRow) return;
+
     const rollbackDemoRows = async () => {
       await this.admin.from("students").delete().eq("user_id", targetUserId).eq("is_demo", true);
+      // Remove o lock/estado para permitir nova tentativa em caso de falha.
       await this.admin.from("user_demo_state").delete().eq("user_id", targetUserId);
     };
 
@@ -146,12 +161,6 @@ export class SupabaseDemoTemplateRepository implements IDemoTemplateRepository {
         if (insAnErr) throw new Error(insAnErr.message);
       }
 
-      const { error: stateErr } = await this.admin.from("user_demo_state").insert({
-        user_id: targetUserId,
-        template_version: DEMO_TEMPLATE_VERSION,
-      });
-
-      if (stateErr) throw new Error(stateErr.message);
     } catch (err) {
       await rollbackDemoRows();
       throw err;

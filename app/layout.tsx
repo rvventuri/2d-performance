@@ -5,9 +5,16 @@ import AppShell from "@/components/app-shell";
 import GoogleAnalytics from "@/components/google-analytics";
 import { ThemeProvider } from "next-themes";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
-  title: APP_NAME,
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: APP_NAME,
+    template: `%s | ${APP_NAME}`,
+  },
   description: APP_DESCRIPTION,
   openGraph: {
     title: APP_NAME,
@@ -15,6 +22,7 @@ export const metadata: Metadata = {
     siteName: APP_NAME,
     locale: "pt_BR",
     type: "website",
+    url: siteUrl,
   },
   twitter: {
     card: "summary_large_image",

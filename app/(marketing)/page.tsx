@@ -225,23 +225,18 @@ export default function LandingPage() {
             className="font-heading font-black text-foreground mb-6 leading-none tracking-tight"
             style={{ fontSize: "clamp(3rem, 8vw, 6rem)", lineHeight: 1.0 }}
           >
-            CADA SALTO{" "}
-            <span
-              className="text-gradient bg-brand-gradient"
-              style={{ WebkitTextFillColor: "transparent" }}
-            >
-              É UM DADO.
+            Avaliação de{" "}
+            <span className="text-gradient bg-brand-gradient" style={{ WebkitTextFillColor: "transparent" }}>
+              salto vertical
             </span>
-            <br />
-            CADA DADO{" "}
-            <span className="text-brand-accent text-glow">É UMA DECISÃO.</span>
+            <br />com IA para treinadores
           </h1>
 
           <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Transforme avaliações biomecânicas em inteligência. O{" "}
-            <span className="text-foreground font-semibold">{APP_NAME}</span> usa IA para decifrar
-            a performance do seu atleta — salto por salto, avaliação por avaliação — e entregar
-            os insights que mudam o planejamento.
+            Registre CMJ, SJ, Abalakov e RSI, acompanhe evolução ao longo do tempo e receba insights em
+            linguagem humana. O{" "}
+            <span className="text-foreground font-semibold">{APP_NAME}</span> transforma cada avaliação em
+            decisão.
           </p>
 
           {/* CTAs */}
