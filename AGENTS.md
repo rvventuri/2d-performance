@@ -10,7 +10,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## O que é este app
 
-SaaS para **personal trainers** acompanharem a **performance de salto** dos seus atletas. O trainer cadastra alunos, registra avaliações com métricas de salto (CMJ, SJ, Abalakov, RSI, etc.) e consulta análises geradas por IA (Claude) que interpretam a evolução e sugerem intervenções.
+**SaltoVerse** — SaaS para **profissionais de performance** (treinadores, preparadores, fisioterapeutas, etc.) **acompanharem alunos**: métricas, histórico de avaliações e evolução visual, com **análises geradas por IA** (Claude Sonnet via `@anthropic-ai/sdk`) que interpretam dados e sugerem leituras e ajustes de treino.
+
+**Posicionamento (marketing e copy):** mensagem ampla — clareza, decisão baseada em dados e IA acionável. Textos canônicos em `lib/branding.ts` (`APP_DESCRIPTION`, `APP_TAGLINE`). Landing pública em `app/(marketing)/page.tsx`. Pitch interno resumido em `PITCH.md`.
+
+**Âmbito do código hoje:** o banco e a UI ainda **destacam métricas de salto** (CMJ, SJ, Abalakov, RSI, assimetria, etc.) em colunas de `assessments`, além de **`custom_metric_values`** e **`metric_configs`** para métricas e benchmarks por trainer — compatível com o discurso de templates + métricas próprias.
 
 ## Stack
 
@@ -56,7 +60,7 @@ lib/              → utilitários compartilhados, clientes Supabase, tipos
 
 No **celular**, apps como LinkedIn ou Instagram abrem links em **WebView**; o Google costuma **bloquear** OAuth nesse contexto. As telas de login e cadastro mostram um **aviso fechável** (persistido na sessão com `sessionStorage`) com links para abrir a URL canônica no navegador (HTTPS em nova janela, Safari, Chrome iOS ou intent Android). O login **não** é bloqueado pelo aviso. Defina **`NEXT_PUBLIC_APP_URL=https://2d-performance.vercel.app`** (sem barra final) na Vercel para que esses links não dependam do host do WebView.
 
-Na **landing** (`app/page.tsx`), CTAs de entrar/cadastrar usam `getMarketingCtaHref` + `target="_blank"` para tentar abrir fora do WebView de apps sociais. **Não é garantido** (quem decide é o app anfitrião); sem API web para “forçar navegador padrão”.
+Na **landing** (`app/(marketing)/page.tsx`), CTAs de entrar/cadastrar usam `getMarketingCtaHref` + `target="_blank"` para tentar abrir fora do WebView de apps sociais. **Não é garantido** (quem decide é o app anfitrião); sem API web para “forçar navegador padrão”.
 
 **Diagnóstico rápido:** no mesmo telefone, abrir o mesmo URL no **Safari** ou **Chrome** (fora do app) e tentar de novo. Se funcionar, era WebView — não é bug de redirect no Next.js.
 
@@ -69,8 +73,8 @@ Na **landing** (`app/page.tsx`), CTAs de entrar/cadastrar usam `getMarketingCtaH
 
 | Tabela | Propósito |
 |---|---|
-| `students` | Perfis de atletas (FK → auth.users) |
-| `assessments` | Avaliações com métricas de salto denormalizadas em colunas |
+| `students` | Perfis de alunos / atletas (FK → auth.users) |
+| `assessments` | Avaliações com métricas de salto (e afins) denormalizadas em colunas + extensão via custom |
 | `custom_metric_values` | Métricas extras por avaliação (metric_key + value) |
 | `ai_analyses` | Análises de IA por atleta; `status` = pending/running/done/error |
 | `trainer_profiles` | Contexto do trainer para personalizar prompts de IA |
@@ -118,7 +122,9 @@ SUPABASE_SERVICE_ROLE_KEY
 ANTHROPIC_API_KEY
 NEXT_PUBLIC_APP_URL   (recomendado em produção: URL canônica, ex. https://2d-performance.vercel.app — usada nos links “Abrir no Chrome/Safari” no login; fallback: origin atual)
 NEXT_PUBLIC_GA_MEASUREMENT_ID (opcional) — ID GA4 (ex. G-XXXXXXXXXX); sem valor, o script e eventos `gtag` não carregam
-DEMO_TEMPLATE_USER_ID (opcional) — UUID do usuário Supabase que guarda a base de demonstração clonada para novas contas na primeira visita ao dashboard. Requer `SUPABASE_SERVICE_ROLE_KEY` no servidor.
+Dados de demonstração por modalidade (opcional) — no primeiro acesso ao dashboard o trainer escolhe a modalidade; o app aplica o template de métricas e, se houver UUID configurado para essa modalidade, clona alunos/avaliações desse usuário seed. Requer `SUPABASE_SERVICE_ROLE_KEY` no servidor para o clone.
+`DEMO_TEMPLATE_USER_PREPARADOR_FISICO` ou legado `DEMO_TEMPLATE_USER_ID` — seed alinhado ao template preparador (salto).
+`DEMO_TEMPLATE_USER_PERSONAL_TRAINER_STRENGTH`, `DEMO_TEMPLATE_USER_CROSS_TRAINING`, `DEMO_TEMPLATE_USER_RUNNING_COACH`, `DEMO_TEMPLATE_USER_ONLINE_PT` — um Auth user por modalidade (opcionais).
 ```
 
 ## SEO (produção)
@@ -134,17 +140,17 @@ DEMO_TEMPLATE_USER_ID (opcional) — UUID do usuário Supabase que guarda a base
 
 ### Dados de demonstração (onboarding)
 
-1. Crie um usuário interno no Supabase Auth (ex.: `demo-template@seu-dominio.internal`).
-2. Faça login como esse usuário e rode o seed de desenvolvimento (`POST /api/seed` com `NODE_ENV=development`) ou insira manualmente alunos, avaliações e análises de IA até o template estar completo.
-3. Copie o UUID do usuário para `DEMO_TEMPLATE_USER_ID` no ambiente (Vercel / `.env.local`).
-4. Execute no SQL Editor os trechos novos de `SCHEMA.sql` (`students.is_demo`, tabela `user_demo_state`).
+1. Para cada modalidade em que quiser demo com alunos fictícios, crie um usuário interno no Supabase Auth, faça login e popule alunos `is_demo`, avaliações (colunas de salto e/ou `custom_metric_values` conforme o template) e análises de IA.
+2. Copie cada UUID para a variável de ambiente correspondente (`lib/demo-seed-users.ts` lista os nomes).
+3. Execute no SQL Editor os trechos de `SCHEMA.sql` (`user_demo_state` com `modality_chosen_at`, políticas RLS, etc.).
 
-Sem essas variáveis, novos trainers simplesmente não recebem clone automático (o app ignora em silêncio).
+Sem UUID para uma modalidade, ao escolhê-la o trainer recebe só o template de métricas (sem clone de alunos).
 
 ## Arquivos Importantes
 
 | Arquivo | Propósito |
 |---|---|
+| `lib/branding.ts` | Nome do produto e mensagens canônicas (`APP_NAME`, `APP_DESCRIPTION`, `APP_TAGLINE`) — SEO, JSON-LD, login/register, landing |
 | `lib/types.ts` | Tipos de domínio (Student, Assessment, AiAnalysisData, etc.) |
 | `lib/supabase/database.types.ts` | Tipos das rows do banco |
 | `lib/api.ts` | Helpers `apiOk` / `apiError` |

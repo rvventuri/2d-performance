@@ -1,33 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Plus, RotateCcw, Trash2, LayoutTemplate, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { MetricConfig } from "@/lib/types";
 import { ResolvedMetricConfig } from "@/lib/types";
 import { DEFAULT_METRIC_MAP } from "@/domain/trainer/services/DefaultMetrics";
-import { saveMetricConfig, deleteCustomMetric, invalidateAllAnalyses } from "../_actions";
+import { METRIC_TEMPLATES } from "@/domain/trainer/services/MetricTemplates";
+import { isLegacyAssessmentMetricKey } from "@/domain/trainer/services/MetricConfigResolver";
+import {
+  saveMetricConfig,
+  deleteCustomMetric,
+  invalidateAllAnalyses,
+  applyMetricTemplate,
+} from "../_actions";
 import { AddCustomMetricModal } from "./add-custom-metric-modal";
 
 interface Props {
-  initialConfigs: MetricConfig[];
   resolvedMetrics: ResolvedMetricConfig[];
 }
 
 const WEIGHT_OPTIONS = ["0", "0.5", "1", "1.5", "2", "2.5", "3"];
 
-export function MetricasTab({ initialConfigs, resolvedMetrics: initialResolved }: Props) {
+export function MetricasTab({ resolvedMetrics: initialResolved }: Props) {
+  const router = useRouter();
   const [metrics, setMetrics] = useState<ResolvedMetricConfig[]>(initialResolved);
+
+  useEffect(() => {
+    setMetrics(initialResolved);
+  }, [initialResolved]);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [, startApplyTransition] = useTransition();
+
+  const sortedMetrics = [...metrics].sort((a, b) => a.displayOrder - b.displayOrder || a.key.localeCompare(b.key));
 
   const updateMetric = async (key: string, changes: Partial<ResolvedMetricConfig>) => {
-    setMetrics((prev) =>
-      prev.map((m) => (m.key === key ? { ...m, ...changes } : m))
-    );
-    const metric = metrics.find((m) => m.key === key)!;
+    const metric = metrics.find((m) => m.key === key);
+    if (!metric) return;
     const updated = { ...metric, ...changes };
+    setMetrics((prev) => prev.map((m) => (m.key === key ? updated : m)));
 
     const result = await saveMetricConfig({
       metricKey: updated.key,
@@ -62,7 +76,7 @@ export function MetricasTab({ initialConfigs, resolvedMetrics: initialResolved }
       weight: 1.0,
       isEnabled: true,
     });
-    toast.success("Métrica redefinida para o padrão");
+    toast.success("Métrica redefinida para o padrão de referência (salto)");
   };
 
   const handleDelete = async (key: string) => {
@@ -73,38 +87,75 @@ export function MetricasTab({ initialConfigs, resolvedMetrics: initialResolved }
     }
     setMetrics((prev) => prev.filter((m) => m.key !== key));
     toast.success("Métrica excluída");
+    router.refresh();
   };
 
-  const defaultMetrics = metrics.filter((m) => !m.isCustom);
-  const customMetrics = metrics.filter((m) => m.isCustom);
+  const handleApplyTemplate = (templateId: string) => {
+    setApplyingId(templateId);
+    startApplyTransition(async () => {
+      const result = await applyMetricTemplate(templateId);
+      setApplyingId(null);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(
+        `Template aplicado: ${result.appliedCount} métrica(s) adicionadas ou atualizadas.`
+      );
+      router.refresh();
+    });
+  };
 
   return (
     <div className="mt-6 space-y-8">
-      {/* Default Metrics */}
       <section>
-        <h3 className="text-foreground font-semibold mb-1">Métricas Padrão</h3>
+        <div className="flex items-center gap-2 mb-1">
+          <LayoutTemplate className="w-4 h-4 text-brand-primary-bright" />
+          <h3 className="text-foreground font-semibold">Templates por persona</h3>
+        </div>
         <p className="text-muted-foreground text-sm mb-4">
-          Ajuste os benchmarks, pesos e visibilidade das métricas nativas do sistema.
+          Adicione um pacote de métricas ao seu catálogo (mescla por chave: métricas já existentes são
+          atualizadas). Você pode editar, desativar ou excluir depois.
         </p>
-        <div className="space-y-3">
-          {defaultMetrics.map((m) => (
-            <MetricRow
-              key={m.key}
-              metric={m}
-              onUpdate={(changes) => updateMetric(m.key, changes)}
-              onReset={() => handleReset(m.key)}
-            />
+        <div className="grid gap-3 sm:grid-cols-2">
+          {METRIC_TEMPLATES.map((t) => (
+            <div
+              key={t.id}
+              className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3"
+            >
+              <div>
+                <p className="font-medium text-foreground text-sm">{t.title}</p>
+                <p className="text-muted-foreground text-xs mt-1 leading-snug">{t.description}</p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="w-full sm:w-auto border-border cursor-pointer"
+                disabled={applyingId !== null}
+                onClick={() => handleApplyTemplate(t.id)}
+              >
+                {applyingId === t.id ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                    Aplicando…
+                  </>
+                ) : (
+                  "Adicionar ao catálogo"
+                )}
+              </Button>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* Custom Metrics */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
           <div>
-            <h3 className="text-foreground font-semibold mb-1">Métricas Personalizadas</h3>
+            <h3 className="text-foreground font-semibold mb-1">Seu catálogo</h3>
             <p className="text-muted-foreground text-sm">
-              Crie métricas específicas para seu método de avaliação.
+              Todas as métricas disponíveis nas avaliações e na IA. Lista vazia até você aplicar um template
+              ou criar métricas.
             </p>
           </div>
           <Button
@@ -113,21 +164,24 @@ export function MetricasTab({ initialConfigs, resolvedMetrics: initialResolved }
             className="bg-brand-primary hover:bg-brand-primary-hover text-primary-foreground font-semibold cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Nova Métrica
+            Nova métrica
           </Button>
         </div>
 
-        {customMetrics.length === 0 ? (
-          <div className="bg-card border border-dashed border-border rounded-xl p-6 text-center">
-            <p className="text-muted-foreground text-sm">Nenhuma métrica personalizada criada ainda.</p>
+        {sortedMetrics.length === 0 ? (
+          <div className="bg-card border border-dashed border-border rounded-xl p-8 text-center">
+            <p className="text-muted-foreground text-sm">
+              Nenhuma métrica ainda. Escolha um template acima ou crie uma métrica personalizada.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {customMetrics.map((m) => (
+            {sortedMetrics.map((m) => (
               <MetricRow
                 key={m.key}
                 metric={m}
                 onUpdate={(changes) => updateMetric(m.key, changes)}
+                onReset={DEFAULT_METRIC_MAP[m.key] ? () => handleReset(m.key) : undefined}
                 onDelete={() => handleDelete(m.key)}
               />
             ))}
@@ -155,8 +209,11 @@ export function MetricasTab({ initialConfigs, resolvedMetrics: initialResolved }
               displayOrder: metric.displayOrder,
             },
           ]);
+          router.refresh();
         }}
-        displayOrder={metrics.length}
+        displayOrder={
+          metrics.length === 0 ? 0 : Math.max(...metrics.map((m) => m.displayOrder), -1) + 1
+        }
       />
     </div>
   );
@@ -171,6 +228,7 @@ interface MetricRowProps {
 
 function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
   const def = DEFAULT_METRIC_MAP[metric.key];
+  const jumpBadge = isLegacyAssessmentMetricKey(metric.key);
 
   return (
     <div
@@ -179,8 +237,8 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
       }`}
     >
       <div className="flex items-center gap-3 flex-wrap">
-        {/* Toggle */}
         <button
+          type="button"
           onClick={() => onUpdate({ isEnabled: !metric.isEnabled })}
           className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer flex-shrink-0 ${
             metric.isEnabled ? "bg-brand-primary" : "bg-secondary"
@@ -194,17 +252,21 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
           />
         </button>
 
-        {/* Label */}
         <div className="flex-1 min-w-[120px]">
+          <div className="flex items-center gap-2 mb-1">
+            {jumpBadge && (
+              <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
+                Salto
+              </span>
+            )}
+          </div>
           <Input
             value={metric.label}
             onChange={(e) => onUpdate({ label: e.target.value })}
-            onBlur={() => {}}
             className="bg-secondary border-border text-foreground h-8 text-sm focus:border-brand-primary-bright"
           />
         </div>
 
-        {/* Unit */}
         <div className="w-16">
           <Input
             value={metric.unit}
@@ -214,7 +276,6 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
           />
         </div>
 
-        {/* Benchmarks */}
         <div className="flex gap-1.5 items-center">
           <span className="text-muted-foreground text-xs hidden sm:block">Ref:</span>
           {(["benchRecreational", "benchTrained", "benchElite"] as const).map((bKey, i) => (
@@ -234,7 +295,6 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
           ))}
         </div>
 
-        {/* Weight */}
         <div className="w-24">
           <select
             value={String(metric.weight)}
@@ -250,19 +310,20 @@ function MetricRow({ metric, onUpdate, onReset, onDelete }: MetricRowProps) {
           </select>
         </div>
 
-        {/* Actions */}
         <div className="flex gap-1">
           {onReset && (
             <button
+              type="button"
               onClick={onReset}
               className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded cursor-pointer transition-colors"
-              title="Redefinir para padrão"
+              title="Redefinir referência (salto)"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
           )}
           {onDelete && (
             <button
+              type="button"
               onClick={onDelete}
               className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded cursor-pointer transition-colors"
               title="Excluir métrica"

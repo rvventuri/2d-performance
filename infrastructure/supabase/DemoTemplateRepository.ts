@@ -3,48 +3,20 @@ import type { IDemoTemplateRepository } from "@/domain/demo/repositories/IDemoTe
 import type {
   AiAnalysisRow,
   AssessmentRow,
+  CustomMetricValueRow,
   StudentRow,
 } from "@/lib/supabase/database.types";
-
-const DEMO_TEMPLATE_VERSION = 1;
 
 export class SupabaseDemoTemplateRepository implements IDemoTemplateRepository {
   constructor(private readonly admin: SupabaseClient) {}
 
-  async hasDemoBeenApplied(userId: string): Promise<boolean> {
-    const { data, error } = await this.admin
-      .from("user_demo_state")
-      .select("user_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (error) throw new Error(error.message);
-    return data != null;
-  }
-
-  async cloneTemplateToUser(targetUserId: string, templateUserId: string): Promise<void> {
+  async cloneDemoFromTemplateUser(targetUserId: string, templateUserId: string): Promise<void> {
     if (targetUserId === templateUserId) {
-      throw new Error("Usuário alvo não pode ser o mesmo que o template.");
+      throw new Error("Usuário alvo não pode ser o mesmo que o usuário seed.");
     }
-
-    // Use `user_demo_state` como lock idempotente para evitar corridas (duas abas/requests).
-    // Se já existir, consideramos demo aplicado e saímos sem erro.
-    const { data: lockRow, error: lockErr } = await this.admin
-      .from("user_demo_state")
-      .upsert(
-        { user_id: targetUserId, template_version: DEMO_TEMPLATE_VERSION },
-        { onConflict: "user_id", ignoreDuplicates: true }
-      )
-      .select("user_id")
-      .maybeSingle();
-
-    if (lockErr) throw new Error(lockErr.message);
-    if (!lockRow) return;
 
     const rollbackDemoRows = async () => {
       await this.admin.from("students").delete().eq("user_id", targetUserId).eq("is_demo", true);
-      // Remove o lock/estado para permitir nova tentativa em caso de falha.
-      await this.admin.from("user_demo_state").delete().eq("user_id", targetUserId);
     };
 
     const { data: templateStudentsRaw, error: stErr } = await this.admin
@@ -58,7 +30,7 @@ export class SupabaseDemoTemplateRepository implements IDemoTemplateRepository {
 
     if (templateStudents.length === 0) {
       throw new Error(
-        "Usuário template sem alunos. Configure DEMO_TEMPLATE_USER_ID e popule o template (ex.: seed em dev)."
+        "Usuário seed sem alunos. Crie um usuário template no Supabase por modalidade e defina a variável de ambiente correspondente (ver lib/demo-seed-users.ts)."
       );
     }
 
@@ -132,6 +104,27 @@ export class SupabaseDemoTemplateRepository implements IDemoTemplateRepository {
         assessmentIdMap[a.id] = insertedRow.id as string;
       }
 
+      const oldAssessmentIds = Object.keys(assessmentIdMap);
+      if (oldAssessmentIds.length > 0) {
+        const { data: cvRows, error: cvErr } = await this.admin
+          .from("custom_metric_values")
+          .select("*")
+          .in("assessment_id", oldAssessmentIds);
+
+        if (cvErr) throw new Error(cvErr.message);
+        const customRows = (cvRows ?? []) as CustomMetricValueRow[];
+        if (customRows.length > 0) {
+          const payload = customRows.map((row) => ({
+            assessment_id: assessmentIdMap[row.assessment_id],
+            user_id: targetUserId,
+            metric_key: row.metric_key,
+            value: row.value,
+          }));
+          const { error: insCvErr } = await this.admin.from("custom_metric_values").insert(payload);
+          if (insCvErr) throw new Error(insCvErr.message);
+        }
+      }
+
       const { data: templateAnalysesRaw, error: anErr } = await this.admin
         .from("ai_analyses")
         .select("*")
@@ -160,7 +153,6 @@ export class SupabaseDemoTemplateRepository implements IDemoTemplateRepository {
         const { error: insAnErr } = await this.admin.from("ai_analyses").insert(analysisPayload);
         if (insAnErr) throw new Error(insAnErr.message);
       }
-
     } catch (err) {
       await rollbackDemoRows();
       throw err;

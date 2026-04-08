@@ -84,19 +84,14 @@ describe("SupabaseMetricConfigRepository.upsert", () => {
 });
 
 describe("SupabaseMetricConfigRepository.delete", () => {
-  it("só deleta linhas com is_custom = true", async () => {
-    const eqFn = vi.fn().mockReturnValue({ error: null });
-    const deleteFn = vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          eq: eqFn,
-        }),
-      }),
-    });
+  it("deleta por user_id e metric_key", async () => {
+    const eq2 = vi.fn().mockResolvedValue({ error: null });
+    const eq1 = vi.fn().mockReturnValue({ eq: eq2 });
+    const deleteFn = vi.fn().mockReturnValue({ eq: eq1 });
     const supabase = { from: vi.fn().mockReturnValue({ delete: deleteFn }) };
     const repo = new SupabaseMetricConfigRepository(supabase, userId);
-    await repo.delete(userId, "triple_hop");
-    // The last .eq() should filter is_custom = true
-    expect(eqFn).toHaveBeenCalledWith("is_custom", true);
+    await repo.delete(userId, "cmj");
+    expect(eq1).toHaveBeenCalledWith("user_id", userId);
+    expect(eq2).toHaveBeenCalledWith("metric_key", "cmj");
   });
 });

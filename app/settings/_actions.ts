@@ -7,7 +7,8 @@ import { SupabaseMetricConfigRepository } from "@/infrastructure/supabase/Metric
 import { SaveTrainerProfileUseCase } from "@/application/trainer/SaveTrainerProfileUseCase";
 import { SaveMetricConfigUseCase } from "@/application/trainer/SaveMetricConfigUseCase";
 import { CreateCustomMetricUseCase, CreateCustomMetricInput } from "@/application/trainer/CreateCustomMetricUseCase";
-import { DeleteCustomMetricUseCase } from "@/application/trainer/DeleteCustomMetricUseCase";
+import { ApplyMetricTemplateUseCase } from "@/application/trainer/ApplyMetricTemplateUseCase";
+import { DeleteMetricConfigUseCase } from "@/application/trainer/DeleteMetricConfigUseCase";
 import { InvalidateAnalysesUseCase } from "@/application/trainer/InvalidateAnalysesUseCase";
 
 async function getRepos() {
@@ -67,10 +68,30 @@ export async function deleteCustomMetric(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
     const { userId, metricRepo } = await getRepos();
-    await new DeleteCustomMetricUseCase(metricRepo).execute(userId, metricKey);
+    await new DeleteMetricConfigUseCase(metricRepo).execute(userId, metricKey);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Erro ao excluir" };
+  }
+}
+
+export async function applyMetricTemplate(
+  templateId: string
+): Promise<{ ok: true; appliedCount: number } | { ok: false; error: string }> {
+  try {
+    const { userId, metricRepo, analysisRepo } = await getRepos();
+    const save = new SaveMetricConfigUseCase(metricRepo);
+    const { appliedCount } = await new ApplyMetricTemplateUseCase(save).execute(
+      userId,
+      templateId
+    );
+    await new InvalidateAnalysesUseCase(analysisRepo).execute(userId);
+    return { ok: true, appliedCount };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Erro ao aplicar template",
+    };
   }
 }
 

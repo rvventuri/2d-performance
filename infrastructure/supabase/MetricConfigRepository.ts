@@ -71,8 +71,7 @@ export class SupabaseMetricConfigRepository implements IMetricConfigRepository {
       .from("metric_configs")
       .delete()
       .eq("user_id", userId)
-      .eq("metric_key", metricKey)
-      .eq("is_custom", true); // Safety: never delete default overrides
+      .eq("metric_key", metricKey);
 
     if (error) throw new Error(error.message);
   }

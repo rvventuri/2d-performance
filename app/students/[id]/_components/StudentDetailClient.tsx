@@ -137,7 +137,6 @@ function AssessmentRow({
   const evolutions = calcEvolution(assessment, previous);
   const hasWarning = insights.some((i) => i.type === "warning");
   const metricsWithData = evolutions.filter((e) => e.current !== null);
-
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div

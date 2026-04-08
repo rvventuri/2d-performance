@@ -7,7 +7,14 @@ import { GetTrainerConfigUseCase } from "@/application/trainer/GetTrainerConfigU
 import { PerfilIaTab } from "./_components/perfil-ia-tab";
 import { MetricasTab } from "./_components/metricas-tab";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ tab?: string }>;
+}) {
+  const tab = searchParams ? (await searchParams).tab : undefined;
+  const defaultTab = tab === "metricas" ? "metricas" : "perfil-ia";
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -20,10 +27,9 @@ export default async function SettingsPage() {
     new SupabaseMetricConfigRepository(supabase, user.id)
   );
 
-  const [profile, configs] = await Promise.all([
-    new SupabaseTrainerProfileRepository(supabase, user.id).getByUserId(user.id),
-    new SupabaseMetricConfigRepository(supabase, user.id).getByUserId(user.id),
-  ]);
+  const profile = await new SupabaseTrainerProfileRepository(supabase, user.id).getByUserId(
+    user.id
+  );
 
   const { resolvedMetrics } = await useCase.execute(user.id);
 
@@ -38,7 +44,7 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="perfil-ia">
+      <Tabs defaultValue={defaultTab}>
         <TabsList className="bg-card border border-border p-1 rounded-xl mb-6">
           <TabsTrigger
             value="perfil-ia"
@@ -71,7 +77,7 @@ export default async function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="metricas">
-          <MetricasTab initialConfigs={configs} resolvedMetrics={resolvedMetrics} />
+          <MetricasTab resolvedMetrics={resolvedMetrics} />
         </TabsContent>
       </Tabs>
     </div>

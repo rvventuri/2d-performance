@@ -8,7 +8,7 @@ import { Metrics } from "@/lib/types";
 import { GetTrainerConfigUseCase } from "@/application/trainer/GetTrainerConfigUseCase";
 import { SupabaseTrainerProfileRepository } from "@/infrastructure/supabase/TrainerProfileRepository";
 import { SupabaseMetricConfigRepository } from "@/infrastructure/supabase/MetricConfigRepository";
-import { resolveMetricConfigs } from "@/domain/trainer/services/MetricConfigResolver";
+import { getEnabledMetrics, resolveMetricConfigs } from "@/domain/trainer/services/MetricConfigResolver";
 import { runAnalysis } from "@/lib/services/ai-analysis.service";
 
 export interface CreateAssessmentInput {
@@ -211,6 +211,14 @@ export async function createAssessmentAction(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Não autenticado");
+
+  const metricRepoForCheck = new SupabaseMetricConfigRepository(supabase, user.id);
+  const storedConfigs = await metricRepoForCheck.getByUserId(user.id);
+  if (getEnabledMetrics(resolveMetricConfigs(storedConfigs)).length === 0) {
+    throw new Error(
+      "Configure ao menos uma métrica em Configurações antes de registrar avaliações."
+    );
+  }
 
   // Capture session token before the response is sent — needed inside after()
   const {

@@ -62,6 +62,15 @@ export default function OnboardingChecklist({ state }: Props) {
       action: "",
     },
     {
+      id: "metrics",
+      label: "Defina suas métricas",
+      description:
+        "No primeiro acesso, escolha a modalidade no aviso do dashboard. Depois você pode ajustar em Configurações.",
+      done: state.hasMetricCatalog,
+      href: "/settings?tab=metricas",
+      action: "Ajustar métricas",
+    },
+    {
       id: "profile",
       label: "Configure o Perfil IA",
       description: "Ensine a IA sobre seu método e os atletas que você treina.",
@@ -80,7 +89,7 @@ export default function OnboardingChecklist({ state }: Props) {
     {
       id: "assessment",
       label: "Registre uma avaliação",
-      description: "Insira os dados de salto para gerar a análise IA.",
+      description: "Insira os dados das suas métricas para gerar a análise IA.",
       done: state.hasAssessments,
       href: state.firstStudentId
         ? `/students/${state.firstStudentId}/assessment/new`

@@ -6,6 +6,28 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ---
 
+## [Unreleased] — 2026-04-08
+
+### Added
+- **Catálogo de métricas só no banco**: `resolveMetricConfigs` usa apenas linhas de `metric_configs`; conta nova começa sem métricas até template ou cadastro manual.
+- **Templates por persona** (`domain/trainer/services/MetricTemplates.ts`): personal força, preparador físico, cross, corrida, PT online; `ApplyMetricTemplateUseCase` com merge por `metric_key`; cards em Configurações e `MODALITY_PICKER_OPTIONS` para o dashboard.
+- **Modal de modalidade no primeiro acesso ao dashboard** (`ModalityPickerModal`, `completeModalityOnboardingAction`): aplica métricas do template escolhido e clona demo se existir usuário seed configurado (`lib/demo-seed-users.ts`).
+- **Chaves legacy** (`LEGACY_ASSESSMENT_METRIC_KEYS`) para mapear colunas de `assessments` vs `custom_metric_values`.
+- **Migrações em `SCHEMA.sql`**: backfill de `metric_configs` para usuários sem linhas; `user_demo_state.modality_chosen_at` / `modality_template_id`; RLS SELECT/INSERT/UPDATE para o dono; backfill de modalidade para contas que já tinham alunos ou métricas.
+- **Clone de demo**: `custom_metric_values` copiados junto com avaliações; `DeleteMetricConfigUseCase` permite excluir qualquer métrica do catálogo.
+- **`PITCH.md`**, ajustes de **branding** (`lib/branding.ts`), landing em **`app/(marketing)/`**, `opengraph-image`, detalhe do aluno e shell da app alinhados ao posicionamento SaltoVerse / performance ampla.
+
+### Changed
+- **Removido clone automático na carga do dashboard** e removido `EnsureDemoDataUseCase`; demo só após escolha na modalidade.
+- **`IDemoTemplateRepository`**: `cloneDemoFromTemplateUser` (sem lock antigo); variáveis de ambiente por modalidade documentadas em `AGENTS.md` (mantido `DEMO_TEMPLATE_USER_ID` como fallback do preparador).
+- **Nova avaliação**: formulário dinâmico por métricas habilitadas; bloqueio se catálogo vazio; validação no servidor em `createAssessmentAction`.
+- **Onboarding**: passo de métricas e `hasMetricCatalog` no dashboard; link `?tab=metricas` em Configurações.
+
+### Fixed
+- (Ver testes) fluxos de demo e métricas cobertos por ajustes nos testes de resolver, trainer config, delete e repositório de demo.
+
+---
+
 ## [Unreleased] — 2026-04-05
 
 ## [Unreleased] — 2026-04-06

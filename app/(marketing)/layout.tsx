@@ -3,9 +3,10 @@ import { APP_DESCRIPTION, APP_NAME } from "@/lib/branding";
 import { LandingJsonLd } from "@/components/landing-json-ld";
 import { getSiteUrl } from "@/lib/site-url";
 
-const homeTitle = "Avaliação de salto vertical, CMJ e IA para treinadores";
+const homeTitle =
+  "Acompanhe alunos com clareza — métricas, evolução e IA | SaltoVerse";
 
-const homeDescription = `${APP_DESCRIPTION} Registre CMJ, SJ, Abalakov, RSI e acompanhe a evolução dos atletas com análises geradas por IA.`;
+const homeDescription = `${APP_DESCRIPTION} Templates (força, corrida, salto) ou métricas próprias, gráficos e insights acionáveis.`;
 
 export const metadata: Metadata = {
   title: homeTitle,

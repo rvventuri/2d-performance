@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
 import { GetTrainerConfigUseCase } from "./GetTrainerConfigUseCase";
-import { DEFAULT_METRICS } from "@/domain/trainer/services/DefaultMetrics";
 import { MetricConfig, TrainerProfile } from "@/lib/types";
 
 const userId = "user-1";
@@ -27,13 +26,13 @@ function emptyProfile(): TrainerProfile {
 }
 
 describe("GetTrainerConfigUseCase", () => {
-  it("repo vazio → retorna todos os defaults e context vazio", async () => {
+  it("repo vazio → catálogo vazio e context vazio", async () => {
     const useCase = new GetTrainerConfigUseCase(
       makeProfileRepo(null),
       makeMetricConfigRepo([])
     );
     const { resolvedMetrics, trainerContext } = await useCase.execute(userId);
-    expect(resolvedMetrics).toHaveLength(DEFAULT_METRICS.length);
+    expect(resolvedMetrics).toHaveLength(0);
     expect(trainerContext).toBe("");
   });
 
@@ -74,6 +73,7 @@ describe("GetTrainerConfigUseCase", () => {
       makeMetricConfigRepo(overrides)
     );
     const { resolvedMetrics } = await useCase.execute(userId);
+    expect(resolvedMetrics).toHaveLength(1);
     const cmj = resolvedMetrics.find((m) => m.key === "cmj")!;
     expect(cmj.benchRecreational).toBe(35);
     expect(cmj.benchTrained).toBe(50);

@@ -67,7 +67,7 @@ export default function OpenGraphImage() {
             fontWeight: 600,
           }}
         >
-          Avaliação de salto · CMJ · IA para treinadores
+          Métricas · evolução · IA para decisões de treino
         </p>
       </div>
     ),

@@ -1,44 +1,40 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getAdminClientOrNull } from "@/lib/supabase/admin";
-import { EnsureDemoDataUseCase } from "@/application/demo/EnsureDemoDataUseCase";
-import { SupabaseDemoTemplateRepository } from "@/infrastructure/supabase/DemoTemplateRepository";
 import DashboardClient from "./_components/DashboardClient";
 import type { StudentWithStats, OnboardingState } from "./_components/DashboardClient";
 import type { StudentRow } from "@/lib/supabase/database.types";
+import { MODALITY_PICKER_OPTIONS } from "@/domain/trainer/services/MetricTemplates";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const admin = getAdminClientOrNull();
-  const demoRepo = admin ? new SupabaseDemoTemplateRepository(admin) : null;
-  const ensureDemo = new EnsureDemoDataUseCase(
-    demoRepo,
-    process.env.DEMO_TEMPLATE_USER_ID
-  );
-  try {
-    const result = await ensureDemo.execute(user.id);
-    if (process.env.NODE_ENV !== "production" && result.skippedReason) {
-      console.info("[demo] Clone pulado:", result.skippedReason);
-    }
-  } catch (e) {
-    console.error("[demo] Falha ao garantir dados de demonstração:", e);
-  }
-
-  // 1. Fetch students, assessments and trainer profile in parallel
-  const [{ data: studentsData, error: studentsError }, { data: profileData }] =
-    await Promise.all([
-      supabase.from("students").select("*").order("created_at", { ascending: false }),
-      supabase.from("trainer_profiles").select("coaching_philosophy,sport_context").eq("user_id", user.id).single(),
-    ]);
+  const [
+    { data: studentsData, error: studentsError },
+    { data: profileData },
+    { count: metricConfigCount },
+    { data: demoState },
+  ] = await Promise.all([
+    supabase.from("students").select("*").order("created_at", { ascending: false }),
+    supabase.from("trainer_profiles").select("coaching_philosophy,sport_context").eq("user_id", user.id).single(),
+    supabase
+      .from("metric_configs")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id),
+    supabase
+      .from("user_demo_state")
+      .select("modality_chosen_at")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
 
   if (studentsError) throw studentsError;
 
   const students = (studentsData ?? []) as StudentRow[];
 
-  // 2. Fetch assessment stats in ONE batch query instead of N individual queries.
   let assessmentRows: Array<{ student_id: string; date: string }> = [];
   if (students.length > 0) {
     const { data: statsData } = await supabase
@@ -48,7 +44,6 @@ export default async function DashboardPage() {
     assessmentRows = statsData ?? [];
   }
 
-  // 3. Aggregate stats per student in memory
   const countByStudent: Record<string, number> = {};
   const lastDateByStudent: Record<string, string> = {};
 
@@ -75,7 +70,12 @@ export default async function DashboardPage() {
     lastAssessmentDate: lastDateByStudent[s.id] ?? null,
   }));
 
+  const modalityChosen = Boolean(
+    (demoState as { modality_chosen_at?: string | null } | null)?.modality_chosen_at
+  );
+
   const onboardingState: OnboardingState = {
+    hasMetricCatalog: (metricConfigCount ?? 0) > 0,
     isProfileConfigured: !!(
       profileData?.coaching_philosophy || profileData?.sport_context
     ),
@@ -90,6 +90,8 @@ export default async function DashboardPage() {
       totalAssessments={totalAssessments}
       onboardingState={onboardingState}
       hasDemoData={hasDemoData}
+      needsModalityPicker={!modalityChosen}
+      modalityOptions={MODALITY_PICKER_OPTIONS}
     />
   );
 }

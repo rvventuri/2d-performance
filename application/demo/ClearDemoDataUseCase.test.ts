@@ -6,8 +6,7 @@ const userId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 
 function makeRepo(overrides: Partial<IDemoTemplateRepository> = {}): IDemoTemplateRepository {
   return {
-    hasDemoBeenApplied: vi.fn(),
-    cloneTemplateToUser: vi.fn(),
+    cloneDemoFromTemplateUser: vi.fn(),
     clearDemoStudents: vi.fn().mockResolvedValue(3),
     markDemoCleared: vi.fn().mockResolvedValue(undefined),
     ...overrides,

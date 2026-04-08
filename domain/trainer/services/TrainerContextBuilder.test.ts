@@ -4,8 +4,9 @@ import {
   buildBenchmarkSection,
   buildWeightNote,
 } from "./TrainerContextBuilder";
-import { TrainerProfile, ResolvedMetricConfig } from "@/lib/types";
+import { TrainerProfile, ResolvedMetricConfig, MetricConfig } from "@/lib/types";
 import { resolveMetricConfigs } from "./MetricConfigResolver";
+import { DEFAULT_METRICS } from "./DefaultMetrics";
 
 function makeProfile(partial: Partial<TrainerProfile> = {}): TrainerProfile {
   return {
@@ -62,9 +63,28 @@ describe("buildTrainerContext", () => {
   });
 });
 
+function defaultMetricConfigs(): MetricConfig[] {
+  return DEFAULT_METRICS.map((def, i) => ({
+    id: `id-${def.key}`,
+    userId: "u",
+    metricKey: def.key,
+    label: def.label,
+    unit: def.unit,
+    higherIsBetter: def.higherIsBetter,
+    isCustom: false,
+    isEnabled: true,
+    benchRecreational: def.benchRecreational,
+    benchTrained: def.benchTrained,
+    benchElite: def.benchElite,
+    weight: 1,
+    displayOrder: i,
+    createdAt: "2025-01-01",
+  }));
+}
+
 describe("buildBenchmarkSection", () => {
   it("gera uma linha por métrica habilitada", () => {
-    const resolved = resolveMetricConfigs([]);
+    const resolved = resolveMetricConfigs(defaultMetricConfigs());
     const section = buildBenchmarkSection(resolved);
     const lines = section.split("\n").filter(Boolean);
     expect(lines).toHaveLength(10);

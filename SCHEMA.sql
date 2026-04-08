@@ -419,3 +419,120 @@ CREATE TABLE IF NOT EXISTS public.user_demo_state (
 
 ALTER TABLE public.user_demo_state ENABLE ROW LEVEL SECURITY;
 -- Sem políticas: acesso apenas via service_role (bypass RLS) no servidor.
+
+-- ============================================================
+-- MIGRAÇÃO: Backfill metric_configs (catálogo explícito)
+-- Antes o app resolvia DEFAULT_METRICS mesmo sem linhas no banco.
+-- Execute no SQL Editor uma vez após deploy do app que passa a usar só o DB.
+-- ============================================================
+
+INSERT INTO public.metric_configs (
+  user_id,
+  metric_key,
+  label,
+  unit,
+  higher_is_better,
+  is_custom,
+  is_enabled,
+  bench_recreational,
+  bench_trained,
+  bench_elite,
+  weight,
+  display_order
+)
+SELECT
+  u.id,
+  v.metric_key,
+  v.label,
+  v.unit,
+  v.higher_is_better,
+  FALSE,
+  TRUE,
+  v.bench_recreational,
+  v.bench_trained,
+  v.bench_elite,
+  1.0,
+  v.display_order
+FROM auth.users AS u
+CROSS JOIN (
+  VALUES
+    ('cmj', 'CMJ', 'cm', TRUE, 30::NUMERIC, 42::NUMERIC, 60::NUMERIC, 0),
+    ('sj', 'SJ', 'cm', TRUE, 25::NUMERIC, 38::NUMERIC, 55::NUMERIC, 1),
+    ('abalakov', 'Abalakov', 'cm', TRUE, 34::NUMERIC, 47::NUMERIC, 65::NUMERIC, 2),
+    ('rsi', 'RSI', '', TRUE, 0.8::NUMERIC, 1.5::NUMERIC, 2.5::NUMERIC, 3),
+    ('tempoContato', 'Tempo de Contato', 'ms', FALSE, 300::NUMERIC, 230::NUMERIC, 170::NUMERIC, 4),
+    ('alturaSaltoDJ', 'Altura Salto DJ', 'cm', TRUE, 25::NUMERIC, 35::NUMERIC, 48::NUMERIC, 5),
+    ('cmjEsquerdo', 'CMJ Esquerdo', 'cm', TRUE, 28::NUMERIC, 40::NUMERIC, 58::NUMERIC, 6),
+    ('cmjDireito', 'CMJ Direito', 'cm', TRUE, 28::NUMERIC, 40::NUMERIC, 58::NUMERIC, 7),
+    ('assimetriaPercentual', 'Assimetria %', '%', FALSE, 12::NUMERIC, 7::NUMERIC, 3::NUMERIC, 8),
+    ('saltoHorizontal', 'Salto Horizontal', 'cm', TRUE, 175::NUMERIC, 230::NUMERIC, 285::NUMERIC, 9)
+) AS v(
+  metric_key,
+  label,
+  unit,
+  higher_is_better,
+  bench_recreational,
+  bench_trained,
+  bench_elite,
+  display_order
+)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM public.metric_configs mc
+  WHERE mc.user_id = u.id AND mc.metric_key = v.metric_key
+);
+
+-- ============================================================
+-- MIGRAÇÃO: Modalidade no primeiro acesso (dashboard)
+-- Execute no SQL Editor após deploy do app que usa o modal de modalidade.
+-- ============================================================
+
+ALTER TABLE public.user_demo_state
+  ADD COLUMN IF NOT EXISTS modality_chosen_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS modality_template_id TEXT;
+
+-- Contas que já usavam demo/métricas antes do modal: não exibir o picker de novo.
+UPDATE public.user_demo_state
+SET
+  modality_chosen_at = COALESCE(modality_chosen_at, applied_at, NOW()),
+  modality_template_id = COALESCE(modality_template_id, 'preparador_fisico')
+WHERE modality_chosen_at IS NULL;
+
+INSERT INTO public.user_demo_state (
+  user_id,
+  template_version,
+  applied_at,
+  modality_chosen_at,
+  modality_template_id
+)
+SELECT
+  x.user_id,
+  1,
+  NOW(),
+  NOW(),
+  'preparador_fisico'
+FROM (
+  SELECT DISTINCT user_id FROM public.students
+  UNION
+  SELECT DISTINCT user_id FROM public.metric_configs
+) AS x
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.user_demo_state u WHERE u.user_id = x.user_id
+);
+
+-- Dono pode ler/gravar próprio estado (server action com JWT); service role ignora RLS.
+DROP POLICY IF EXISTS "user_demo_state_select_own" ON public.user_demo_state;
+CREATE POLICY "user_demo_state_select_own"
+  ON public.user_demo_state FOR SELECT
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "user_demo_state_insert_own" ON public.user_demo_state;
+CREATE POLICY "user_demo_state_insert_own"
+  ON public.user_demo_state FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "user_demo_state_update_own" ON public.user_demo_state;
+CREATE POLICY "user_demo_state_update_own"
+  ON public.user_demo_state FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);

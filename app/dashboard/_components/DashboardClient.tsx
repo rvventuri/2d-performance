@@ -25,6 +25,7 @@ import {
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import OnboardingChecklist from "./OnboardingChecklist";
+import { ModalityPickerModal, type ModalityOption } from "./ModalityPickerModal";
 import { clearDemoDataAction } from "../_actions";
 
 export interface StudentWithStats {
@@ -39,6 +40,7 @@ export interface StudentWithStats {
 }
 
 export interface OnboardingState {
+  hasMetricCatalog: boolean;
   isProfileConfigured: boolean;
   hasStudents: boolean;
   hasAssessments: boolean;
@@ -50,6 +52,8 @@ interface Props {
   totalAssessments: number;
   onboardingState: OnboardingState;
   hasDemoData: boolean;
+  needsModalityPicker: boolean;
+  modalityOptions: ModalityOption[];
 }
 
 export default function DashboardClient({
@@ -57,6 +61,8 @@ export default function DashboardClient({
   totalAssessments,
   onboardingState,
   hasDemoData,
+  needsModalityPicker,
+  modalityOptions,
 }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -88,6 +94,8 @@ export default function DashboardClient({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <ModalityPickerModal open={needsModalityPicker} options={modalityOptions} />
+
       <div className="mb-8">
         <h1 className="font-heading text-4xl font-bold text-foreground tracking-wide mb-1">DASHBOARD</h1>
         <p className="text-muted-foreground text-sm">Gerencie seus alunos e acompanhe a evolução de performance</p>

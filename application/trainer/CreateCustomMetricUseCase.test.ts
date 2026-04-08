@@ -51,21 +51,19 @@ describe("CreateCustomMetricUseCase", () => {
   });
 });
 
-describe("DeleteCustomMetricUseCase", () => {
-  it("rejeita exclusão de métrica padrão", async () => {
-    const { DeleteCustomMetricUseCase } = await import("./DeleteCustomMetricUseCase");
+describe("DeleteMetricConfigUseCase", () => {
+  it("deleta qualquer métrica do catálogo do usuário", async () => {
+    const { DeleteMetricConfigUseCase } = await import("./DeleteMetricConfigUseCase");
     const repo = makeRepo();
-    const useCase = new DeleteCustomMetricUseCase(repo);
-    await expect(useCase.execute(userId, "cmj")).rejects.toThrow(
-      "Não é possível excluir métrica padrão"
-    );
-    expect(repo.delete).not.toHaveBeenCalled();
+    const useCase = new DeleteMetricConfigUseCase(repo);
+    await useCase.execute(userId, "cmj");
+    expect(repo.delete).toHaveBeenCalledWith(userId, "cmj");
   });
 
-  it("deleta custom metric sem problemas", async () => {
-    const { DeleteCustomMetricUseCase } = await import("./DeleteCustomMetricUseCase");
+  it("deleta métrica custom", async () => {
+    const { DeleteMetricConfigUseCase } = await import("./DeleteMetricConfigUseCase");
     const repo = makeRepo();
-    const useCase = new DeleteCustomMetricUseCase(repo);
+    const useCase = new DeleteMetricConfigUseCase(repo);
     await useCase.execute(userId, "custom_123_abc");
     expect(repo.delete).toHaveBeenCalledWith(userId, "custom_123_abc");
   });
