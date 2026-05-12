@@ -55,6 +55,8 @@ export default function NewAssessmentPage() {
   const [customMetricValues, setCustomMetricValues] = useState<Record<string, string>>({});
   const [resolvedMetrics, setResolvedMetrics] = useState<ReturnType<typeof resolveMetricConfigs>>([]);
   const [isPending, startTransition] = useTransition();
+  /** Quando true, alterações no CMJ esq./dir. não sobrescrevem a assimetria (valor informado manualmente). */
+  const [assimetriaOverrideManual, setAssimetriaOverrideManual] = useState(false);
 
   useEffect(() => {
     Promise.all([getStudent(id), getMetricConfigs()]).then(([s, configs]) => {
@@ -92,21 +94,64 @@ export default function NewAssessmentPage() {
 
   const metricUnit = (key: string) => resolvedMetrics.find((m) => m.key === key)?.unit ?? "";
 
+  const suggestedAssimetriaPercent = useMemo(() => {
+    const left = Number(metrics.cmjEsquerdo);
+    const right = Number(metrics.cmjDireito);
+    if (!Number.isFinite(left) || !Number.isFinite(right) || left <= 0 || right <= 0) return null;
+    const max = Math.max(left, right);
+    const min = Math.min(left, right);
+    return (((max - min) / max) * 100).toFixed(1);
+  }, [metrics.cmjEsquerdo, metrics.cmjDireito]);
+
+  const assimetriaDiffersFromCmjSuggestion = useMemo(() => {
+    if (suggestedAssimetriaPercent === null) return false;
+    if (metrics.assimetriaPercentual === "") return true;
+    const cur = Number(metrics.assimetriaPercentual);
+    const sug = Number(suggestedAssimetriaPercent);
+    if (!Number.isFinite(cur) || !Number.isFinite(sug)) return true;
+    return Math.abs(cur - sug) > 0.001;
+  }, [suggestedAssimetriaPercent, metrics.assimetriaPercentual]);
+
+  const applySuggestedAssimetria = useCallback(() => {
+    const left = Number(metrics.cmjEsquerdo);
+    const right = Number(metrics.cmjDireito);
+    if (!Number.isFinite(left) || !Number.isFinite(right) || left <= 0 || right <= 0) return;
+    const max = Math.max(left, right);
+    const min = Math.min(left, right);
+    setAssimetriaOverrideManual(false);
+    setMetrics((prev) => ({
+      ...prev,
+      assimetriaPercentual: (((max - min) / max) * 100).toFixed(1),
+    }));
+  }, [metrics.cmjEsquerdo, metrics.cmjDireito]);
+
   const handleMetricChange = useCallback((field: keyof Metrics, value: string) => {
+    if (field === "assimetriaPercentual") {
+      if (value === "") {
+        setAssimetriaOverrideManual(false);
+      } else {
+        setAssimetriaOverrideManual(true);
+      }
+      setMetrics((prev) => ({ ...prev, assimetriaPercentual: value }));
+      return;
+    }
+
     setMetrics((prev) => {
       const updated = { ...prev, [field]: value };
       if (field === "cmjEsquerdo" || field === "cmjDireito") {
         const left = Number(field === "cmjEsquerdo" ? value : prev.cmjEsquerdo);
         const right = Number(field === "cmjDireito" ? value : prev.cmjDireito);
-        if (left > 0 && right > 0) {
+        if (!assimetriaOverrideManual && left > 0 && right > 0) {
           const max = Math.max(left, right);
           const min = Math.min(left, right);
           updated.assimetriaPercentual = (((max - min) / max) * 100).toFixed(1);
+        } else if (!assimetriaOverrideManual && (left <= 0 || right <= 0)) {
+          updated.assimetriaPercentual = "";
         }
       }
       return updated;
     });
-  }, []);
+  }, [assimetriaOverrideManual]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,8 +260,8 @@ export default function NewAssessmentPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {legacyEnabled.map((m) => {
                 const field = m.key as keyof Metrics;
-                const isAutoCalc =
-                  field === "assimetriaPercentual" && metrics.cmjEsquerdo !== "" && metrics.cmjDireito !== "";
+                const showAssimetriaHint =
+                  field === "assimetriaPercentual" && suggestedAssimetriaPercent !== null;
                 const unit = metricUnit(m.key);
                 const label = metricLabel(m.key);
                 return (
@@ -226,8 +271,10 @@ export default function NewAssessmentPage() {
                       className="text-muted-foreground text-xs font-medium uppercase tracking-wider flex items-center gap-1"
                     >
                       {label}
-                      {isAutoCalc && (
-                        <span className="text-brand-primary-bright text-xs normal-case font-normal">(auto)</span>
+                      {showAssimetriaHint && (
+                        <span className="text-muted-foreground text-xs normal-case font-normal">
+                          (editável — sugestão pelo CMJ)
+                        </span>
                       )}
                     </Label>
                     <div className="relative">
@@ -238,10 +285,9 @@ export default function NewAssessmentPage() {
                         placeholder="—"
                         value={metrics[field]}
                         onChange={(e) => handleMetricChange(field, e.target.value)}
-                        readOnly={isAutoCalc}
                         className={`bg-secondary border-border text-foreground placeholder:text-muted-foreground/40 focus:border-brand-primary-bright h-11 ${
                           unit ? "pr-12" : ""
-                        } ${isAutoCalc ? "opacity-70 cursor-default" : ""}`}
+                        }`}
                       />
                       {unit && (
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
@@ -249,6 +295,29 @@ export default function NewAssessmentPage() {
                         </span>
                       )}
                     </div>
+                    {field === "assimetriaPercentual" && suggestedAssimetriaPercent !== null && (
+                      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-muted-foreground text-xs">
+                          Sugestão a partir do CMJ esq./dir.:{" "}
+                          <span className="text-foreground font-medium tabular-nums">
+                            {suggestedAssimetriaPercent}
+                            {unit ? ` ${unit}` : ""}
+                          </span>
+                        </p>
+                        {suggestedAssimetriaPercent !== null &&
+                          (assimetriaOverrideManual || assimetriaDiffersFromCmjSuggestion) && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-8 shrink-0 border-border text-xs"
+                            onClick={applySuggestedAssimetria}
+                          >
+                            Usar sugestão
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -306,8 +375,9 @@ export default function NewAssessmentPage() {
           <div className="flex items-center gap-2 p-3 bg-card border border-border/50 rounded-lg">
             <Info className="w-4 h-4 text-brand-primary-bright shrink-0" />
             <p className="text-muted-foreground text-xs">
-              Campos vazios são ignorados na análise. Com CMJ esquerdo e direito preenchidos, a assimetria
-              % pode ser calculada automaticamente.
+              Campos vazios são ignorados na análise. Com CMJ esquerdo e direito preenchidos, sugerimos a
+              assimetria %; você pode editar o campo ou usar o botão &quot;Usar sugestão&quot; para voltar ao
+              valor calculado.
             </p>
           </div>
         )}
