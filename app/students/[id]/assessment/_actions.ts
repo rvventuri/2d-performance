@@ -2,6 +2,7 @@
 
 import { after } from "next/server";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Metrics } from "@/lib/types";
@@ -10,9 +11,18 @@ import { SupabaseTrainerProfileRepository } from "@/infrastructure/supabase/Trai
 import { SupabaseMetricConfigRepository } from "@/infrastructure/supabase/MetricConfigRepository";
 import { getEnabledMetrics, resolveMetricConfigs } from "@/domain/trainer/services/MetricConfigResolver";
 import { runAnalysis } from "@/lib/services/ai-analysis.service";
+import { sortAssessmentsChronologically } from "@/lib/assessment-sort";
 
 export interface CreateAssessmentInput {
   studentId: string;
+  date: string;
+  metrics: Metrics;
+  customMetrics: Record<string, number | null>;
+}
+
+export interface UpdateAssessmentInput {
+  studentId: string;
+  assessmentId: string;
   date: string;
   metrics: Metrics;
   customMetrics: Record<string, number | null>;
@@ -106,7 +116,8 @@ async function runBackgroundAnalysis(
       .from("assessments")
       .select("*")
       .eq("student_id", studentId)
-      .order("date", { ascending: true });
+      .order("date", { ascending: true })
+      .order("created_at", { ascending: true });
 
     const assessments = (assessmentRows ?? []).map((r) =>
       rowToAssessment(r as Record<string, unknown>)
@@ -270,6 +281,115 @@ export async function createAssessmentAction(
   const userId = user.id;
 
   // 4. Run analysis in background — executes after the redirect is sent
+  if (accessToken) {
+    after(async () => {
+      await runBackgroundAnalysis(studentId, userId, accessToken);
+    });
+  }
+
+  redirect(`/students/${studentId}`);
+}
+
+export async function updateAssessmentAction(
+  input: UpdateAssessmentInput
+): Promise<void> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Não autenticado");
+
+  const metricRepoForCheck = new SupabaseMetricConfigRepository(supabase, user.id);
+  const storedConfigs = await metricRepoForCheck.getByUserId(user.id);
+  if (getEnabledMetrics(resolveMetricConfigs(storedConfigs)).length === 0) {
+    throw new Error(
+      "Configure ao menos uma métrica em Configurações antes de registrar avaliações."
+    );
+  }
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token ?? null;
+
+  const { data: metaRows, error: metaErr } = await supabase
+    .from("assessments")
+    .select("id, date, created_at")
+    .eq("student_id", input.studentId)
+    .eq("user_id", user.id)
+    .order("date", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (metaErr) throw new Error(metaErr.message);
+
+  const rows = metaRows ?? [];
+  if (rows.length === 0) throw new Error("Nenhuma avaliação encontrada.");
+
+  const last = rows[rows.length - 1];
+  if (last.id !== input.assessmentId) {
+    throw new Error("Só é possível editar a avaliação mais recente do atleta.");
+  }
+
+  const withNewDate = rows.map((r) => ({
+    id: r.id as string,
+    date: r.id === input.assessmentId ? input.date : (r.date as string),
+    created_at: r.created_at as string,
+  }));
+  const reordered = sortAssessmentsChronologically(withNewDate);
+  const chronologicallyLast = reordered[reordered.length - 1];
+  if (!chronologicallyLast || chronologicallyLast.id !== input.assessmentId) {
+    throw new Error(
+      "A data informada faz com que esta avaliação deixe de ser a mais recente. Ajuste as datas das outras avaliações primeiro."
+    );
+  }
+
+  const { error: updateErr } = await supabase
+    .from("assessments")
+    .update({
+      date: input.date,
+      ...metricsToRow(input.metrics),
+    })
+    .eq("id", input.assessmentId)
+    .eq("student_id", input.studentId)
+    .eq("user_id", user.id);
+
+  if (updateErr) throw new Error(updateErr.message);
+
+  const { error: delCvErr } = await supabase
+    .from("custom_metric_values")
+    .delete()
+    .eq("assessment_id", input.assessmentId)
+    .eq("user_id", user.id);
+  if (delCvErr) throw new Error(delCvErr.message);
+
+  const customEntries = Object.entries(input.customMetrics).filter(([, v]) => v !== null);
+  if (customEntries.length > 0) {
+    const cvRows = customEntries.map(([key, value]) => ({
+      assessment_id: input.assessmentId,
+      user_id: user.id,
+      metric_key: key,
+      value,
+    }));
+    const { error: insCvErr } = await supabase.from("custom_metric_values").insert(cvRows);
+    if (insCvErr) throw new Error(insCvErr.message);
+  }
+
+  await supabase.from("ai_analyses").delete().eq("student_id", input.studentId);
+  await supabase.from("ai_analyses").insert({
+    student_id: input.studentId,
+    user_id: user.id,
+    content: "{}",
+    last_assessment_id: input.assessmentId,
+    status: "pending",
+  });
+
+  const studentId = input.studentId;
+  const userId = user.id;
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/students/${studentId}`);
+
   if (accessToken) {
     after(async () => {
       await runBackgroundAnalysis(studentId, userId, accessToken);

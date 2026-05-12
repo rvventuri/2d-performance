@@ -18,8 +18,18 @@ describe("getMarketingCtaHref", () => {
     );
   });
 
+  it("remove barra final da base", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://2d-performance.vercel.app/");
+    expect(getMarketingCtaHref("/login")).toBe("https://2d-performance.vercel.app/login");
+  });
+
   it("returns relative path when env is missing", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
+    expect(getMarketingCtaHref("/login")).toBe("/login");
+  });
+
+  it("trata base só com espaços como relativo", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "   ");
     expect(getMarketingCtaHref("/login")).toBe("/login");
   });
 });

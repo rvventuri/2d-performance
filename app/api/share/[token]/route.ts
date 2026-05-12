@@ -77,7 +77,8 @@ export async function POST(
     .from("assessments")
     .select("*")
     .eq("student_id", link.student_id)
-    .order("date", { ascending: true });
+    .order("date", { ascending: true })
+    .order("created_at", { ascending: true });
 
   const assessments = (assessmentRows ?? []).map(rowToAssessment);
 

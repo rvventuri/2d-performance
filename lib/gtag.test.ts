@@ -23,6 +23,14 @@ describe("sendGtagEvent", () => {
     delete window.gtag;
   });
 
+  it("no-op sem measurement id", () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_MEASUREMENT_ID", "");
+    const gtag = vi.fn();
+    window.gtag = gtag;
+    sendGtagEvent("login");
+    expect(gtag).not.toHaveBeenCalled();
+  });
+
   it("does not throw when gtag is missing", () => {
     vi.stubEnv("NEXT_PUBLIC_GA_MEASUREMENT_ID", "G-X");
     expect(() => sendGtagEvent("login", { method: "email" })).not.toThrow();
@@ -41,6 +49,20 @@ describe("gaPageview", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     delete window.gtag;
+  });
+
+  it("no-op sem measurement id", () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_MEASUREMENT_ID", "");
+    const gtag = vi.fn();
+    window.gtag = gtag;
+    gaPageview("/x");
+    expect(gtag).not.toHaveBeenCalled();
+  });
+
+  it("no-op quando gtag não é função", () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_MEASUREMENT_ID", "G-ABC");
+    window.gtag = {} as never;
+    expect(() => gaPageview("/x")).not.toThrow();
   });
 
   it("calls gtag config with page_path when configured", () => {

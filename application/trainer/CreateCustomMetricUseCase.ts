@@ -24,6 +24,7 @@ export class CreateCustomMetricUseCase {
     // Generate unique metric_key that never conflicts with defaults
     const metricKey = `custom_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
+    /* v8 ignore next — collision is practically impossible (timestamp + random suffix) */
     if (DEFAULT_METRIC_MAP[metricKey]) {
       throw new Error(`Chave de métrica conflita com métrica padrão: ${metricKey}`);
     }

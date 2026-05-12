@@ -224,7 +224,8 @@ export async function getStudentAssessments(
     .from("assessments")
     .select("*")
     .eq("student_id", studentId)
-    .order("date", { ascending: true });
+    .order("date", { ascending: true })
+    .order("created_at", { ascending: true });
   if (error) throw normalizeSupabaseError(error);
 
   const assessments = (data ?? []).map(rowToAssessment);

@@ -152,10 +152,13 @@ describe("POST /api/share/[token]", () => {
           };
         }
         if (table === "assessments") {
+          const assessmentsResult = { data: [MOCK_ASSESSMENT_ROW] };
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            order: vi.fn().mockResolvedValue({ data: [MOCK_ASSESSMENT_ROW] }),
+            order: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue(assessmentsResult),
+            }),
           };
         }
         if (table === "custom_metric_values") {
@@ -214,7 +217,9 @@ describe("POST /api/share/[token]", () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            order: vi.fn().mockResolvedValue({ data: [] }),
+            order: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue({ data: [] }),
+            }),
           };
         }
         if (table === "ai_analyses") {
@@ -266,7 +271,9 @@ describe("POST /api/share/[token]", () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            order: vi.fn().mockResolvedValue({ data: [] }),
+            order: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue({ data: [] }),
+            }),
           };
         }
         if (table === "ai_analyses") {
@@ -289,6 +296,244 @@ describe("POST /api/share/[token]", () => {
 
     expect(body.aiAnalysis).not.toBeNull();
     expect(body.aiAnalysis.performanceScore).toBe(82);
+  });
+
+  it("retorna 404 quando atleta não existe", async () => {
+    const adminMock = {
+      from: vi.fn((table: string) => {
+        if (table === "share_links") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+              data: { id: "l-404", student_id: "s-missing", user_id: "u-1", password_hash: null },
+              error: null,
+            }),
+          };
+        }
+        if (table === "students") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: null, error: { message: "not found" } }),
+          };
+        }
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) };
+      }),
+    };
+    vi.mocked(createAdminClient).mockReturnValue(adminMock as never);
+
+    const req = makeRequest("tok-no-student");
+    const res = await POST(req, { params: Promise.resolve({ token: "tok-no-student" }) });
+    expect(res.status).toBe(404);
+  });
+
+  it("403 com body JSON inválido quando link exige senha", async () => {
+    vi.mocked(createAdminClient).mockReturnValue(
+      makeAdminMock({
+        share_links: {
+          data: { id: "l-1", student_id: "s-1", user_id: "u-1", password_hash: "hashed" },
+          error: null,
+        },
+      }) as never
+    );
+    const req = new NextRequest("http://localhost/api/share/tok-bad-json", {
+      method: "POST",
+      body: "{ not-json",
+      headers: { "content-type": "application/json" },
+    });
+    const res = await POST(req, { params: Promise.resolve({ token: "tok-bad-json" }) });
+    expect(res.status).toBe(403);
+  });
+
+  it("agrega custom_metric_values para múltiplas avaliações", async () => {
+    const row2 = { ...MOCK_ASSESSMENT_ROW, id: "a-2", date: "2025-01-11" };
+    const adminMock = {
+      from: vi.fn((table: string) => {
+        if (table === "share_links") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+              data: { id: "l-cv", student_id: "s-1", user_id: "u-1", password_hash: null },
+              error: null,
+            }),
+          };
+        }
+        if (table === "students") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: MOCK_STUDENT_ROW, error: null }),
+          };
+        }
+        if (table === "assessments") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue({ data: [MOCK_ASSESSMENT_ROW, row2] }),
+            }),
+          };
+        }
+        if (table === "custom_metric_values") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            in: vi.fn().mockResolvedValue({
+              data: [
+                { assessment_id: "a-1", metric_key: "custom_a", value: 9 },
+                { assessment_id: "a-1", metric_key: "custom_a2", value: 3 },
+                { assessment_id: "a-2", metric_key: "custom_b", value: null },
+              ],
+            }),
+          };
+        }
+        if (table === "ai_analyses") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: null }),
+          };
+        }
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) };
+      }),
+    };
+    vi.mocked(createAdminClient).mockReturnValue(adminMock as never);
+
+    const req = makeRequest("tok-multi-cv");
+    const res = await POST(req, { params: Promise.resolve({ token: "tok-multi-cv" }) });
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.assessments).toHaveLength(2);
+    expect(body.assessments[0].customMetrics.custom_a).toBe(9);
+    expect(body.assessments[0].customMetrics.custom_a2).toBe(3);
+    expect(body.assessments[1].customMetrics.custom_b).toBeNull();
+  });
+
+  it("mapeia avaliação esparsa e defaults do atleta", async () => {
+    const sparseAssessment = {
+      id: "a-sparse",
+      student_id: "s-1",
+      date: "2025-02-01",
+    };
+    const adminMock = {
+      from: vi.fn((table: string) => {
+        if (table === "share_links") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+              data: { id: "l-sp", student_id: "s-1", user_id: "u-1", password_hash: null },
+              error: null,
+            }),
+          };
+        }
+        if (table === "students") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+              data: {
+                name: "X",
+                age: null,
+                weight: null,
+                height: null,
+                objective: null,
+                photo_url: null,
+              },
+              error: null,
+            }),
+          };
+        }
+        if (table === "assessments") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue({ data: [sparseAssessment] }),
+            }),
+          };
+        }
+        if (table === "custom_metric_values") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            in: vi.fn().mockResolvedValue({ data: null }),
+          };
+        }
+        if (table === "ai_analyses") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: { content: "not-json" } }),
+          };
+        }
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) };
+      }),
+    };
+    vi.mocked(createAdminClient).mockReturnValue(adminMock as never);
+
+    const req = makeRequest("tok-sparse");
+    const res = await POST(req, { params: Promise.resolve({ token: "tok-sparse" }) });
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.student.age).toBe(0);
+    expect(body.assessments).toHaveLength(1);
+    expect(body.assessments[0].metrics.cmj).toBeNull();
+    expect(body.aiAnalysis).toBeNull();
+  });
+
+  it("assessmentRows null usa lista vazia", async () => {
+    const adminMock = {
+      from: vi.fn((table: string) => {
+        if (table === "share_links") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+              data: { id: "l-null-a", student_id: "s-1", user_id: "u-1", password_hash: null },
+              error: null,
+            }),
+          };
+        }
+        if (table === "students") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: MOCK_STUDENT_ROW, error: null }),
+          };
+        }
+        if (table === "assessments") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue({ data: null }),
+            }),
+          };
+        }
+        if (table === "ai_analyses") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: null }),
+          };
+        }
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) };
+      }),
+    };
+    vi.mocked(createAdminClient).mockReturnValue(adminMock as never);
+
+    const req = makeRequest("tok-null-assess");
+    const res = await POST(req, { params: Promise.resolve({ token: "tok-null-assess" }) });
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.assessments).toEqual([]);
   });
 
   it("trata JSON inválido na análise IA silenciosamente (retorna null)", async () => {
@@ -315,7 +560,9 @@ describe("POST /api/share/[token]", () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            order: vi.fn().mockResolvedValue({ data: [] }),
+            order: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue({ data: [] }),
+            }),
           };
         }
         if (table === "ai_analyses") {

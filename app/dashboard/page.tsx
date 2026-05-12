@@ -35,23 +35,28 @@ export default async function DashboardPage() {
 
   const students = (studentsData ?? []) as StudentRow[];
 
-  let assessmentRows: Array<{ student_id: string; date: string }> = [];
+  let assessmentRows: Array<{ student_id: string; date: string; created_at: string }> = [];
   if (students.length > 0) {
     const { data: statsData } = await supabase
       .from("assessments")
-      .select("student_id, date")
+      .select("student_id, date, created_at")
       .in("student_id", students.map((s) => s.id));
     assessmentRows = statsData ?? [];
   }
 
   const countByStudent: Record<string, number> = {};
-  const lastDateByStudent: Record<string, string> = {};
+  const lastRowByStudent: Record<string, { date: string; created_at: string }> = {};
 
   for (const row of assessmentRows) {
     countByStudent[row.student_id] = (countByStudent[row.student_id] ?? 0) + 1;
-    const prev = lastDateByStudent[row.student_id];
-    if (!prev || row.date > prev) {
-      lastDateByStudent[row.student_id] = row.date;
+    const prev = lastRowByStudent[row.student_id];
+    if (!prev) {
+      lastRowByStudent[row.student_id] = { date: row.date, created_at: row.created_at };
+    } else {
+      const newer =
+        row.date > prev.date ||
+        (row.date === prev.date && row.created_at > prev.created_at);
+      if (newer) lastRowByStudent[row.student_id] = { date: row.date, created_at: row.created_at };
     }
   }
 
@@ -67,7 +72,7 @@ export default async function DashboardPage() {
     photoUrl: s.photo_url ?? null,
     isDemo: s.is_demo === true,
     assessmentCount: countByStudent[s.id] ?? 0,
-    lastAssessmentDate: lastDateByStudent[s.id] ?? null,
+    lastAssessmentDate: lastRowByStudent[s.id]?.date ?? null,
   }));
 
   const modalityChosen = Boolean(

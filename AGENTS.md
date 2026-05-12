@@ -108,7 +108,7 @@ return apiError("msg", 401); // { error: string }
 npm run dev          # servidor de desenvolvimento
 npm test             # testes (vitest run)
 npm run test:watch   # testes em watch mode
-npm run test:coverage # cobertura (domain/, application/, infrastructure/)
+npm run test:coverage # cobertura Vitest (ver `vitest.config.ts`: include domain/application/infrastructure, lib, hooks, proxy, next.config, robots/sitemap, app/api/share; exclusões e thresholds documentados no próprio config)
 npm run lint         # eslint
 npm run build        # build de produção
 ```

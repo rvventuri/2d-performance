@@ -48,7 +48,12 @@ export default async function StudentDetailPage({
   // Fetch all data in parallel
   const [studentResult, assessmentsResult, metricConfigsResult, goalsResult] = await Promise.all([
     supabase.from("students").select("*").eq("id", id).eq("user_id", user.id).single(),
-    supabase.from("assessments").select("*").eq("student_id", id).order("date", { ascending: true }),
+    supabase
+      .from("assessments")
+      .select("*")
+      .eq("student_id", id)
+      .order("date", { ascending: true })
+      .order("created_at", { ascending: true }),
     supabase.from("metric_configs").select("*").eq("user_id", user.id).order("display_order", { ascending: true }),
     supabase.from("student_goals").select("*").eq("student_id", id).eq("user_id", user.id),
   ]);

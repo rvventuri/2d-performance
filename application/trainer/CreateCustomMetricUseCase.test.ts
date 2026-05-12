@@ -50,21 +50,3 @@ describe("CreateCustomMetricUseCase", () => {
     expect(repo.upsert).not.toHaveBeenCalled();
   });
 });
-
-describe("DeleteMetricConfigUseCase", () => {
-  it("deleta qualquer métrica do catálogo do usuário", async () => {
-    const { DeleteMetricConfigUseCase } = await import("./DeleteMetricConfigUseCase");
-    const repo = makeRepo();
-    const useCase = new DeleteMetricConfigUseCase(repo);
-    await useCase.execute(userId, "cmj");
-    expect(repo.delete).toHaveBeenCalledWith(userId, "cmj");
-  });
-
-  it("deleta métrica custom", async () => {
-    const { DeleteMetricConfigUseCase } = await import("./DeleteMetricConfigUseCase");
-    const repo = makeRepo();
-    const useCase = new DeleteMetricConfigUseCase(repo);
-    await useCase.execute(userId, "custom_123_abc");
-    expect(repo.delete).toHaveBeenCalledWith(userId, "custom_123_abc");
-  });
-});

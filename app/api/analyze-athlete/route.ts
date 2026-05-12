@@ -84,7 +84,8 @@ export async function POST(req: NextRequest) {
         .from("assessments")
         .select("*")
         .eq("student_id", studentId)
-        .order("date", { ascending: true });
+        .order("date", { ascending: true })
+        .order("created_at", { ascending: true });
 
       const baseAssessments = (aRows ?? []).map((r) => ({
         id: r.id as string,

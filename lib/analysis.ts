@@ -89,7 +89,7 @@ export function analyzeAssessment(
         title: "Reatividade Moderada",
         description: `RSI de ${m.rsi.toFixed(2)} — nível intermediário. Foco em treinos de drop jump e pliometria de alta intensidade.`,
       });
-    } else if (m.rsi !== null) {
+    } else {
       insights.push({
         type: "warning",
         title: "Baixa Reatividade",

@@ -170,6 +170,57 @@ describe("POST /api/share", () => {
     const res = await POST(req);
     expect(res.status).toBe(500);
   });
+
+  it("retorna 500 quando createClient falha", async () => {
+    vi.mocked(createServerClient).mockRejectedValue(new Error("cookie fail"));
+    const req = makeRequest("POST", "http://localhost/api/share", { studentId: "student-1" });
+    const res = await POST(req);
+    expect(res.status).toBe(500);
+  });
+
+  it("retorna 400 quando body JSON é inválido", async () => {
+    vi.mocked(createServerClient).mockResolvedValue(makeServerSupabase() as never);
+    const req = new NextRequest("http://localhost/api/share", {
+      method: "POST",
+      body: "not-json",
+      headers: { "content-type": "application/json" },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+  });
+
+  it("retorna 500 quando createAdminClient falha", async () => {
+    vi.mocked(createServerClient).mockResolvedValue(makeServerSupabase() as never);
+    vi.mocked(createAdminClient).mockImplementation(() => {
+      throw new Error("no service role");
+    });
+    const req = makeRequest("POST", "http://localhost/api/share", { studentId: "student-1" });
+    const res = await POST(req);
+    expect(res.status).toBe(500);
+  });
+
+  it("ignora erro ao apagar link anterior e continua insert", async () => {
+    const insertQuery: Record<string, unknown> = {};
+    insertQuery.delete = vi.fn().mockReturnValue(insertQuery);
+    insertQuery.eq = vi
+      .fn()
+      .mockReturnValueOnce(insertQuery)
+      .mockResolvedValueOnce({ error: { message: "delete-warn", code: "PGRST" } });
+    insertQuery.insert = vi.fn().mockReturnValue(insertQuery);
+    insertQuery.select = vi.fn().mockReturnValue(insertQuery);
+    insertQuery.single = vi.fn().mockResolvedValue({
+      data: { token: "tok-after-del", created_at: "2025-01-01T00:00:00Z" },
+      error: null,
+    });
+    vi.mocked(createServerClient).mockResolvedValue(makeServerSupabase() as never);
+    vi.mocked(createAdminClient).mockReturnValue({ from: vi.fn().mockReturnValue(insertQuery) } as never);
+
+    const req = makeRequest("POST", "http://localhost/api/share", { studentId: "student-1" });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.token).toBe("tok-after-del");
+  });
 });
 
 // ── GET /api/share ────────────────────────────────────────────────────────────
@@ -228,6 +279,26 @@ describe("GET /api/share", () => {
     const body = await res.json();
     expect(body.data.hasPassword).toBe(true);
   });
+
+  it("retorna data:null quando erro não é PGRST116", async () => {
+    const linkQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: { code: "42703", message: "column missing" },
+      }),
+    };
+    const supabaseMock = {
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: MOCK_USER } }) },
+      from: vi.fn(() => linkQuery),
+    };
+    vi.mocked(createServerClient).mockResolvedValue(supabaseMock as never);
+    const req = makeRequest("GET", "http://localhost/api/share?studentId=student-1");
+    const res = await GET(req);
+    const body = await res.json();
+    expect(body.data).toBeNull();
+  });
 });
 
 // ── DELETE /api/share ─────────────────────────────────────────────────────────
@@ -272,5 +343,24 @@ describe("DELETE /api/share", () => {
     const req = makeRequest("DELETE", "http://localhost/api/share?studentId=student-1");
     const res = await DELETE(req);
     expect(res.status).toBe(204);
+  });
+
+  it("retorna 500 quando delete falha", async () => {
+    const deleteQuery: Record<string, unknown> = {};
+    deleteQuery.delete = vi.fn().mockReturnValue(deleteQuery);
+    deleteQuery.eq = vi.fn().mockImplementation(() => {
+      const partial = { ...deleteQuery };
+      partial.eq = vi.fn().mockResolvedValue({ error: { message: "db", code: "PGRST" } });
+      return partial;
+    });
+    const supabaseMock = makeServerSupabase();
+    supabaseMock.from = vi.fn((table: string) => {
+      if (table === "share_links") return deleteQuery;
+      return { auth: supabaseMock.auth };
+    });
+    vi.mocked(createServerClient).mockResolvedValue(supabaseMock as never);
+    const req = makeRequest("DELETE", "http://localhost/api/share?studentId=student-1");
+    const res = await DELETE(req);
+    expect(res.status).toBe(500);
   });
 });

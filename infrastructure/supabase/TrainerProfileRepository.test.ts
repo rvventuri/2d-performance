@@ -1,14 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { SupabaseTrainerProfileRepository } from "./TrainerProfileRepository";
-
-function makeSupabaseMock(response: { data?: unknown; error?: { code?: string; message?: string } | null }) {
-  const single = vi.fn().mockResolvedValue(response);
-  const select = vi.fn().mockReturnValue({ single });
-  const eq = vi.fn().mockReturnValue({ single, select });
-  const upsert = vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ single }) });
-  const from = vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ eq }), upsert });
-  return { from };
-}
 
 const userId = "user-123";
 
@@ -54,6 +45,31 @@ describe("SupabaseTrainerProfileRepository.getByUserId", () => {
     expect(result!.coachingPhilosophy).toBe("Periodização ondulatória");
     expect(result!.sportContext).toBe("Futebol");
     expect(result!.userId).toBe(userId);
+  });
+
+  it("mapeia campos nulos do banco para string vazia", async () => {
+    const row = {
+      id: "id-1",
+      user_id: userId,
+      coaching_philosophy: null,
+      sport_context: null,
+      athlete_profiles: null,
+      priority_focus: null,
+      custom_instructions: null,
+      updated_at: "2025-01-01T00:00:00Z",
+    };
+    const supabase = {
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: row, error: null }),
+          }),
+        }),
+      }),
+    };
+    const result = await new SupabaseTrainerProfileRepository(supabase, userId).getByUserId(userId);
+    expect(result!.coachingPhilosophy).toBe("");
+    expect(result!.sportContext).toBe("");
   });
 
   it("lança erro para outros erros do Supabase", async () => {
@@ -106,5 +122,54 @@ describe("SupabaseTrainerProfileRepository.upsert", () => {
       { onConflict: "user_id" }
     );
     expect(result.coachingPhilosophy).toBe("A");
+  });
+
+  it("upsert converte strings vazias em null", async () => {
+    const savedRow = {
+      id: "new-id",
+      user_id: userId,
+      coaching_philosophy: null,
+      sport_context: null,
+      athlete_profiles: null,
+      priority_focus: null,
+      custom_instructions: null,
+      updated_at: "2025-01-01T00:00:00Z",
+    };
+    const single = vi.fn().mockResolvedValue({ data: savedRow, error: null });
+    const upsertFn = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({ single }),
+    });
+    const supabase = { from: vi.fn().mockReturnValue({ upsert: upsertFn }) };
+    await new SupabaseTrainerProfileRepository(supabase, userId).upsert(userId, {
+      coachingPhilosophy: "",
+      sportContext: "",
+      athleteProfiles: "",
+      priorityFocus: "",
+      customInstructions: "",
+    });
+    expect(upsertFn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        coaching_philosophy: null,
+        sport_context: null,
+      }),
+      { onConflict: "user_id" }
+    );
+  });
+
+  it("upsert lança em erro", async () => {
+    const single = vi.fn().mockResolvedValue({ data: null, error: { message: "bad" } });
+    const upsertFn = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({ single }),
+    });
+    const supabase = { from: vi.fn().mockReturnValue({ upsert: upsertFn }) };
+    await expect(
+      new SupabaseTrainerProfileRepository(supabase, userId).upsert(userId, {
+        coachingPhilosophy: "a",
+        sportContext: "b",
+        athleteProfiles: "c",
+        priorityFocus: "d",
+        customInstructions: "e",
+      })
+    ).rejects.toThrow("bad");
   });
 });

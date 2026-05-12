@@ -11,7 +11,7 @@ export interface MetricTemplateDefinition {
   metrics: TemplateMetricInput[];
 }
 
-function tpl(partial: {
+export function tpl(partial: {
   metricKey: string;
   label: string;
   unit: string;

@@ -126,10 +126,12 @@ function GoalProgress({
 function AssessmentRow({
   assessment,
   previous,
+  latestAssessmentId,
   onDelete,
 }: {
   assessment: Assessment;
   previous?: Assessment;
+  latestAssessmentId: string | null;
   onDelete: (id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -161,6 +163,21 @@ function AssessmentRow({
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {latestAssessmentId === assessment.id && (
+            <Link
+              href={`/students/${assessment.studentId}/assessment/${assessment.id}/edit`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-brand-primary-bright hover:bg-accent cursor-pointer h-8 w-8 p-0"
+                aria-label="Editar avaliação"
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+            </Link>
+          )}
           <AlertDialog>
             <AlertDialogTrigger
               render={
@@ -540,6 +557,7 @@ export default function StudentDetailClient({
                     key={assessment.id}
                     assessment={assessment}
                     previous={prev}
+                    latestAssessmentId={latest?.id ?? null}
                     onDelete={handleDeleteAssessment}
                   />
                 );

@@ -2,9 +2,10 @@ import { describe, it, expect } from "vitest";
 import {
   buildTrainerContext,
   buildBenchmarkSection,
+  buildGoalsSection,
   buildWeightNote,
 } from "./TrainerContextBuilder";
-import { TrainerProfile, ResolvedMetricConfig, MetricConfig } from "@/lib/types";
+import { TrainerProfile, ResolvedMetricConfig, MetricConfig, StudentGoal } from "@/lib/types";
 import { resolveMetricConfigs } from "./MetricConfigResolver";
 import { DEFAULT_METRICS } from "./DefaultMetrics";
 
@@ -135,6 +136,30 @@ describe("buildBenchmarkSection", () => {
     const section = buildBenchmarkSection(resolved);
     expect(section).toContain("[peso: 2x]");
   });
+
+  it("usa adimensional e MENOR = melhor quando aplicável", () => {
+    const resolved = resolveMetricConfigs([
+      {
+        id: "x",
+        userId: "u",
+        metricKey: "tempoContato",
+        label: "TC",
+        unit: "",
+        higherIsBetter: false,
+        isCustom: false,
+        isEnabled: true,
+        benchRecreational: 300,
+        benchTrained: 230,
+        benchElite: 170,
+        weight: 1,
+        displayOrder: 0,
+        createdAt: "2025-01-01",
+      },
+    ]);
+    const section = buildBenchmarkSection(resolved);
+    expect(section).toContain("adimensional");
+    expect(section).toContain("MENOR = melhor");
+  });
 });
 
 describe("buildWeightNote", () => {
@@ -185,5 +210,142 @@ describe("buildWeightNote", () => {
       },
     ];
     expect(buildWeightNote(resolved)).toBe("");
+  });
+});
+
+const baseResolved = (key: string, overrides: Partial<ResolvedMetricConfig> = {}): ResolvedMetricConfig => ({
+  key,
+  label: "CMJ",
+  unit: "cm",
+  higherIsBetter: true,
+  benchRecreational: 30,
+  benchTrained: 42,
+  benchElite: 60,
+  isEnabled: true,
+  weight: 1,
+  isCustom: false,
+  displayOrder: 0,
+  ...overrides,
+});
+
+describe("buildGoalsSection", () => {
+  it("retorna vazio sem metas", () => {
+    expect(buildGoalsSection([], {}, [])).toBe("");
+  });
+
+  it("lista metas com label da métrica resolvida", () => {
+    const goals: StudentGoal[] = [
+      {
+        id: "1",
+        studentId: "s",
+        userId: "u",
+        metricKey: "cmj",
+        targetValue: 50,
+        targetDate: null,
+        createdAt: "t",
+      },
+    ];
+    const section = buildGoalsSection(goals, {}, [baseResolved("cmj")]);
+    expect(section).toContain("METAS DEFINIDAS");
+    expect(section).toContain("CMJ");
+    expect(section).toContain("50");
+  });
+
+  it("usa metricKey quando métrica não está no mapa", () => {
+    const goals: StudentGoal[] = [
+      {
+        id: "1",
+        studentId: "s",
+        userId: "u",
+        metricKey: "unknown_key",
+        targetValue: 10,
+        targetDate: null,
+        createdAt: "t",
+      },
+    ];
+    const section = buildGoalsSection(goals, {}, []);
+    expect(section).toContain("unknown_key");
+  });
+
+  it("inclui prazo formatado quando targetDate definido", () => {
+    const goals: StudentGoal[] = [
+      {
+        id: "1",
+        studentId: "s",
+        userId: "u",
+        metricKey: "cmj",
+        targetValue: 50,
+        targetDate: "2026-06-15",
+        createdAt: "t",
+      },
+    ];
+    const section = buildGoalsSection(goals, {}, [baseResolved("cmj")]);
+    expect(section).toMatch(/prazo:/);
+  });
+
+  it("nota progresso quando há valor atual (higherIsBetter)", () => {
+    const goals: StudentGoal[] = [
+      {
+        id: "1",
+        studentId: "s",
+        userId: "u",
+        metricKey: "cmj",
+        targetValue: 50,
+        targetDate: null,
+        createdAt: "t",
+      },
+    ];
+    const section = buildGoalsSection(goals, { cmj: 25 }, [baseResolved("cmj", { higherIsBetter: true })]);
+    expect(section).toContain("atual:");
+    expect(section).toContain("50% da meta");
+  });
+
+  it("nota progresso com higherIsBetter false", () => {
+    const goals: StudentGoal[] = [
+      {
+        id: "1",
+        studentId: "s",
+        userId: "u",
+        metricKey: "tempoContato",
+        targetValue: 200,
+        targetDate: null,
+        createdAt: "t",
+      },
+    ];
+    const metrics = [baseResolved("tempoContato", { label: "TC", higherIsBetter: false })];
+    const section = buildGoalsSection(goals, { tempoContato: 250 }, metrics);
+    expect(section).toContain("atual:");
+  });
+
+  it("omite progresso quando valor atual é null", () => {
+    const goals: StudentGoal[] = [
+      {
+        id: "1",
+        studentId: "s",
+        userId: "u",
+        metricKey: "cmj",
+        targetValue: 50,
+        targetDate: null,
+        createdAt: "t",
+      },
+    ];
+    const section = buildGoalsSection(goals, { cmj: null }, [baseResolved("cmj")]);
+    expect(section).not.toContain("atual:");
+  });
+
+  it("usa higherIsBetter true quando métrica não resolvida mas há valor atual", () => {
+    const goals: StudentGoal[] = [
+      {
+        id: "1",
+        studentId: "s",
+        userId: "u",
+        metricKey: "orphan",
+        targetValue: 100,
+        targetDate: null,
+        createdAt: "t",
+      },
+    ];
+    const section = buildGoalsSection(goals, { orphan: 50 }, []);
+    expect(section).toContain("50% da meta");
   });
 });

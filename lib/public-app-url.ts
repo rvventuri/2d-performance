@@ -6,7 +6,8 @@ export type AuthPagePath = "/login" | "/register";
  * abrem o link fora do WebView — não é garantido, mas é o máximo possível na web.
  */
 export function getMarketingCtaHref(path: AuthPagePath): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, "") ?? "";
+  const raw = process.env.NEXT_PUBLIC_APP_URL;
+  const base = (raw?.trim() ?? "").replace(/\/$/, "");
   return base ? `${base}${path}` : path;
 }
 
@@ -16,7 +17,8 @@ export function getMarketingCtaHref(path: AuthPagePath): string {
  */
 export function getPublicAppBaseUrl(): string {
   if (typeof window === "undefined") return "";
-  const env = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, "");
+  const raw = process.env.NEXT_PUBLIC_APP_URL;
+  const env = (raw?.trim() ?? "").replace(/\/$/, "");
   if (env) return env;
   return window.location.origin;
 }

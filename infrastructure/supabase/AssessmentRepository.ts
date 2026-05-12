@@ -28,7 +28,8 @@ export class SupabaseAssessmentRepository implements IAssessmentRepository {
       .select("*")
       .eq("student_id", studentId)
       .eq("user_id", this.userId)
-      .order("date", { ascending: true });
+      .order("date", { ascending: true })
+      .order("created_at", { ascending: true });
 
     if (error) throw new Error(error.message);
 
