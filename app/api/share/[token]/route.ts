@@ -112,6 +112,17 @@ export async function POST(
     }
   }
 
+  // Busca labels de métricas customizadas do trainer
+  const { data: metricConfigRows } = await admin
+    .from("metric_configs")
+    .select("metric_key, label")
+    .eq("user_id", link.user_id);
+
+  const customMetricLabels: Record<string, string> = {};
+  for (const mc of metricConfigRows ?? []) {
+    if (mc.metric_key && mc.label) customMetricLabels[mc.metric_key] = mc.label;
+  }
+
   // Busca análise de IA
   const { data: aiRow } = await admin
     .from("ai_analyses")
@@ -141,5 +152,6 @@ export async function POST(
     },
     assessments,
     aiAnalysis,
+    customMetricLabels,
   });
 }

@@ -17,7 +17,7 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
-  Star,
+
   Zap,
   Target,
   Activity,
@@ -75,7 +75,7 @@ function ScoreCircle({ score, label }: { score: number; label: string }) {
   );
 }
 
-function AssessmentCard({ assessment, index, total }: { assessment: Assessment; index: number; total: number }) {
+function AssessmentCard({ assessment, index, total, metricLabels }: { assessment: Assessment; index: number; total: number; metricLabels: Record<string, string> }) {
   const [open, setOpen] = useState(index === total - 1);
   const filledMetrics = STANDARD_METRICS.filter((k) => assessment.metrics[k] !== null && assessment.metrics[k] !== undefined);
   const customEntries = Object.entries(assessment.customMetrics ?? {}).filter(([, v]) => v !== null);
@@ -109,7 +109,7 @@ function AssessmentCard({ assessment, index, total }: { assessment: Assessment; 
           ))}
           {customEntries.map(([k, v]) => (
             <div key={k} className="flex justify-between items-center py-1.5 border-b border-border last:border-0">
-              <span className="text-muted-foreground text-sm capitalize">{k}</span>
+              <span className="text-muted-foreground text-sm">{metricLabels[k] ?? k}</span>
               <span className="font-mono font-bold text-foreground text-sm">{v}</span>
             </div>
           ))}
@@ -175,6 +175,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
   const [student, setStudent] = useState<ShareAthleteData["student"] | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [aiAnalysis, setAiAnalysis] = useState<AiAnalysisData | null>(null);
+  const [customMetricLabels, setCustomMetricLabels] = useState<Record<string, string>>({});
 
   const fetchData = useCallback(
     async (password?: string) => {
@@ -199,6 +200,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
         setStudent(data.student);
         setAssessments(data.assessments ?? []);
         setAiAnalysis(data.aiAnalysis ?? null);
+        setCustomMetricLabels(data.customMetricLabels ?? {});
         setPwError(undefined);
 
         if (password) sessionStorage.setItem(SESSION_KEY(token), password);
@@ -407,7 +409,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
         )}
 
         {/* ─── Gráficos de evolução ────────────────────────────────────────── */}
-        {assessments.length >= 2 && (activeMetrics.length > 0 || customMetricKeys.length > 0) && (
+        {assessments.length >= 1 && (activeMetrics.length > 0 || customMetricKeys.length > 0) && (
           <section className="space-y-4">
             <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
               <Zap className="w-5 h-5 text-brand-accent" />
@@ -438,7 +440,7 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
                   <MetricChart
                     assessments={assessments}
                     metricKey={key}
-                    label={key}
+                    label={customMetricLabels[key] ?? key}
                     unit=""
                     color="#8B5CF6"
                     isCustom
@@ -464,87 +466,12 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
                   assessment={a}
                   index={assessments.length - 1 - i}
                   total={assessments.length}
+                  metricLabels={customMetricLabels}
                 />
               ))}
             </div>
           )}
         </section>
-
-        {/* ─── Pontos fortes ───────────────────────────────────────────────── */}
-        {aiAnalysis?.strengths && aiAnalysis.strengths.length > 0 && (
-          <section className="space-y-4">
-            <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
-              <Star className="w-5 h-5 text-brand-accent" />
-              Seus pontos fortes
-            </h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {aiAnalysis.strengths.map((s, i) => (
-                <div
-                  key={i}
-                  className="bg-card border border-border rounded-xl p-5 space-y-2"
-                  style={{ borderLeftWidth: "3px", borderLeftColor: "#22C55E" }}
-                >
-                  <h3 className="font-heading font-bold text-foreground text-sm">{s.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{s.description}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ─── Recomendações ───────────────────────────────────────────────── */}
-        {aiAnalysis?.prescriptions && aiAnalysis.prescriptions.length > 0 && (
-          <section className="space-y-4">
-            <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
-              <Target className="w-5 h-5 text-brand-primary-bright" />
-              Recomendações para você
-            </h2>
-            <div className="space-y-4">
-              {aiAnalysis.prescriptions.map((p, i) => (
-                <div
-                  key={i}
-                  className="bg-card border border-border rounded-xl p-5 space-y-3"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-brand-primary-bright bg-brand-primary/10 border border-brand-primary/20 rounded px-2 py-0.5">
-                          {p.quality}
-                        </span>
-                        {p.priority === 1 && (
-                          <span className="text-xs font-bold text-destructive bg-destructive/10 border border-destructive/20 rounded px-2 py-0.5">
-                            Prioridade alta
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="font-heading font-bold text-foreground">{p.title}</h3>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{p.rationale}</p>
-                  {p.examples?.length > 0 && (
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Exemplos</p>
-                      <ul className="space-y-1">
-                        {p.examples.map((ex, j) => (
-                          <li key={j} className="text-muted-foreground text-sm flex items-start gap-2">
-                            <span className="text-brand-primary-bright shrink-0 mt-0.5">•</span>
-                            {ex}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {p.frequency && (
-                    <p className="text-xs text-muted-foreground">
-                      Frequência sugerida:{" "}
-                      <span className="text-foreground font-medium">{p.frequency}</span>
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
         {/* ─── Alertas ─────────────────────────────────────────────────────── */}
         {aiAnalysis?.alerts && aiAnalysis.alerts.length > 0 && (
