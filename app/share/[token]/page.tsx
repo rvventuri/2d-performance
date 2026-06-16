@@ -18,8 +18,6 @@ import {
   Minus,
 
   Zap,
-  Target,
-  Activity,
 } from "lucide-react";
 
 const SHARE_BRAND = {
@@ -45,39 +43,6 @@ const CHART_COLORS: Record<string, string> = {
 const STANDARD_METRICS = Object.keys(METRIC_LABELS) as (keyof typeof METRIC_LABELS)[];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-
-function ScoreCircle({ score, label }: { score: number; label: string }) {
-  const circumference = 2 * Math.PI * 48;
-  const offset = circumference - (score / 100) * circumference;
-  const color = score >= 70 ? "#22C55E" : score >= 45 ? "#F59E0B" : "#EF4444";
-
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative w-28 h-28">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 110 110">
-          <circle cx="55" cy="55" r="48" fill="none" stroke="var(--border)" strokeWidth="8" />
-          <circle
-            cx="55"
-            cy="55"
-            r="48"
-            fill="none"
-            stroke={color}
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            style={{ transition: "stroke-dashoffset 1s ease" }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-foreground font-heading">{score}</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">/ 100</span>
-        </div>
-      </div>
-      <span className="text-xs text-muted-foreground text-center max-w-[120px] leading-tight">{label}</span>
-    </div>
-  );
-}
 
 function AssessmentCard({ assessment, index, total, metricLabels }: { assessment: Assessment; index: number; total: number; metricLabels: Record<string, string> }) {
   const [open, setOpen] = useState(index === total - 1);
@@ -372,31 +337,6 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
             </div>
           </div>
         </section>
-
-        {/* ─── Score + Performance ─────────────────────────────────────────── */}
-        {aiAnalysis && (
-          <section className="bg-card border border-border rounded-2xl p-6 space-y-6">
-            <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
-              <Activity className="w-5 h-5 text-brand-primary-bright" />
-              Score de Performance
-            </h2>
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <ScoreCircle score={aiAnalysis.performanceScore} label={aiAnalysis.profileType} />
-              <div className="flex-1 space-y-3 text-center sm:text-left">
-                <p className="text-muted-foreground text-sm leading-relaxed">{aiAnalysis.profileDescription}</p>
-                {aiAnalysis.objectiveAlignment && (
-                  <div className="inline-flex items-center gap-2 bg-brand-primary/10 border border-brand-primary/20 rounded-lg px-3 py-2">
-                    <Target className="w-3.5 h-3.5 text-brand-primary-bright shrink-0" />
-                    <span className="text-xs text-muted-foreground">
-                      Alinhamento ao objetivo:{" "}
-                      <span className="text-foreground font-medium">{aiAnalysis.objectiveAlignment.score}/100</span>
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* ─── Mensagem de evolução ─────────────────────────────────────────── */}
         {aiAnalysis?.evolution && (
