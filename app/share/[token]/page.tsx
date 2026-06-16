@@ -438,32 +438,6 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
           )}
         </section>
 
-        {/* ─── Alertas ─────────────────────────────────────────────────────── */}
-        {aiAnalysis?.alerts && aiAnalysis.alerts.length > 0 && (
-          <section className="space-y-4">
-            <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-[#F59E0B]" />
-              Pontos de atenção
-            </h2>
-            <div className="space-y-3">
-              {aiAnalysis.alerts.map((alert, i) => {
-                const borderColor =
-                  alert.priority === "high" ? "#EF4444" : alert.priority === "medium" ? "#F59E0B" : "#64748B";
-                return (
-                  <div
-                    key={i}
-                    className="bg-card border border-border rounded-xl p-5 space-y-1"
-                    style={{ borderLeftWidth: "3px", borderLeftColor: borderColor }}
-                  >
-                    <h3 className="font-heading font-bold text-foreground text-sm">{alert.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{alert.description}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
         {/* ─── Footer ──────────────────────────────────────────────────────── */}
         <footer className="border-t border-border pt-6 pb-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
