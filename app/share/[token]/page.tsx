@@ -9,7 +9,6 @@ import { formatDate } from "@/lib/utils";
 import { use } from "react";
 import { APP_NAME } from "@/lib/branding";
 import {
-  Lock,
   Loader2,
   AlertTriangle,
   ChevronDown,
@@ -22,6 +21,11 @@ import {
   Target,
   Activity,
 } from "lucide-react";
+
+const SHARE_BRAND = {
+  name: "2D Performance",
+  logoSrc: "/logo2d.jpg",
+} as const;
 
 // ─── Metric colour map ────────────────────────────────────────────────────────
 
@@ -119,6 +123,35 @@ function AssessmentCard({ assessment, index, total, metricLabels }: { assessment
   );
 }
 
+function ShareBrand({
+  size = 28,
+  showAppNameFallback = false,
+  textClassName,
+}: {
+  size?: number;
+  showAppNameFallback?: boolean;
+  textClassName?: string;
+}) {
+  const name = SHARE_BRAND.name || (showAppNameFallback ? APP_NAME : "");
+  return (
+    <div className="flex items-center gap-2">
+      <Image
+        src={SHARE_BRAND.logoSrc}
+        alt={name || APP_NAME}
+        width={size}
+        height={size}
+        className="rounded-md"
+        priority
+      />
+      {name ? (
+        <span className={textClassName ?? "font-heading font-bold text-sm text-foreground"}>
+          {name}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 // ─── Password Gate ────────────────────────────────────────────────────────────
 
 function PasswordGate({ onSubmit, error }: { onSubmit: (pw: string) => void; error?: string }) {
@@ -127,8 +160,8 @@ function PasswordGate({ onSubmit, error }: { onSubmit: (pw: string) => void; err
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-accent/10 border border-brand-accent/20 mb-2">
-            <Lock className="w-6 h-6 text-brand-accent" />
+          <div className="flex items-center justify-center mb-3">
+            <ShareBrand size={36} showAppNameFallback />
           </div>
           <h1 className="font-heading text-2xl font-bold text-foreground">Link protegido</h1>
           <p className="text-muted-foreground text-sm">Seu treinador definiu uma senha para este link.</p>
@@ -263,7 +296,6 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
     new Set(assessments.flatMap((a) => Object.keys(a.customMetrics ?? {})))
   ).filter((k) => assessments.some((a) => (a.customMetrics?.[k] ?? null) !== null));
 
-  const latestAssessment = assessments[assessments.length - 1] ?? null;
   const bmi = student.weight && student.height
     ? (student.weight / Math.pow(student.height / 100, 2)).toFixed(1)
     : null;
@@ -280,17 +312,10 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
       <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            <Image
-              src="/saltoverse-mark.svg"
-              alt={APP_NAME}
-              width={28}
-              height={28}
-              className="rounded-md"
-              unoptimized
+            <ShareBrand
+              showAppNameFallback
+              textClassName="font-heading font-bold text-sm text-foreground group-hover:text-brand-primary-bright transition-colors"
             />
-            <span className="font-heading font-bold text-sm text-foreground group-hover:text-brand-primary-bright transition-colors">
-              {APP_NAME}
-            </span>
           </Link>
           <span className="text-muted-foreground text-xs hidden sm:block">Relatório do Atleta</span>
         </div>
@@ -502,15 +527,11 @@ export default function ShareAthletePublicPage({ params }: { params: Promise<{ t
         {/* ─── Footer ──────────────────────────────────────────────────────── */}
         <footer className="border-t border-border pt-6 pb-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Image
-              src="/saltoverse-mark.svg"
-              alt={APP_NAME}
-              width={20}
-              height={20}
-              className="rounded"
-              unoptimized
+            <ShareBrand
+              size={20}
+              showAppNameFallback
+              textClassName="text-muted-foreground text-xs font-medium"
             />
-            <span className="text-muted-foreground text-xs font-medium">{APP_NAME}</span>
           </div>
           <span className="text-muted-foreground/50 text-xs">
             Gerado em {new Date().toLocaleDateString("pt-BR")}

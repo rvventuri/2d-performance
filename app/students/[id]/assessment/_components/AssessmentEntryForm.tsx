@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useTransition, useMemo } from "react";
+import { useState, useCallback, useTransition, useMemo } from "react";
 import Link from "next/link";
 import { Metrics } from "@/lib/types";
 import {
@@ -62,8 +62,12 @@ export type AssessmentEntryFormProps = {
   }) => Promise<void>;
 };
 
-export default function AssessmentEntryForm({
-  formKey = "default",
+export default function AssessmentEntryForm(props: AssessmentEntryFormProps) {
+  const { formKey = "default" } = props;
+  return <AssessmentEntryFormInner key={formKey} {...props} />;
+}
+
+function AssessmentEntryFormInner({
   studentId,
   studentName,
   resolvedMetrics,
@@ -86,19 +90,6 @@ export default function AssessmentEntryForm({
     initialAssimetriaOverrideManual
   );
   const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    setDate(initialDate);
-    setMetrics(initialMetrics);
-    setCustomMetricValues(initialCustomMetricValues);
-    setAssimetriaOverrideManual(initialAssimetriaOverrideManual);
-  }, [
-    formKey,
-    initialDate,
-    initialAssimetriaOverrideManual,
-    initialCustomMetricValues,
-    initialMetrics,
-  ]);
 
   const enabledList = useMemo(
     () => getEnabledMetrics(resolvedMetrics),
