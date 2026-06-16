@@ -25,6 +25,8 @@ interface MetricChartProps {
   higherIsBetter?: boolean;
   /** If false, the label/value header is hidden (parent handles it) */
   showHeader?: boolean;
+  /** If false, disables line animation (useful for PDF export) */
+  animate?: boolean;
 }
 
 const CustomTooltip = ({
@@ -62,6 +64,7 @@ export default function MetricChart({
   goalValue,
   higherIsBetter = true,
   showHeader = true,
+  animate = true,
 }: MetricChartProps) {
   const getValue = (a: Assessment): number | null => {
     if (isCustom) {
@@ -159,6 +162,7 @@ export default function MetricChart({
             dataKey="value"
             stroke={color}
             strokeWidth={2}
+            isAnimationActive={animate}
             dot={{ fill: color, strokeWidth: 0, r: 4 }}
             activeDot={{ r: 6, strokeWidth: 0, fill: color }}
           />

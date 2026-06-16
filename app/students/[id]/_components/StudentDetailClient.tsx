@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition, useRef, useMemo } from "react";
+import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getStudent, getStudentAssessments, deleteStudent, deleteAssessment, getMetricConfigs } from "@/lib/storage";
-import { Student, Assessment, Metrics, StudentGoal } from "@/lib/types";
+import { getStudent, getStudentAssessments, deleteStudent, deleteAssessment, getMetricConfigs, getAiAnalysis } from "@/lib/storage";
+import { Student, Assessment, Metrics, StudentGoal, AiAnalysisData } from "@/lib/types";
 import { resolveMetricConfigs, getEnabledMetrics } from "@/domain/trainer/services/MetricConfigResolver";
 import { analyzeAssessment, calcEvolution } from "@/lib/analysis";
 import AiAnalysisTab from "@/components/ai-analysis-tab";
@@ -36,6 +37,8 @@ import MetricChart from "@/components/metric-chart";
 import AnalysisInsights from "@/components/analysis-insights";
 import EvolutionCard from "@/components/evolution-card";
 import PerformanceReport from "@/components/performance-report";
+import AthleteReportView from "@/components/athlete-report/AthleteReportView";
+import { exportAthletePdf } from "@/lib/export-athlete-pdf";
 import Image from "next/image";
 import {
   ArrowLeft,
@@ -52,6 +55,7 @@ import {
   Loader2,
   Sparkles,
   Share2,
+  FileDown,
   Target,
   X,
 } from "lucide-react";
@@ -265,6 +269,9 @@ export default function StudentDetailClient({
   const [goals, setGoals] = useState<StudentGoal[]>(initialGoals);
   const [pageLoading, setPageLoading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [pdfAiAnalysis, setPdfAiAnalysis] = useState<AiAnalysisData | null>(null);
+  const reportRef = useRef<HTMLDivElement>(null);
   const [goalDialog, setGoalDialog] = useState<GoalDialogState | null>(null);
   const [goalTargetValue, setGoalTargetValue] = useState("");
   const [goalTargetDate, setGoalTargetDate] = useState("");
@@ -291,6 +298,45 @@ export default function StudentDetailClient({
       setPageLoading(false);
     }
   }, [id, router]);
+
+  const customMetricLabels = useMemo(() => {
+    const labels: Record<string, string> = {};
+    for (const m of resolvedMetrics) {
+      if (m.isCustom) labels[m.key] = m.label;
+    }
+    return labels;
+  }, [resolvedMetrics]);
+
+  const handleExportPdf = async () => {
+    if (assessments.length === 0) {
+      toast.error("Registre ao menos uma avaliação para exportar");
+      return;
+    }
+
+    setExporting(true);
+    try {
+      let aiData: AiAnalysisData | null = null;
+      try {
+        const saved = await getAiAnalysis(id);
+        if (saved?.status === "done" && saved.content) {
+          aiData = JSON.parse(saved.content) as AiAnalysisData;
+        }
+      } catch {
+        // omit AI section when unavailable
+      }
+
+      flushSync(() => {
+        setPdfAiAnalysis(aiData);
+      });
+
+      await exportAthletePdf(reportRef, student.name);
+      toast.success("PDF exportado com sucesso!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao exportar PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const openGoalDialog = (
     metricKey: string,
@@ -463,6 +509,20 @@ export default function StudentDetailClient({
                 Nova Avaliação
               </Button>
             </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportPdf}
+              disabled={exporting || assessments.length === 0}
+              className="border-border text-muted-foreground hover:text-brand-primary-bright hover:bg-accent cursor-pointer gap-1.5"
+            >
+              {exporting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileDown className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">Exportar PDF</span>
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -702,6 +762,17 @@ export default function StudentDetailClient({
         studentId={student.id}
         studentName={student.name}
       />
+
+      <div aria-hidden className="fixed left-[-9999px] top-0 pointer-events-none">
+        <AthleteReportView
+          ref={reportRef}
+          mode="export"
+          student={student}
+          assessments={assessments}
+          aiAnalysis={pdfAiAnalysis}
+          customMetricLabels={customMetricLabels}
+        />
+      </div>
 
       {/* Goal Editor Dialog */}
       <Dialog open={goalDialog !== null} onOpenChange={(open) => { if (!open) setGoalDialog(null); }}>
