@@ -3,22 +3,34 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import bcrypt from "bcryptjs";
 import { AiAnalysisData } from "@/lib/types";
 
+function toNumberOrNull(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const n = Number(trimmed);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 function rowToAssessment(row: Record<string, unknown>) {
   return {
     id: row.id as string,
     studentId: row.student_id as string,
     date: row.date as string,
     metrics: {
-      cmj: row.cmj ?? null,
-      sj: row.sj ?? null,
-      abalakov: row.abalakov ?? null,
-      rsi: row.rsi ?? null,
-      tempoContato: row.tempo_contato ?? null,
-      alturaSaltoDJ: row.altura_salto_dj ?? null,
-      cmjEsquerdo: row.cmj_esquerdo ?? null,
-      cmjDireito: row.cmj_direito ?? null,
-      assimetriaPercentual: row.assimetria_percentual ?? null,
-      saltoHorizontal: row.salto_horizontal ?? null,
+      cmj: toNumberOrNull(row.cmj),
+      sj: toNumberOrNull(row.sj),
+      abalakov: toNumberOrNull(row.abalakov),
+      rsi: toNumberOrNull(row.rsi),
+      tempoContato: toNumberOrNull(row.tempo_contato),
+      alturaSaltoDJ: toNumberOrNull(row.altura_salto_dj),
+      cmjEsquerdo: toNumberOrNull(row.cmj_esquerdo),
+      cmjDireito: toNumberOrNull(row.cmj_direito),
+      assimetriaPercentual: toNumberOrNull(row.assimetria_percentual),
+      saltoHorizontal: toNumberOrNull(row.salto_horizontal),
     },
     customMetrics: {} as Record<string, number | null>,
   };
@@ -93,7 +105,7 @@ export async function POST(
     const cvByAssessment: Record<string, Record<string, number | null>> = {};
     for (const cv of cvRows ?? []) {
       if (!cvByAssessment[cv.assessment_id]) cvByAssessment[cv.assessment_id] = {};
-      cvByAssessment[cv.assessment_id][cv.metric_key] = cv.value ?? null;
+      cvByAssessment[cv.assessment_id][cv.metric_key] = toNumberOrNull(cv.value);
     }
     for (const a of assessments) {
       a.customMetrics = cvByAssessment[a.id] ?? {};
@@ -122,8 +134,8 @@ export async function POST(
     student: {
       name: studentRow.name,
       age: studentRow.age ?? 0,
-      weight: studentRow.weight ?? 0,
-      height: studentRow.height ?? 0,
+      weight: toNumberOrNull(studentRow.weight) ?? 0,
+      height: toNumberOrNull(studentRow.height) ?? 0,
       objective: studentRow.objective ?? "",
       photoUrl: studentRow.photo_url ?? null,
     },
