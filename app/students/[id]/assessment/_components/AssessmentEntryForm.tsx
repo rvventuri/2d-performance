@@ -68,6 +68,7 @@ export default function AssessmentEntryForm(props: AssessmentEntryFormProps) {
 }
 
 function AssessmentEntryFormInner({
+  formKey = "default",
   studentId,
   studentName,
   resolvedMetrics,
